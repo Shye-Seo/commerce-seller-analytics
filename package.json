@@ -1,0 +1,35 @@
+{
+  "name": "commerce-seller-analytics",
+  "version": "1.0.0",
+  "private": true,
+  "description": "이커머스 셀러를 위한 실시간 마진 시뮬레이터 & 키워드 분석 대시보드",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "next": "14.2.35",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.9",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "autoprefixer": "^10.4.21",
+    "eslint": "8.57.1",
+    "eslint-config-next": "14.2.35",
+    "postcss": "^8.5.6",
+    "tailwindcss": "3.4.19",
+    "typescript": "5.9.3",
+    "vitest": "2.1.9"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  }
+}

@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    @apply bg-emerald-400/25 text-white;
+  }
+
+  /* 숫자 지표가 흔들리지 않도록 고정폭 숫자를 기본으로 쓴다. */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  /* 카드: 배경(ink-950)과 표면(white/2%)의 명도 차이만으로 계층을 만든다. */
+  .card {
+    @apply rounded-2xl border border-white/[0.06] bg-white/[0.02] shadow-card;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-[11px] font-medium text-slate-400;
+  }
+
+  .field-label {
+    @apply text-[12px] font-medium text-slate-400;
+  }
+
+  .input-base {
+    @apply w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-sm font-medium text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/20;
+  }
+
+  /* 커스텀 range: 트랙 채움은 인라인 그라데이션으로, 썸은 여기서 정의한다. */
+  .range {
+    @apply h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/10;
+  }
+
+  .range::-webkit-slider-thumb {
+    @apply h-4 w-4 appearance-none rounded-full border-2 border-ink-950 bg-emerald-400;
+    box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.12);
+  }
+
+  .range::-moz-range-thumb {
+    height: 16px;
+    width: 16px;
+    border-radius: 9999px;
+    border: 2px solid #070b16;
+    background: #34d399;
+    box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.12);
+  }
+
+  .range:focus-visible {
+    @apply outline-none ring-2 ring-emerald-400/40 ring-offset-2 ring-offset-ink-950;
+  }
+}
+
+@layer utilities {
+  /* 얇은 스크롤바: 표가 가로로 넘칠 때 레이아웃을 방해하지 않게 한다. */
+  .thin-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+  }
+
+  .thin-scrollbar::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+  }
+
+  .thin-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(148, 163, 184, 0.3);
+    border-radius: 9999px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
