@@ -56,7 +56,7 @@
   </g>
 
   <text x="154" y="212" font-family="Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif" font-size="13" fill="#64748B">수수료 · 배송비 · 광고비 · 반품률을 반영한 실제 순이익 계산</text>
-  <text x="154" y="234" font-family="Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif" font-size="13" fill="#64748B">검색량 · 경쟁 강도 · 구매 의도를 합성한 키워드 기회 지수</text>
+  <text x="154" y="234" font-family="Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif" font-size="13" fill="#64748B">4축 마진 진단 · 5개 마켓 비교 · 키워드 기회 지수</text>
 
   <!-- 우측 차트 일러스트 -->
   <rect x="840" y="70" width="380" height="200" rx="18" fill="#FFFFFF" fill-opacity="0.028" stroke="#FFFFFF" stroke-opacity="0.08" />
