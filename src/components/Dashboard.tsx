@@ -8,6 +8,7 @@ import type { MarginInput, MarketId } from "@/lib/types";
 import { IconPercent, IconTarget, IconTrend, IconWallet } from "./icons";
 import MarginSimulator from "./MarginSimulator";
 import MetricCard from "./MetricCard";
+import SmartInsightBox from "./SmartInsightBox";
 
 /**
  * 대시보드 상태의 단일 소유자.
@@ -93,7 +94,13 @@ export default function Dashboard() {
         />
       </div>
 
-      <div id="simulator" className="mt-6 scroll-mt-24">
+      {/* 진단은 지표 바로 아래에 둔다. "얼마 남는가"를 본 직후 "그래서 뭘 먼저 고칠까"를
+          읽게 하는 순서가, 계산기부터 보여 주는 순서보다 의사결정에 가깝다. */}
+      <div id="diagnosis" className="mt-6 scroll-mt-24">
+        <SmartInsightBox input={input} result={result} />
+      </div>
+
+      <div id="simulator" className="mt-8 scroll-mt-24">
         <MarginSimulator
           input={input}
           result={result}
