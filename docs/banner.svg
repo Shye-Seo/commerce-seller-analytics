@@ -1,0 +1,90 @@
+<svg width="1280" height="340" viewBox="0 0 1280 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SellerScope — 이커머스 셀러를 위한 마진 시뮬레이터와 키워드 분석 대시보드">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#070B16" />
+      <stop offset="60%" stop-color="#0B1224" />
+      <stop offset="100%" stop-color="#111C33" />
+    </linearGradient>
+    <linearGradient id="mark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6EE7B7" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#34D399" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#34D399" stop-opacity="0.18" />
+    </linearGradient>
+    <linearGradient id="line" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#818CF8" />
+      <stop offset="100%" stop-color="#C4B5FD" />
+    </linearGradient>
+    <radialGradient id="glowGreen" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#34D399" stop-opacity="0.26" />
+      <stop offset="100%" stop-color="#34D399" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="glowIndigo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#6366F1" stop-opacity="0.28" />
+      <stop offset="100%" stop-color="#6366F1" stop-opacity="0" />
+    </radialGradient>
+    <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse">
+      <path d="M44 0H0V44" fill="none" stroke="#FFFFFF" stroke-opacity="0.032" stroke-width="1" />
+    </pattern>
+  </defs>
+
+  <rect width="1280" height="340" fill="url(#bg)" />
+  <rect width="1280" height="340" fill="url(#grid)" />
+  <circle cx="120" cy="20" r="240" fill="url(#glowGreen)" />
+  <circle cx="1180" cy="320" r="260" fill="url(#glowIndigo)" />
+
+  <!-- 브랜드 마크 -->
+  <rect x="80" y="62" width="54" height="54" rx="15" fill="url(#mark)" />
+  <path d="M94 100 L105 88 L112 93 L122 79" fill="none" stroke="#04231A" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M94 107 H122" fill="none" stroke="#04231A" stroke-opacity="0.4" stroke-width="2.6" stroke-linecap="round" />
+
+  <text x="154" y="88" font-family="Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif" font-size="34" font-weight="700" fill="#F8FAFC" letter-spacing="-0.6">SellerScope</text>
+  <text x="154" y="116" font-family="Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif" font-size="15" fill="#94A3B8">이커머스 셀러를 위한 실시간 마진 시뮬레이터 &amp; 키워드 분석 대시보드</text>
+
+  <!-- 기술 스택 칩 -->
+  <g font-family="Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif" font-size="13" fill="#CBD5E1">
+    <rect x="154" y="140" width="106" height="30" rx="15" fill="#FFFFFF" fill-opacity="0.04" stroke="#FFFFFF" stroke-opacity="0.10" />
+    <text x="207" y="160" text-anchor="middle">Next.js 14</text>
+
+    <rect x="270" y="140" width="102" height="30" rx="15" fill="#FFFFFF" fill-opacity="0.04" stroke="#FFFFFF" stroke-opacity="0.10" />
+    <text x="321" y="160" text-anchor="middle">TypeScript</text>
+
+    <rect x="382" y="140" width="122" height="30" rx="15" fill="#FFFFFF" fill-opacity="0.04" stroke="#FFFFFF" stroke-opacity="0.10" />
+    <text x="443" y="160" text-anchor="middle">Tailwind CSS</text>
+  </g>
+
+  <text x="154" y="212" font-family="Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif" font-size="13" fill="#64748B">수수료 · 배송비 · 광고비 · 반품률을 반영한 실제 순이익 계산</text>
+  <text x="154" y="234" font-family="Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif" font-size="13" fill="#64748B">검색량 · 경쟁 강도 · 구매 의도를 합성한 키워드 기회 지수</text>
+
+  <!-- 우측 차트 일러스트 -->
+  <rect x="840" y="70" width="380" height="200" rx="18" fill="#FFFFFF" fill-opacity="0.028" stroke="#FFFFFF" stroke-opacity="0.08" />
+  <line x1="864" y1="246" x2="1196" y2="246" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="1" />
+
+  <g fill="url(#bar)">
+    <rect x="866" y="194" width="16" height="52" rx="3" />
+    <rect x="906" y="178" width="16" height="68" rx="3" />
+    <rect x="946" y="185" width="16" height="61" rx="3" />
+    <rect x="986" y="162" width="16" height="84" rx="3" />
+    <rect x="1026" y="174" width="16" height="72" rx="3" />
+    <rect x="1066" y="150" width="16" height="96" rx="3" />
+    <rect x="1106" y="158" width="16" height="88" rx="3" />
+    <rect x="1146" y="128" width="16" height="118" rx="3" />
+  </g>
+
+  <path d="M874 168 L914 152 L954 158 L994 136 L1034 144 L1074 122 L1114 130 L1154 106" fill="none" stroke="url(#line)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+  <g fill="#C7D2FE">
+    <circle cx="874" cy="168" r="3" />
+    <circle cx="914" cy="152" r="3" />
+    <circle cx="954" cy="158" r="3" />
+    <circle cx="994" cy="136" r="3" />
+    <circle cx="1034" cy="144" r="3" />
+    <circle cx="1074" cy="122" r="3" />
+    <circle cx="1114" cy="130" r="3" />
+    <circle cx="1154" cy="106" r="3.6" fill="#F5F3FF" />
+  </g>
+
+  <text x="864" y="96" font-family="Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif" font-size="12" fill="#94A3B8">매출 · 마진율 추이</text>
+  <text x="864" y="268" font-family="Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif" font-size="11" fill="#64748B">최근 30일 · 일별</text>
+</svg>
