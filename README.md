@@ -12,7 +12,7 @@
   <a href="https://nextjs.org"><img alt="Next.js" src="https://img.shields.io/badge/Next.js-14.2-000000?style=flat-square&logo=nextdotjs&logoColor=white" /></a>
   <a href="https://www.typescriptlang.org"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white" /></a>
   <a href="https://tailwindcss.com"><img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" /></a>
-  <a href="https://vitest.dev"><img alt="Tests" src="https://img.shields.io/badge/Vitest-57_tests_passing-4C9A2A?style=flat-square&logo=vitest&logoColor=white" /></a>
+  <a href="https://vitest.dev"><img alt="Tests" src="https://img.shields.io/badge/Vitest-58_tests_passing-4C9A2A?style=flat-square&logo=vitest&logoColor=white" /></a>
 </p>
 
 <p align="center">
@@ -152,6 +152,8 @@ $$\text{기회 지수} = 0.45 \times \text{수요} + 0.30 \times \text{구매 �
   3. **손익분기 판매량 돌파** — 월 고정비를 회수하는 판매량을 **일평균 판매량**으로 환산해, 현재 속도와 비교합니다(예: "일 2.6건 필요 · 현재 12.7건 · 여력 4.9배").
   4. **반품률 1%p 개선** — 왕복 배송비와 원가 손실(반품 충당금 10%)로 계산한 **월 추가 순이익**을 제시합니다.
 
+네 카드는 **긴급도 순(즉시 → 권장 → 유지)** 으로 정렬해 화면에 놓입니다. 같은 긴급도끼리는 위 기본 순서를 유지하므로, "지금 당장 손댈 것"이 항상 가장 위에 옵니다.
+
 > 진단은 외부 LLM 호출 없이 **규칙 기반 엔진**으로 계산합니다. 같은 입력에 항상 같은 문장·같은 금액이 나와야 서버 렌더와 클라이언트 렌더가 어긋나지 않고, "월 +18만 원"이라는 처방의 근거를 계산식으로 되짚을 수 있기 때문입니다(자세한 이유는 [3.7](#37-진단을-llm-api가-아닌-규칙-기반-엔진으로-만든-이유)).
 
 ### 2.6 5대 마켓 실시간 마진 비교 매트릭스
@@ -214,7 +216,7 @@ MarginInput (상태, Dashboard가 단독 소유)
 
 ### 3.6 테스트 전략: 계산 로직을 UI에서 분리
 
-포트폴리오에서 "테스트가 있다"보다 중요한 것은 **무엇을 테스트하는가**입니다. 이 프로젝트에서 틀리면 안 되는 것은 UI가 아니라 계산 규칙이므로, Vitest로 도메인 함수 57개 케이스를 검증합니다.
+포트폴리오에서 "테스트가 있다"보다 중요한 것은 **무엇을 테스트하는가**입니다. 이 프로젝트에서 틀리면 안 되는 것은 UI가 아니라 계산 규칙이므로, Vitest로 도메인 함수 58개 케이스를 검증합니다.
 
 - 손익분기 판매가에서 순이익이 0 이상이 되는지, 그 아래 가격에서는 적자가 되는지
 - 수수료율 합이 100%를 넘을 때 `Infinity`로 안전하게 처리되는지
@@ -317,7 +319,7 @@ commerce-seller-analytics
 │     ├─ format.ts               # 원 · % · 만/억 표기 유틸
 │     ├─ mockData.ts             # 고정 시드 데모 데이터
 │     ├─ calculator.test.ts      # 마진 · 손익분기 · 기회 지수 테스트(22)
-│     ├─ diagnostics.test.ts     # 진단 점수 · 처방 금액 테스트(22)
+│     ├─ diagnostics.test.ts     # 진단 점수 · 처방 금액 테스트(23)
 │     └─ marketComparison.test.ts # 비교표 · 배지 · 순위 테스트(13)
 ├─ docs
 │  └─ banner.svg
@@ -385,13 +387,13 @@ npm run dev
 | `npm start` | 빌드 결과 미리보기 |
 | `npm run lint` | ESLint (`next/core-web-vitals`) |
 | `npm run typecheck` | `tsc --noEmit` 타입 검사 |
-| `npm test` | Vitest 단위 테스트 57개 |
+| `npm test` | Vitest 단위 테스트 58개 |
 
 빌드 결과는 전부 정적 페이지로 프리렌더되므로 Vercel·Netlify·GitHub Pages 등 정적 호스팅에 그대로 올릴 수 있습니다.
 
 ```
 Route (app)                              Size     First Load JS
-┌ ○ /                                    18.2 kB         105 kB
+┌ ○ /                                    18.3 kB         105 kB
 ├ ○ /_not-found                          873 B          88.1 kB
 └ ○ /icon.svg                            0 B                0 B
 ```
@@ -429,7 +431,7 @@ vercel --prod # 운영 도메인 배포
 
 ## 6. 테스트와 품질 관리
 
-`src/lib/*.test.ts` — 57개 케이스 · Vitest (`environment: node`)
+`src/lib/*.test.ts` — 58개 케이스 · Vitest (`environment: node`)
 
 | 파일 | 그룹 | 검증 내용 |
 | --- | --- | --- |
@@ -439,7 +441,7 @@ vercel --prod # 운영 도메인 배포
 | | `recommendSellingPrice` | 권장 판매가에서 목표 마진(25%) 확보 |
 | | `scoreKeyword` | 0~100 범위, 경쟁·구매 의도에 따른 단조성, 등급 구간, 정렬 |
 | | `format` | 원/만/억 표기, 비유한값(`Infinity`, `NaN`) → `—` |
-| `diagnostics.test.ts` (22) | 점수 | 0~100 범위, 가중치 합 100, 적자 조건에서 `위험` 등급, 입력이 나빠질수록 점수 하락, NaN·음수·범위 초과에도 예외 없음 |
+| `diagnostics.test.ts` (23) | 점수 | 0~100 범위, 가중치 합 100, 적자 조건에서 `위험` 등급, 입력이 나빠질수록 점수 하락, NaN·음수·범위 초과에도 예외 없음 |
 | | 비용 비율 | 여섯 항목 비율 계산, 권장 상한 초과 시 상태 전환, 판매가 0에서 0으로 나누지 않음 |
 | | 액션 플랜 | 항상 4개·고정 순서, CPS 10% 초과 시 절감액·15% 이상 시 `critical`, 목표 판매가가 `recommendSellingPrice`와 일치, 인상·인하 여력 분기, BEP 미달·돌파 분기, 반품 1%p 개선액, 반품률 0·판매량 0 처리 |
 | `marketComparison.test.ts` (13) | 비교표 | 5개 마켓 전체 순회, 매출·판매량 고정, 프리셋 수수료 적용, 마진 계산기와 동일한 건당 순이익 |

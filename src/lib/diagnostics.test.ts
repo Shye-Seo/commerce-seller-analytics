@@ -114,15 +114,30 @@ describe("diagnoseMargin · 비용 구조 비율", () => {
 });
 
 describe("diagnoseMargin · 액션 플랜", () => {
-  it("항상 네 개의 액션을 CPS → 가격 → 손익분기 → 반품 순서로 만든다", () => {
+  it("네 개의 액션을 모두 만들고 급한 순서로 정렬한다", () => {
     const diagnosis = diagnoseMargin(baseInput);
+    const order: Record<string, number> = { critical: 0, recommended: 1, maintain: 2 };
+    const priorities = diagnosis.actions.map((item) => order[item.priority]);
 
-    expect(diagnosis.actions.map((item) => item.id)).toEqual([
+    expect(diagnosis.actions.map((item) => item.id).sort()).toEqual([
+      "breakeven",
       "cps",
       "pricing",
-      "breakeven",
       "returns",
     ]);
+    // 앞 카드가 뒤 카드보다 항상 급하거나 같다(안정 정렬)
+    expect(priorities).toEqual([...priorities].sort((a, b) => a - b));
+  });
+
+  it("적자 조건에서는 회수 불가·가격 인상 처방이 즉시(critical)로 올라온다", () => {
+    const diagnosis = diagnoseMargin({ ...baseInput, sellingPrice: 15_000 });
+    const critical = diagnosis.actions
+      .filter((item) => item.priority === "critical")
+      .map((item) => item.id)
+      .sort();
+
+    expect(critical).toEqual(["breakeven", "cps", "pricing"]);
+    expect(diagnosis.actions[diagnosis.actions.length - 1].id).toBe("returns");
   });
 
   it("CPS가 판매가의 10%를 넘으면 광고비 절감 처방과 금액을 제시한다", () => {

@@ -97,6 +97,13 @@ export const CPS_CEILING_RATE = 10;
 /** 반품률 권장 상한(%) */
 export const RECOMMENDED_RETURN_RATE = 5;
 
+/** 액션 긴급도 순서 — 낮을수록 먼저 */
+const PRIORITY_ORDER: Record<ActionPriority, number> = {
+  critical: 0,
+  recommended: 1,
+  maintain: 2,
+};
+
 /** 종합 점수 등급 경계 */
 const GRADE_GOOD = 80;
 const GRADE_WATCH = 60;
@@ -462,7 +469,11 @@ export function diagnoseMargin(input: MarginInput): MarginDiagnosis {
     summary,
     costRatios,
     scoreBreakdown,
-    actions,
+    // 처방전은 급한 순서로 읽혀야 한다. 같은 긴급도끼리는 위에서 만든 기본 순서
+    // (CPS → 가격 → 손익분기 → 반품)를 유지하므로, 금액을 비교하기도 쉽다.
+    actions: [...actions].sort(
+      (a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority],
+    ),
     targetPrice,
     returnUpliftPerPoint,
   };
