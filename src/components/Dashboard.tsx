@@ -7,6 +7,7 @@ import { DEFAULT_MARGIN_INPUT } from "@/lib/mockData";
 import type { MarginInput, MarketId } from "@/lib/types";
 import { IconPercent, IconTarget, IconTrend, IconWallet } from "./icons";
 import MarginSimulator from "./MarginSimulator";
+import MarketComparisonMatrix from "./MarketComparisonMatrix";
 import MetricCard from "./MetricCard";
 import SmartInsightBox from "./SmartInsightBox";
 
@@ -107,6 +108,10 @@ export default function Dashboard() {
           onChange={handleChange}
           onSelectMarket={handleSelectMarket}
         />
+      </div>
+
+      <div className="mt-10">
+        <MarketComparisonMatrix input={input} onSelectMarket={handleSelectMarket} />
       </div>
     </section>
   );

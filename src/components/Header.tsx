@@ -3,7 +3,9 @@ import { IconGithub } from "./icons";
 
 const NAV_ITEMS = [
   { href: "#metrics", label: "핵심 지표" },
+  { href: "#diagnosis", label: "AI 진단" },
   { href: "#simulator", label: "마진 계산기" },
+  { href: "#markets", label: "마켓 비교" },
   { href: "#trend", label: "매출 추이" },
   { href: "#keywords", label: "키워드 분석" },
 ];
@@ -38,7 +40,7 @@ export default function Header() {
           </div>
         </div>
 
-        <nav className="hidden items-center gap-1 md:flex" aria-label="섹션 이동">
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="섹션 이동">
           {NAV_ITEMS.map((item) => (
             <a
               key={item.href}

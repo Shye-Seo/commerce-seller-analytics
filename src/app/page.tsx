@@ -10,7 +10,7 @@ const STACK_BADGES = [
   "TypeScript",
   "Tailwind CSS",
   "Vitest",
-  "RSC",
+  "Vercel",
 ];
 
 function SectionHeading({
@@ -64,7 +64,9 @@ export default function HomePage() {
             <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-400 sm:text-[15px]">
               스마트스토어·쿠팡 셀러가 정산서를 받고 나서야 손해를 알아차리는 일을 없애기 위해
               만들었습니다. 판매가를 바꾸는 순간 순이익·마진율·손익분기 판매가가 다시 계산되고,
-              키워드는 검색량·경쟁 강도·구매 의도를 합성한 하나의 지수로 비교합니다.
+              비용 구조를 네 축으로 진단해 실행 순서를 제시하며, 같은 상품을 5개 마켓에 올렸을 때의
+              마진을 나란히 비교합니다. 키워드는 검색량·경쟁 강도·구매 의도를 합성한 하나의 지수로
+              비교합니다.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-2">
