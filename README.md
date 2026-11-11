@@ -813,8 +813,15 @@ A. 의존성 0개를 유지하면서 윈도 계산을 직접 검증하고 싶었
 
 ## 16. 작성자
 
-**서승혜** — 커머스 SaaS(SellingStorm · chatis.net) 기획·개발 4년 차
-GitHub [@Shye-Seo](https://github.com/Shye-Seo) · 정보처리기사
+**서승혜 (Seunghye Seo)** — Frontend & Fullstack Engineer (4년 차)  
+GitHub [@Shye-Seo](https://github.com/Shye-Seo) · tjtmdgp95@gmail.com · 정보처리기사
+
+### 주요 실무 경력 (주식회사 채티스 · 커머스 SaaS 셀링스톰)
+이커머스 자동화 솔루션(SellingStorm) 기획·개발팀에서 프론트엔드(TypeScript, Tailwind)부터 백엔드(Modern PHP), DB 모델링(MySQL Workbench), 외부 연동까지 **서비스 1인 풀사이클을 주도 완주**했습니다.
+- **아임웹 앱스토어 OAuth 2.0 온보딩**: 이커머스 입점 셀러의 무중단 계정 연동 및 웹훅 기반 구독·해지 라이프사이클 파이프라인 설계
+- **상세페이지 임베디드 위젯 SDK**: 자사몰·스마트스토어 상세페이지용 초경량 반응형 위젯 SDK 개발 및 크롤러 방어(`X-Robots-Tag: noindex`) 최적화
+- **멀티 테넌트 쿼터 관리 백오피스**: 테넌트별 API 호출량 및 플랜별 리소스 사용량을 격리 제어하는 쿼터(Quota) 관리 시스템 구축
+- **대외 서비스 연동 & DB 설계**: 네이버클라우드 SENS 알림톡 및 인스타그램 Graph API 연동, MySQL 8.0 EER 스키마 설계 및 성능 튜닝
 
 > 셀러가 정산서를 받고 나서야 손해를 알아차리는 일을 없애고 싶어서 시작한 프로젝트입니다.
 > 마진 계산에서 출발해, 이제는 **정산서가 틀렸다는 사실을 금액으로 증명하는 도구**가 되었습니다.
