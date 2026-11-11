@@ -6,7 +6,8 @@
 
 <p align="center">
   이커머스 셀러를 위한 <strong>B2B 정산 대사 &amp; 이상 탐지 플랫폼</strong><br />
-  <sub>10만 행 정산서 · Web Worker 파싱 · 가상화 렌더링 · 멀티 테넌트 RBAC · 해시체인 감사 로그</sub>
+  <sub>10만 행 정산서 · Web Worker 파싱 · 가상화 렌더링 · 멀티 테넌트 RBAC · 해시체인 감사 로그</sub><br />
+  <sub><strong>Full-Cycle</strong>: Next.js 14 프론트엔드 + PHP 8.2 백엔드 + MySQL 8.0 + 네이버클라우드 SENS 알림톡</sub>
 </p>
 
 <p align="center">
@@ -14,6 +15,9 @@
   <a href="https://www.typescriptlang.org"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.9_strict-3178C6?style=flat-square&logo=typescript&logoColor=white" /></a>
   <a href="https://tailwindcss.com"><img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" /></a>
   <a href="https://vitest.dev"><img alt="Tests" src="https://img.shields.io/badge/Vitest-149_tests_passing-4C9A2A?style=flat-square&logo=vitest&logoColor=white" /></a>
+  <a href="https://www.php.net/releases/8.2/ko.php"><img alt="PHP" src="https://img.shields.io/badge/PHP-8.2_OOP-777BB4?style=flat-square&logo=php&logoColor=white" /></a>
+  <a href="https://dev.mysql.com/doc/refman/8.0/en/"><img alt="MySQL" src="https://img.shields.io/badge/MySQL-8.0_InnoDB-4479A1?style=flat-square&logo=mysql&logoColor=white" /></a>
+  <a href="https://api.ncloud-docs.com/docs/sens-alimtalk-send"><img alt="Naver Cloud SENS" src="https://img.shields.io/badge/Naver_Cloud-SENS_알림톡-03C75A?style=flat-square&logo=naver&logoColor=white" /></a>
   <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FShye-Seo%2Fcommerce-seller-analytics"><img alt="Deploy" src="https://img.shields.io/badge/Deploy-Vercel-000000?style=flat-square&logo=vercel&logoColor=white" /></a>
 </p>
 
@@ -24,6 +28,7 @@
 수수료 초과 청구·반품비 중복 차감·설명되지 않는 정산 부족을 **원인별 금액으로 증명**합니다.
 
 - **라이브 콘솔**: `/reconciliation` — 배포 후 `https://<your-app>.vercel.app/reconciliation`
+- **서버 계층**: `backend/` (PHP 8.2 OOP API·배치) + `database/` (MySQL 8.0 DDL·ERD) — §4.5, [ERD 설계서](database/ERD_SPEC.md)
 - **마진 대시보드**: `/` — 판매 조건별 실시간 마진·마켓 비교·키워드 기회 분석 (기존 기능, 그대로 유지)
 
 ---
@@ -34,6 +39,7 @@
 2. [문제 정의: 마진 계산기로는 부족한 이유](#2-문제-정의-마진-계산기로는-부족한-이유)
 3. [콘솔 사용 흐름](#3-콘솔-사용-흐름)
 4. [아키텍처](#4-아키텍처)
+   - 4.5 [서버 계층: PHP 8.2 + MySQL 8.0 + 알림톡](#45-서버-계층--php-82--mysql-80--네이버클라우드-sens-알림톡)
 5. [핵심 모듈 1 — 대사·이상 탐지 엔진](#5-핵심-모듈-1--대사이상-탐지-엔진)
 6. [핵심 모듈 2 — Web Worker 스트리밍 파서](#6-핵심-모듈-2--web-worker-스트리밍-파서)
 7. [핵심 모듈 3 — 10만 행 가상화 테이블](#7-핵심-모듈-3--10만-행-가상화-테이블)
@@ -57,6 +63,7 @@
 | 2 | 청크 스트리밍 파서 + Web Worker + 폴백 | `src/lib/csvStreamParser.ts`, `src/lib/settlementFileParser.ts`, `src/workers/csv.worker.ts` | 20 케이스 |
 | 3 | 10만 행 가상화 테이블 (rAF 스로틀) | `src/lib/virtualization.ts`, `src/components/reconciliation/ReconciliationVirtualTable.tsx` | 16 케이스 |
 | 4 | 멀티 테넌트 RBAC + 해시체인 감사 로그 | `src/lib/multiTenantRbac.ts`, `src/components/reconciliation/TenantSwitchConsole.tsx` | 22 케이스 |
+| 5 | **PHP 8.2 백엔드 + MySQL 8.0 스키마 + SENS 알림톡** (정산 배치·이상 알림) | `backend/`, `database/schema.sql` | 75 케이스(MySQL 8.0 실연동 6건 포함) |
 
 **측정값 (이 컨테이너, Node 20.20.2 · 100,000행 기준)**
 
@@ -232,6 +239,61 @@ src/
 └── workers/
     └── csv.worker.ts               # 파싱 워커 (Next.js webpack이 별도 청크로 번들)
 ```
+
+### 4.5 서버 계층 — PHP 8.2 · MySQL 8.0 · 네이버클라우드 SENS 알림톡
+
+브라우저 콘솔은 "내가 올린 파일"만 봅니다. 운영에서는 마켓 4~5곳의 정산서가 매일 밤 자동으로
+들어오고, 100만 행을 **배치로 다시 계산**해 결과를 DB에 남겨야 합니다. 탭이 닫히면 사라지는
+계산은 감사 대상이 될 수 없습니다. 그래서 같은 도메인 규칙을 서버에 한 번 더 구현하고,
+두 구현이 **같은 금액**을 내도록 테스트로 고정했습니다.
+
+```mermaid
+flowchart LR
+  subgraph FE["Next.js 14 · TypeScript"]
+    W["Web Worker<br/>CSV 스트리밍 파싱"]
+    E["reconciliationEngine<br/>(즉시 미리보기)"]
+  end
+  subgraph BE["PHP 8.2 · OOP"]
+    API["ReconciliationController<br/>POST /api/v1/reconciliations"]
+    SVC["SettlementReconciliationService<br/>(동일 규칙 · 손실 귀속)"]
+    REPO["SettlementRepository<br/>배치 UPSERT · keyset 조회"]
+    SENS["NaverCloudSensService<br/>HMAC-SHA256 서명"]
+  end
+  subgraph INFRA["데이터 · 외부"]
+    DB[("MySQL 8.0<br/>6 테이블 · 복합 인덱스")]
+    NCP["NCP SENS<br/>카카오 알림톡"]
+  end
+  W --> E
+  E -->|"검증된 행"| API
+  API --> SVC --> REPO --> DB
+  SVC -->|"critical 이상"| SENS --> NCP
+  DB --> API
+```
+
+| 계층 | 무엇을 보장하나 |
+| --- | --- |
+| **DB (MySQL 8.0)** | 6개 테이블·FK·CHECK·복합 인덱스. 정산서 원본과 대사 결과를 한 행에서 대조하고, 원본 컬럼은 재계산이 덮어쓰지 않는다 |
+| **배치 저장** | 250행 단위 `INSERT … AS new ON DUPLICATE KEY UPDATE`. 유니크 키가 멱등성을 보장(재업로드해도 행이 늘지 않음) |
+| **이상 탐지** | 원인별 손실 귀속을 서버에서도 동일하게. `(order_id, anomaly_type)` 유니크로 중복 없음, 닫힌 이의 제기는 재대사로 되살아나지 않음 |
+| **알림톡** | SENS HMAC-SHA256 서명 → 202 접수 → `messageStatusCode 0000` 도달 확인. 실패는 배치를 막지 않고 재시도 큐로 |
+| **감사 로그** | 테넌트별 SHA-256 해시체인. 중간 행을 고치면 `verifyChain()`이 깨진 `seq`를 돌려준다 |
+
+**실행**
+
+```bash
+docker compose up -d mysql                 # MySQL 8.0.40 + 스키마 + 데모 데이터
+cd backend && composer install
+php bin/migrate.php --fresh --seed --verify
+php bin/reconcile.php --tenant=1 --file=examples/settlement_2026-10_sample.csv --verify
+composer test                              # 75 tests (MySQL 있으면 실연동 6건 포함)
+```
+
+**문서**
+
+- [`database/ERD_SPEC.md`](database/ERD_SPEC.md) — Mermaid ERD, 테이블 요약, 인덱싱 전략(브리프 지정
+  `(tenant_id, settlement_date)` / `(store_id, anomaly_type)` 포함), 타입 선택 근거, 운영 쿼리 실행 계획
+- [`backend/README.md`](backend/README.md) — API 계약, SENS 서명 함정 3가지, 멱등성·반올림·교착 재시도,
+  테스트 목록과 운영 배치 방법
 
 ---
 
@@ -620,6 +682,17 @@ npm install
 npm run dev          # http://localhost:3000  (콘솔: /reconciliation)
 npm test             # 149 tests
 npm run build && npm start
+```
+
+### 서버 계층(선택)
+
+프론트엔드만으로도 콘솔은 완전히 동작합니다. 정산 배치·DB 적재·알림톡까지 보려면:
+
+```bash
+docker compose up -d mysql
+cd backend && composer install && php bin/migrate.php --fresh --seed
+php bin/reconcile.php --tenant=1 --file=examples/settlement_2026-10_sample.csv --verify
+composer test        # 75 tests
 ```
 
 ### Vercel 원클릭 배포

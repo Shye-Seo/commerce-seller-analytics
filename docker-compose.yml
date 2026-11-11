@@ -1,0 +1,36 @@
+# 로컬 개발용 MySQL 8.0
+#
+#   docker compose up -d mysql
+#   cd backend && cp .env.example .env   # DB_HOST=127.0.0.1 / DB_USERNAME=sellerscope / DB_PASSWORD=sellerscope
+#   php bin/migrate.php --verify
+#
+# 컨테이너가 처음 뜰 때 database/ 의 스크립트가 자동 실행된다(initdb).
+# 이미 볼륨이 있으면 실행되지 않으므로, 스키마를 새로 적용하려면
+#   docker compose down -v && docker compose up -d mysql
+services:
+  mysql:
+    image: mysql:8.0.40
+    container_name: sellerscope-mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+09:00
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: sellerscope
+      MYSQL_USER: sellerscope
+      MYSQL_PASSWORD: sellerscope
+    ports:
+      - "3306:3306"
+    volumes:
+      - sellerscope-mysql:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/10-schema.sql:ro
+      - ./database/seed_demo.sql:/docker-entrypoint-initdb.d/20-seed.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  sellerscope-mysql:

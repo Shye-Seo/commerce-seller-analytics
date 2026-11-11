@@ -1,0 +1,43 @@
+{
+  "name": "shye-seo/sellerscope-backend",
+  "description": "SellerScope 정산 대사 API — PHP 8.2 OOP 백엔드 (MySQL 8.0 · 네이버클라우드 SENS 알림톡)",
+  "type": "project",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Seunghye Seo",
+      "email": "tjtmdgp95@gmail.com",
+      "role": "Backend · Data Modeling"
+    }
+  ],
+  "require": {
+    "php": ">=8.2",
+    "ext-pdo": "*",
+    "ext-pdo_mysql": "*",
+    "ext-json": "*",
+    "ext-curl": "*",
+    "ext-mbstring": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "SellerScope\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "SellerScope\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit --colors=always",
+    "migrate": "php bin/migrate.php",
+    "reconcile": "php bin/reconcile.php",
+    "serve": "php -S 127.0.0.1:8080 -t public"
+  },
+  "config": {
+    "sort-packages": true
+  }
+}

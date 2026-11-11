@@ -35,3 +35,8 @@ yarn-error.log*
 .idea
 .vscode/*
 !.vscode/extensions.json
+
+# php backend
+/backend/vendor/
+/backend/.env
+/backend/.phpunit.cache/
