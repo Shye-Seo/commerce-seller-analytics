@@ -14,6 +14,8 @@ import { generateSettlementCsv, generateSettlementRows } from "@/lib/settlementF
 import { formatThroughput } from "@/lib/csvStreamParser";
 import type { FileParseResult } from "@/lib/settlementFileParser";
 import ReconciliationFileUploader from "./ReconciliationFileUploader";
+import MarketApiSyncConsole from "./MarketApiSyncConsole";
+import type { IntakeResult } from "@/lib/marketApiConnector";
 import ReconciliationClaimPanel from "./ReconciliationClaimPanel";
 import TenantSwitchConsole from "./TenantSwitchConsole";
 import ReconciliationVirtualTable, { matchesFilter, type RowFilterId } from "./ReconciliationVirtualTable";
@@ -35,7 +37,8 @@ import { formatPercent, formatWon } from "@/lib/format";
  *
  * 이 컴포넌트가 오케스트레이션하는 것
  *  1. 테넌트/역할 컨텍스트와 RBAC 판정 (거부도 감사 로그에 남긴다)
- *  2. 데이터 유입: 데모 원장 생성 또는 파일 업로드(`ReconciliationFileUploader`가 검증·파싱 담당)
+ *  2. 데이터 유입: 데모 원장 생성 · 파일 업로드(`ReconciliationFileUploader`) · 마켓 API 수집
+ *     (`MarketApiSyncConsole`) 세 경로. 셋 다 **같은 대사 엔진**으로 들어간다
  *  3. 배치 대사 + 진행률 + 처리량 계측
  *  4. 필터·검색·가상화 테이블·상세 드로어
  *  5. 반출: 이상 내역 CSV · 마켓 소명 리포트(`ReconciliationClaimPanel`) · 감사 로그
@@ -55,11 +58,13 @@ interface ProgressState {
   label: string;
 }
 
+type IntakeMode = "file" | "api";
+
 interface DatasetInfo {
-  source: "generated" | "upload";
+  source: "generated" | "upload" | "api";
   label: string;
   rowCount: number;
-  engine: "generated" | "worker" | "main-thread";
+  engine: "generated" | "worker" | "main-thread" | "api";
   fallbackReason?: string;
   parseErrorCount: number;
   elapsedMs: number;
@@ -108,11 +113,13 @@ function KpiCard({
   value,
   hint,
   tone = "default",
+  testId,
 }: {
   label: string;
   value: string;
   hint: string;
   tone?: "default" | "danger" | "warn" | "good";
+  testId?: string;
 }) {
   const toneClass =
     tone === "danger"
@@ -123,7 +130,7 @@ function KpiCard({
           ? "text-emerald-300"
           : "text-white";
   return (
-    <div className="card px-3.5 py-3">
+    <div className="card px-3.5 py-3" data-testid={testId}>
       <p className="text-[10.5px] font-medium text-slate-500">{label}</p>
       <p className={`mt-1 text-[19px] font-semibold leading-tight tabular-nums ${toneClass}`}>{value}</p>
       <p className="mt-1 text-[10px] leading-snug text-slate-600">{hint}</p>
@@ -149,6 +156,7 @@ export default function ReconciliationConsole() {
   const startedRef = useRef(false);
   const deferredQuery = useDeferredValue(query);
   const [uploading, setUploading] = useState(false);
+  const [intakeMode, setIntakeMode] = useState<IntakeMode>("file");
 
   const activeTenant = DEMO_TENANTS.find((tenant) => tenant.id === tenantId) ?? DEMO_TENANTS[0];
   const roleDefinition = ROLES[role];
@@ -309,6 +317,39 @@ export default function ReconciliationConsole() {
     [log],
   );
 
+  /**
+   * 마켓 API 수집 결과 → 화면 반영.
+   * 수집·원장 결합·대사는 `MarketApiSyncConsole`이 끝내고 넘긴다. 여기서는 파일 업로드와 같은
+   * 화면 상태(rows/summary/dataset)·감사 기록만 맞춘다. 두 경로의 결과 모양이 같아야 하므로
+   * 엔진 호출을 여기서 다시 하지 않는다.
+   */
+  const handleApiCollected = useCallback(
+    (result: IntakeResult) => {
+      setRows(result.reconciled.rows);
+      setSummary(result.reconciled.summary);
+      setSelected(null);
+      setDataset({
+        source: "api",
+        label: `${result.provider === "coupang" ? "쿠팡" : "스마트스토어"} API · ${result.month}${result.meta.sandbox ? " (샌드박스)" : ""}`,
+        rowCount: result.reconciled.rows.length,
+        engine: "api",
+        parseErrorCount: result.meta.droppedRecords,
+        elapsedMs: result.meta.elapsedMs,
+        rowsPerSecond: Math.round((result.reconciled.rows.length / Math.max(1, result.meta.elapsedMs)) * 1000),
+        bytes: 0,
+      });
+      setProgress({ phase: "ready", percent: 100, label: "API 수집 · 대사 완료" });
+      log(
+        "RECONCILE_RUN",
+        `${result.provider} API ${result.month}`,
+        `${result.records.length.toLocaleString("ko-KR")}건 · 원장 누락 ${result.meta.ledgerMisses}건 · 누수 ${formatWon(result.reconciled.summary.totalLeak)}`,
+        "allowed",
+        { tenantId },
+      );
+    },
+    [log, tenantId],
+  );
+
   const handleTenantChange = (nextTenantId: string): void => {
     if (nextTenantId === tenantId) return;
     if (busy) {
@@ -456,7 +497,7 @@ export default function ReconciliationConsole() {
             같은 돈을 두 번 세지 않습니다.
           </p>
           <div className="mt-4 flex flex-wrap gap-1.5">
-            {["Web Worker 스트리밍 파서", "10만 행 가상화", "멀티 테넌트 RBAC", "해시체인 감사 로그", "배치 대사 엔진"].map((badge) => (
+            {["Web Worker 스트리밍 파서", "마켓 API 자동 수집", "10만 행 가상화", "멀티 테넌트 RBAC", "해시체인 감사 로그", "배치 대사 엔진"].map((badge) => (
               <span key={badge} className="rounded-md border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-[10.5px] font-medium text-slate-400">
                 {badge}
               </span>
@@ -507,6 +548,7 @@ export default function ReconciliationConsole() {
               />
               <KpiCard
                 label="정상 대사율"
+                testId="kpi-matched-rate"
                 value={summary ? formatPercent(summary.matchedRate, 1) : "—"}
                 hint={summary ? `이상 ${summary.flaggedRows.toLocaleString("ko-KR")}건 / ${summary.totalRows.toLocaleString("ko-KR")}건` : "대기 중"}
                 tone={summary ? (summary.matchedRate >= 80 ? "good" : summary.matchedRate >= 60 ? "warn" : "danger") : "default"}
@@ -531,24 +573,74 @@ export default function ReconciliationConsole() {
               />
             </div>
 
-            {/* 파일 입구: 검증 → 워커 파싱 → 진행률/통계까지 이 카드가 소유한다 */}
-            <ReconciliationFileUploader
-              disabled={busy}
-              onParsed={handleParsed}
-              onBusyChange={setUploading}
-              onNotice={(next) => setNotice(next)}
-            />
+            {/* 데이터 입구를 두 탭으로 분리한다. 파일은 파싱, API는 수집이 앞단이고 이후 대사는 공통이다 */}
+            <div className="flex items-center gap-1.5" role="tablist" aria-label="정산 데이터 입구">
+              {(
+                [
+                  { id: "file", label: "정산서 파일 업로드", hint: "CSV · TSV · XLSX" },
+                  { id: "api", label: "API 자동 수집", hint: "스마트스토어 · 쿠팡" },
+                ] as { id: IntakeMode; label: string; hint: string }[]
+              ).map((tab) => {
+                const active = intakeMode === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setIntakeMode(tab.id)}
+                    data-testid={`intake-tab-${tab.id}`}
+                    className={`rounded-lg border px-3 py-2 text-left transition ${
+                      active
+                        ? "border-emerald-400/40 bg-emerald-400/[0.08] text-emerald-100"
+                        : "border-white/[0.07] bg-white/[0.02] text-slate-400 hover:border-white/20 hover:text-slate-200"
+                    }`}
+                  >
+                    <span className="block text-[11.5px] font-medium">{tab.label}</span>
+                    <span className="block text-[9.5px] opacity-60">{tab.hint}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {intakeMode === "file" ? (
+              /* 파일 입구: 검증 → 워커 파싱 → 진행률/통계까지 이 카드가 소유한다 */
+              <ReconciliationFileUploader
+                disabled={busy}
+                onParsed={handleParsed}
+                onBusyChange={setUploading}
+                onNotice={(next) => setNotice(next)}
+              />
+            ) : (
+              <MarketApiSyncConsole
+                role={role}
+                tenantId={tenantId}
+                disabled={busy}
+                onCollected={handleApiCollected}
+                onBusyChange={setUploading}
+                onNotice={(next) => setNotice(next)}
+                onAudit={(target, detail, outcome) => log("RECONCILE_RUN", target, detail, outcome)}
+              />
+            )}
 
             <section className="card p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">Data pipeline</p>
-                  <p className="mt-1 text-[12.5px] text-slate-300">
+                  <p className="mt-1 text-[12.5px] text-slate-300" data-testid="dataset-label">
                     {dataset ? dataset.label : "데모 정산 원장을 준비하고 있습니다."}
                   </p>
                   <p className="mt-0.5 text-[10.5px] text-slate-500">
                     {dataset
-                      ? `실행 경로 ${dataset.engine === "generated" ? "생성기" : dataset.engine === "worker" ? "Web Worker" : "메인 스레드 폴백"}${dataset.fallbackReason ? ` (${dataset.fallbackReason})` : ""} · 배치 ${BATCH_SIZE.toLocaleString("ko-KR")}건 단위`
+                      ? `실행 경로 ${
+                          dataset.engine === "generated"
+                            ? "생성기"
+                            : dataset.engine === "worker"
+                              ? "Web Worker"
+                              : dataset.engine === "api"
+                                ? "마켓 API 수집"
+                                : "메인 스레드 폴백"
+                        }${dataset.fallbackReason ? ` (${dataset.fallbackReason})` : ""} · 배치 ${BATCH_SIZE.toLocaleString("ko-KR")}건 단위`
                       : "계약 프리셋 · 스마트스토어 3.63% / 쿠팡 10.8% / 11번가 9% / G마켓 8.5%"}
                   </p>
                 </div>
@@ -647,7 +739,7 @@ export default function ReconciliationConsole() {
               role={role}
               tenantName={activeTenant?.name ?? "셀러"}
               businessNo={activeTenant?.businessNo}
-              period={dataset?.source === "upload" ? undefined : "데모 원장"}
+              period={dataset?.source === "upload" ? undefined : dataset?.source === "api" ? dataset.label : "데모 원장"}
               sourceFileName={dataset?.source === "upload" ? dataset.label : undefined}
               disabled={busy}
               onAudit={(target, detail, outcome) => log("EXPORT_CSV", target, detail, outcome)}

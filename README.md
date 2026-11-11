@@ -7,6 +7,7 @@
 <p align="center">
   이커머스 셀러를 위한 <strong>B2B 정산 대사 &amp; 이상 탐지 플랫폼</strong><br />
   <sub>10만 행 정산서 · Web Worker 파싱 · 가상화 렌더링 · 멀티 테넌트 RBAC · 해시체인 감사 로그</sub><br />
+  <sub>마켓 정산 API 자동 수집(스마트스토어 커머스API · 쿠팡 Open API)</sub><br />
   <sub><strong>Full-Cycle</strong>: Next.js 14 프론트엔드 + PHP 8.2 백엔드 + MySQL 8.0 + 네이버클라우드 SENS 알림톡</sub>
 </p>
 
@@ -14,7 +15,7 @@
   <a href="https://nextjs.org"><img alt="Next.js" src="https://img.shields.io/badge/Next.js-14.2-000000?style=flat-square&logo=nextdotjs&logoColor=white" /></a>
   <a href="https://www.typescriptlang.org"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.9_strict-3178C6?style=flat-square&logo=typescript&logoColor=white" /></a>
   <a href="https://tailwindcss.com"><img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" /></a>
-  <a href="https://vitest.dev"><img alt="Tests" src="https://img.shields.io/badge/Vitest-211_tests_passing-4C9A2A?style=flat-square&logo=vitest&logoColor=white" /></a>
+  <a href="https://vitest.dev"><img alt="Tests" src="https://img.shields.io/badge/Vitest-249_tests_passing-4C9A2A?style=flat-square&logo=vitest&logoColor=white" /></a>
   <a href="https://www.php.net/releases/8.2/ko.php"><img alt="PHP" src="https://img.shields.io/badge/PHP-8.2_OOP-777BB4?style=flat-square&logo=php&logoColor=white" /></a>
   <a href="https://dev.mysql.com/doc/refman/8.0/en/"><img alt="MySQL" src="https://img.shields.io/badge/MySQL-8.0_InnoDB-4479A1?style=flat-square&logo=mysql&logoColor=white" /></a>
   <a href="https://api.ncloud-docs.com/docs/sens-alimtalk-send"><img alt="Naver Cloud SENS" src="https://img.shields.io/badge/Naver_Cloud-SENS_알림톡-03C75A?style=flat-square&logo=naver&logoColor=white" /></a>
@@ -66,6 +67,7 @@
 | 5 | **PHP 8.2 백엔드 + MySQL 8.0 스키마 + SENS 알림톡** (정산 배치·이상 알림) | `backend/`, `database/schema.sql` | 75 케이스(MySQL 8.0 실연동 6건 포함) |
 | 6 | **드래그앤드롭 파일 입구** — 검증 + 의존성 0 xlsx 파서(워커) | `src/lib/xlsxConvert.ts`, `src/lib/settlementUpload.ts`, `ReconciliationFileUploader.tsx` | 34 케이스 |
 | 7 | **마켓 소명 리포트** — 플랫폼 규격 CSV + 인쇄용 PDF | `src/lib/reconciliationReport.ts`, `ReconciliationClaimPanel.tsx` | 28 케이스 |
+| 8 | **마켓 정산 API 자동 수집** — 스마트스토어 커머스API(OAuth2+bcrypt 전자서명) / 쿠팡 Open API(CEA HMAC-SHA256), 샌드박스·재시도·마스킹·원장 결합 | `src/lib/marketApiConnector.ts`, `MarketApiSyncConsole.tsx` | 38 케이스 |
 
 **측정값 (이 컨테이너, Node 20.20.2 · 100,000행 기준)**
 
@@ -125,11 +127,12 @@
    └ 법인(본사 / 부산 지사 / 위탁사) × 역할(대표 / 정산 담당자 / 운영 MD)
    └ 역할에 따라 정산액·원가가 마스킹되고, 권한 없는 동작은 감사 로그에 '거부'로 남음
 
-3) 데이터 유입 — File intake 카드
+3) 데이터 유입 — 카드 상단의 두 탭
    ├ "데모 2만 건" / "10만 건 스트레스" — 고정 시드 데모 원장 생성 + 배치 대사
-   ├ 드래그앤드롭 업로더 — CSV · TSV · XLSX. 검증(0바이트/용량/가짜 xlsx) → Web Worker 파싱
+   ├ [정산서 파일 업로드] 드래그앤드롭 업로더 — CSV · TSV · XLSX. 검증(0바이트/용량/가짜 xlsx) → Web Worker 파싱
    │  ├ 진행률 0~100% (엑셀은 변환 25% → 파싱 75%), 실행 경로·읽은 행·오류·중복·처리 속도 표시
    │  └ 실패는 사유 + 다음 행동("다시 내려받기", "기간을 나눠 업로드")으로 안내
+   ├ [API 자동 수집] 마켓 선택 → 정산월 → 연결 테스트 → 수집(+대사). 키는 입력 후 마스킹되어 다시 보이지 않음
    └ "샘플 양식" — 업로드 테스트용 500건 CSV (한글 헤더)
 
 4) 탐색
@@ -230,6 +233,7 @@ src/
 │   │   ├── ReconciliationConsole.tsx        # 상태 오케스트레이션 (테넌트·역할·업로드·반출)
 │   │   ├── TenantSwitchConsole.tsx          # 테넌트/역할 전환 + 권한 매트릭스 + 감사 로그
 │   │   ├── ReconciliationVirtualTable.tsx   # 가상화 표 + 필터 + 키보드 탐색
+│   │   ├── MarketApiSyncConsole.tsx         # 마켓 API 수집: 자격 증명·연결 테스트·진행률·오류 안내
 │   │   └── SettlementDetailDrawer.tsx       # 1건 상세: 기대값/실제값/귀속/계산식
 │   ├── EnterpriseEntry.tsx         # 홈의 엔터프라이즈 요약 (서버 컴포넌트, 빌드 시 실계산)
 │   └── (기존) Dashboard, MarginSimulator, MarketComparisonMatrix …
@@ -240,10 +244,14 @@ src/
 │   ├── csvWorkerProtocol.ts        # 워커 메시지 계약
 │   ├── virtualization.ts           # 윈도 계산 (고정/가변, 이진 탐색)
 │   ├── multiTenantRbac.ts          # 권한·마스킹·감사 로그(해시체인)
+│   ├── marketApiConnector.ts       # 마켓 API 커넥터: 인증·페이지네이션·재시도·마스킹·원장 결합
 │   ├── settlementFixtures.ts       # 고정 시드 데모 원장 + CSV 직렬화
 │   └── (기존) calculator, diagnostics, marketComparison, format, types
 └── workers/
     └── csv.worker.ts               # 파싱 워커 (Next.js webpack이 별도 청크로 번들)
+
+docs/
+└── market-api-connector.md         # 마켓 연동 설계 노트 (인증·샌드박스·프록시·보안 경계)
 ```
 
 ### 4.5 서버 계층 — PHP 8.2 · MySQL 8.0 · 네이버클라우드 SENS 알림톡
@@ -482,6 +490,71 @@ xlsx를 직접 읽습니다. xlsx는 ZIP + XML이므로 라이브러리 없이 �
 
 ---
 
+### 6.6 마켓 정산 API 자동 수집 — 파일 없이 정산 내역 받기
+
+파일 업로드는 "정산서를 사람이 내려받아 올린다"는 전제를 갖습니다. 셀러가 매달 반복하는 일은 파일을 받는 것이 아니라
+**마켓이 말하는 숫자와 내 원장이 말하는 숫자가 같은지 확인하는 것**이므로, 그 앞단을 `marketApiConnector.ts`가 맡습니다.
+수집이 끝나면 나머지는 파일 경로와 **완전히 같은 대사 엔진**으로 들어갑니다(규칙이 두 벌이 되면 결과가 갈라집니다).
+
+**두 마켓의 인증은 같은 문제를 다르게 풉니다**
+
+| | 스마트스토어 커머스API | 쿠팡 Open API |
+| --- | --- | --- |
+| 방식 | OAuth2 Client Credentials | CEA(HMAC-SHA256) 서명 |
+| 요청 | `POST /external/v1/oauth2/token` → `Authorization: Bearer` | 매 요청 서명 → `Authorization: CEA algorithm=HmacSHA256, access-key=…, signed-date=…, signature=…` |
+| 시크릿 보호 | `client_secret_sign = Base64(bcrypt(client_id + "_" + timestamp, client_secret))` — 원문 시크릿을 전송하지 않음 | 서명 메시지 = `signed-date + method + path + query`(도메인 제외) |
+| 토큰 수명 | 응답의 `expires_in`을 캐시하고 만료 60초 전 갱신, `401 GW.AUTHN`이면 1회 재발급 후 재시도 | 없음(요청마다 서명) |
+
+구현 포인트는 **차이를 화면으로 새지 않게** 하는 것입니다. 커넥터가 두 방식을 흡수하고 밖으로는 정산 레코드 배열만 내놓습니다.
+
+```ts
+const connector = new MarketApiConnector({ credentials });        // provider: "smartstore" | "coupang"
+const intake = await runSettlementIntake(connector, {
+  month: "2026-10",
+  ledger,                        // 셀러 원장(SKU → 매입원가·실배송원가)
+  onProgress: (step) => setLabel(step.message),
+});
+intake.reconciled.summary.totalLeak;   // 화면은 계산하지 않고 보여 주기만 한다
+```
+
+**마켓이 주지 않는 두 값을 어디서 채우나**
+
+마켓 API는 금액만 줍니다. 계약 수수료율은 계약서(`CHANNEL_CONTRACTS`), 매입원가는 셀러 원장(`CostLedger`)에서 옵니다.
+원장에 없는 SKU는 **0원으로 두고 경고를 남깁니다**. 0원은 "공짜"가 아니라 "모른다"이고, 대사 엔진이 그 행을
+`MISSING_LEDGER`로 표시하기 때문입니다. 모르는 값을 그럴듯한 숫자로 채우지 않는 것이 원칙입니다.
+
+**샌드박스**
+
+- 네트워크를 타지 않고 `(마켓, 정산월)` 고정 시드로 1,200건을 만듭니다. 같은 조건이면 리뷰어도 같은 숫자를 봅니다.
+- 레코드는 **마켓이 주는 값만** 담고(원가·수수료율 없음), 원장은 따로 만들어 결합 단계를 실제로 태웁니다.
+- 실패 경로도 검증 가능하게 `failAt`으로 429/503을 주입할 수 있습니다.
+
+**오류는 코드·상태·다음 행동으로 번역합니다** (`MarketApiError.toDisplay()`)
+
+| 코드 | 상황 | 화면이 안내하는 다음 행동 |
+| --- | --- | --- |
+| `AUTH` | 키 오류, `GW.AUTHN`, 토큰 거부 | 키·시크릿 재발급 후 다시 연결 (재시도하지 않음) |
+| `FORBIDDEN` | 정산 조회 권한 없음(403) | 마켓 센터에서 스코프 확인 |
+| `RATE_LIMITED` | 429 | 잠시 뒤 재시도, 페이지 크기 축소 |
+| `NETWORK` | 타임아웃·CORS·프록시 없음 | 네트워크/프록시 확인 |
+| `PARSE` | JSON 아님, 정산 배열 없음 | API 버전 변경 여부 확인 |
+| `SERVER` | 5xx | 지수 백오프 재시도 후에도 실패하면 문의 |
+| `CONFIG` | 키 미입력, 월 형식 오류, 쿠팡 업체코드 누락 | 입력값 수정 (네트워크를 타지 않음) |
+
+**보안 경계 — 의도적으로 이렇게 만들었습니다**
+
+1. **마스킹**: 저장 후에는 `sk-••••••••1f2a`만 남습니다. 불릿 개수를 고정해 키 길이도 노출하지 않습니다.
+2. **오류 로그 세탁**: 마켓 응답 본문에 시크릿이 섞여 나올 수 있어, `MarketApiError`가 `detail`·`message`에서
+   시크릿을 `[REDACTED]`로 지운 뒤 화면에 넘깁니다.
+3. **로컬 저장은 기본 off**: "이 브라우저에 저장(시크릿 포함)"을 고른 경우에만 localStorage에 기록하고, 아니면 탭 메모리에만 둡니다.
+4. **브라우저 직접 호출 금지**: 마켓 API는 CORS를 허용하지 않습니다. `proxyBaseUrl`(=`NEXT_PUBLIC_MARKET_API_PROXY`)이
+   없으면 실연동을 시작하지 않고 그 이유를 화면에 적습니다. 실서비스에서는 시크릿이 서버에만 있어야 합니다.
+
+> 이 모듈의 단위 테스트 38개 중 8개가 **서명·정규화·재시도·시크릿 세탁**을 고정합니다.
+> 쿠팡 서명은 테스트에서 `node:crypto`의 HMAC으로 **독립 재계산**해 비교하므로, 구현과 검증이 같은 코드를 믿고 돌지 않습니다.
+
+---
+
 ## 7. 핵심 모듈 3 — 10만 행 가상화 테이블
 
 ### 7.1 계산
@@ -671,7 +744,7 @@ B2B SaaS로 판매하려면 서버 영속화와 서버 측 권한 강제가 필�
 
 ## 11. 테스트 전략
 
-**211 케이스 / 10 파일 / Vitest (`environment: node`)**
+**249 케이스 / 11 파일 / Vitest (`environment: node`)**
 
 | 파일 | 케이스 | 검증 |
 | --- | --- | --- |
@@ -682,6 +755,7 @@ B2B SaaS로 판매하려면 서버 영속화와 서버 측 권한 강제가 필�
 | `reconciliationReport.test.ts` | 28 | 청구 대상 선별(역마진·과소청구 제외), 금액 하한/상한, 정렬·플랫폼 분해, 원인별 합계 = 총액, CSV BOM·CRLF·인용·**수식 인젝션 방지**, 플랫폼별 규격 열, 인쇄 HTML 이스케이프 |
 | `xlsxConvert.test.ts` | 20 | ZIP 중앙 디렉터리, stored/deflate, sharedStrings·인라인 문자열, 빈 셀 열 정렬, 날짜 서식 판정과 일련번호 변환, 1900 윤년 보정, 가짜 ZIP 거절, **변환 CSV → 대사 파이프라인 종단 검증** |
 | `settlementUpload.test.ts` | 14 | 0바이트·상한 초과·확장자·가짜 xlsx·구형 xls 거절 사유, 경고 임계값, accept 속성 |
+| `marketApiConnector.test.ts` | 38 | 마스킹·시크릿 세탁, 정산월 계산, 스마트스토어 bcrypt 전자서명, 쿠팡 CEA 서명(**node:crypto 독립 재계산**), 응답 정규화(한/영 필드·정산액 복원), 봉투 해석, 토큰 캐시·401 재발급, 429/5xx 재시도, 네트워크·JSON 구분, 페이지 상한, 샌드박스 결정론·장애 주입, 원장 결합 경고, **API 수집 → 대사 종단**(귀속 합 ≤ 총 누수), localStorage 저장/삭제 |
 | `calculator.test.ts` | 22 | (기존) 수수료·마진·BEP·키워드 점수·포맷 |
 | `diagnostics.test.ts` | 23 | (기존) 4축 진단·비용 비율·액션 플랜 |
 | `marketComparison.test.ts` | 13 | (기존) 5개 마켓 비교·배지·순위 |
@@ -689,7 +763,7 @@ B2B SaaS로 판매하려면 서버 영속화와 서버 측 권한 강제가 필�
 ```bash
 npm run typecheck   # tsc --noEmit
 npm run lint        # next lint
-npm test            # vitest run (211)
+npm test            # vitest run (249)
 npm run build       # next build (프로덕션 번들 + 타입 검사)
 ```
 
@@ -759,7 +833,7 @@ composer test        # 75 tests
 | 영역 | 현재 | 실서비스에 필요 |
 | --- | --- | --- |
 | 권한 | 클라이언트 RBAC (데모·시뮬레이터) | 서버 세션 + DB RLS(행 수준 보안)로 **서버 강제** |
-| 데이터 | 파일 업로드 + 고정 시드 데모 | 마켓 API 연동, 정산 이력 저장, 재대사 |
+| 데이터 | 파일 업로드 + 마켓 API 샌드박스 수집(실연동은 프록시 필요) | 서버 프록시 + 시크릿 보관(KMS), 정산 이력 저장, 재대사 |
 | 감사 로그 | 브라우저 메모리 + 해시체인 | append-only 저장(WORM), 서버 서명, 보존 정책 |
 | 계약 | 채널별 프리셋 | 법인·카테고리·기간별 계약 테이블 |
 | 규모 | 브라우저 10만 건 | 서버 배치(수백만 건), 스트리밍 리포트 |
@@ -779,8 +853,9 @@ composer test        # 75 tests
 - [x] 서버 영속화 (MySQL 8.0 6개 테이블 스키마 + Modern PHP 8.2 대사/이상탐지 API)
 - [x] 네이버클라우드 SENS 알림톡 연동 (정산 이상 징후 알림 발송)
 - [x] 의존성 제로 순수 엑셀 파서(XLSX) 및 마켓별 규격 소명 리포트(CSV/인쇄용 PDF) 다운로드
-- [ ] 마켓 정산 실시간 API 연동 (스마트스토어 커머스API / 쿠팡 Open API Sandbox)
-- [ ] Playwright 브라우저 E2E 테스트 슈트 (파일 업로드 → 대사 검증 → 리포트 다운로드)
+- [x] 마켓 정산 실시간 API 연동 (스마트스토어 커머스API / 쿠팡 Open API Sandbox)
+- [ ] 마켓 API 서버 프록시 + 시크릿 보관(KMS) 경로 — 브라우저에 시크릿을 두지 않는 운영 구성
+- [ ] 정산 이력 저장 + 월별 재대사(전월 대비 차액 추적)
 
 ---
 
