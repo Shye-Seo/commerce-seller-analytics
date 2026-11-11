@@ -216,6 +216,7 @@ export default function ReconciliationClaimPanel({
           type="button"
           onClick={handleCsv}
           disabled={disabled}
+          data-testid="claim-csv"
           className="mt-auto rounded-lg bg-emerald-400 px-3 py-1.5 text-[11px] font-semibold text-ink-950 transition enabled:hover:bg-emerald-300 disabled:opacity-40"
         >
           접수용 CSV
@@ -224,6 +225,7 @@ export default function ReconciliationClaimPanel({
           type="button"
           onClick={handlePrint}
           disabled={disabled}
+          data-testid="claim-pdf"
           className="mt-auto rounded-lg border border-white/[0.12] bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium text-slate-200 transition enabled:hover:border-white/25 enabled:hover:text-white disabled:opacity-40"
         >
           인쇄용 PDF

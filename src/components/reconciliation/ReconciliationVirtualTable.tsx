@@ -166,7 +166,7 @@ export default function ReconciliationVirtualTable({
   };
 
   return (
-    <section className="card overflow-hidden" aria-label="정산 대사 결과 테이블">
+    <section className="card overflow-hidden" aria-label="정산 대사 결과 테이블" data-testid="reconciliation-table">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.06] px-4 py-3">
         <div className="flex flex-wrap items-center gap-1.5">
           {ROW_FILTERS.map((item) => {
@@ -177,6 +177,7 @@ export default function ReconciliationVirtualTable({
                 type="button"
                 onClick={() => onFilterChange(item.id)}
                 aria-pressed={active}
+                data-testid={`vtable-filter-${item.id}`}
                 className={`rounded-lg border px-2.5 py-1 text-[11px] font-medium transition ${
                   active
                     ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-200"
@@ -223,6 +224,8 @@ export default function ReconciliationVirtualTable({
         }}
         className="thin-scrollbar max-h-[520px] min-h-[320px] overflow-auto outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/30"
         aria-rowcount={rows.length}
+        data-testid="vtable-scroll"
+        data-row-count={rows.length}
       >
         <table className="w-full min-w-[1120px] border-collapse text-[11.5px]">
           <thead>
@@ -340,6 +343,7 @@ export default function ReconciliationVirtualTable({
             : `${(window_.startIndex + 1).toLocaleString("ko-KR")}–${Math.min(window_.endIndex, rows.length).toLocaleString("ko-KR")} / ${rows.length.toLocaleString("ko-KR")}행 표시`}
         </span>
         <span className="flex flex-wrap items-center gap-x-3 gap-y-1 tabular-nums">
+          <span data-testid="vtable-total">총 {rows.length.toLocaleString("ko-KR")}행</span>
           <span>렌더 행 {window_.renderedCount}개</span>
           <span>DOM 셀 {dom.virtual.toLocaleString("ko-KR")}개 (전체 {dom.full.toLocaleString("ko-KR")}개 대비 {dom.ratio.toLocaleString("ko-KR")}배 절감)</span>
           <span className="text-slate-600">rAF {renderMs < 1 ? "<1" : renderMs.toFixed(1)}ms</span>

@@ -7,7 +7,7 @@
 <p align="center">
   이커머스 셀러를 위한 <strong>B2B 정산 대사 &amp; 이상 탐지 플랫폼</strong><br />
   <sub>10만 행 정산서 · Web Worker 파싱 · 가상화 렌더링 · 멀티 테넌트 RBAC · 해시체인 감사 로그</sub><br />
-  <sub>마켓 정산 API 자동 수집(스마트스토어 커머스API · 쿠팡 Open API)</sub><br />
+  <sub>마켓 정산 API 자동 수집(스마트스토어 커머스API · 쿠팡 Open API) · Playwright E2E</sub><br />
   <sub><strong>Full-Cycle</strong>: Next.js 14 프론트엔드 + PHP 8.2 백엔드 + MySQL 8.0 + 네이버클라우드 SENS 알림톡</sub>
 </p>
 
@@ -68,6 +68,7 @@
 | 6 | **드래그앤드롭 파일 입구** — 검증 + 의존성 0 xlsx 파서(워커) | `src/lib/xlsxConvert.ts`, `src/lib/settlementUpload.ts`, `ReconciliationFileUploader.tsx` | 34 케이스 |
 | 7 | **마켓 소명 리포트** — 플랫폼 규격 CSV + 인쇄용 PDF | `src/lib/reconciliationReport.ts`, `ReconciliationClaimPanel.tsx` | 28 케이스 |
 | 8 | **마켓 정산 API 자동 수집** — 스마트스토어 커머스API(OAuth2+bcrypt 전자서명) / 쿠팡 Open API(CEA HMAC-SHA256), 샌드박스·재시도·마스킹·원장 결합 | `src/lib/marketApiConnector.ts`, `MarketApiSyncConsole.tsx` | 38 케이스 |
+| 9 | **Playwright 브라우저 E2E** — 업로드 → 대사 → 필터 → 소명 리포트 다운로드 | `playwright.config.ts`, `e2e/reconciliation.spec.ts` | 5 시나리오 |
 
 **측정값 (이 컨테이너, Node 20.20.2 · 100,000행 기준)**
 
@@ -252,6 +253,10 @@ src/
 
 docs/
 └── market-api-connector.md         # 마켓 연동 설계 노트 (인증·샌드박스·프록시·보안 경계)
+
+e2e/
+└── reconciliation.spec.ts          # Playwright: 업로드 → 대사 → 필터 → 리포트 다운로드
+playwright.config.ts                # 프로덕션 빌드를 띄워 실사용 번들로 검증
 ```
 
 ### 4.5 서버 계층 — PHP 8.2 · MySQL 8.0 · 네이버클라우드 SENS 알림톡
@@ -765,7 +770,38 @@ npm run typecheck   # tsc --noEmit
 npm run lint        # next lint
 npm test            # vitest run (249)
 npm run build       # next build (프로덕션 번들 + 타입 검사)
+npm run test:e2e    # Playwright (프로덕션 빌드를 띄워 5 시나리오)
 ```
+
+### E2E — `npm run test:e2e` (Playwright)
+
+단위 테스트는 금액 계산을 고정하지만, **브라우저에서만 드러나는 것**이 따로 있습니다: Web Worker가 실제로 도는지,
+가상화 테이블이 240행을 다 그리는지, 다운로드가 파일로 도달하는지. 이 4단계 흐름을 Playwright로 고정했습니다.
+
+```bash
+npx playwright install --with-deps chromium   # 최초 1회 (브라우저 + 시스템 의존성)
+npm run test:e2e          # 프로덕션 빌드를 띄우고 5 시나리오 실행
+npm run test:e2e:ui       # 타임라인 디버깅
+E2E_DEV_SERVER=1 npm run test:e2e   # 빌드 생략(개발 서버, 온디맨드 컴파일)
+```
+
+| 시나리오 | 검증 |
+| --- | --- |
+| 업로드 → 대사 | 240행 CSV 업로드 → `240행 파싱 완료` → 테이블 `data-row-count=240` → KPI에 정상 대사율 반영 |
+| 이상 필터 | '수수료 오류' 필터 → 행 집합 축소, 표시된 행에 '정상' 배지 없음, '전체'로 복원 |
+| 소명 리포트 | `접수용 CSV` 다운로드 → 파일명 `소명요청_스마트스토어_YYYY-MM-DD_N건.csv`, 본문에 마켓 규격 헤더 |
+| API 수집 | [API 자동 수집] 탭 → 샌드박스 수집 → 1,200행이 같은 대사 파이프라인으로 반영, 오류 카드 없음 |
+| 연결 테스트 | 인증 + 첫 페이지 확인이 `연결 성공`으로 표시 |
+
+설계 메모
+
+- **프로덕션 빌드로 검증합니다.** dev 서버는 요청마다 온디맨드 컴파일을 해 첫 로드가 수십 초 걸리고, 그 시간이
+  진행률·처리량 단언의 잡음이 됩니다. `webServer`가 `next build && next start`를 띄웁니다.
+- **픽스처 CSV를 앱 코드로 만들지 않습니다.** 앱의 직렬화기를 그대로 쓰면 "쓰는 쪽과 읽는 쪽이 같은 버그"를 못 잡습니다.
+  스펙 파일에서 직접 CSV를 쓰고, 이상 징후를 알려진 비율로 심어 기대 건수를 계산할 수 있게 했습니다.
+- **선택자는 `data-testid`만 씁니다.** 문구·클래스는 디자인 변경에 따라 흔들리므로 단언에 쓰지 않습니다.
+- `workers: 1` — 이 스펙은 2만 건 초기 대사와 120만 셀 가상화를 돌립니다. 병렬화하면 메모리에서 브라우저가 죽고,
+  그 실패는 기능 실패처럼 보입니다. CI에서는 `retries: 1`로 흔들림만 흡수합니다.
 
 **테스트 철학** — UI 스냅샷 대신 **도메인 불변식**을 고정합니다.
 특히 "원인별 손실 합 = 부족분"은 화면이 아니라 회계 규칙이므로, 계산식을 바꾸면 반드시 테스트가 깨져야 합니다.
@@ -854,6 +890,7 @@ composer test        # 75 tests
 - [x] 네이버클라우드 SENS 알림톡 연동 (정산 이상 징후 알림 발송)
 - [x] 의존성 제로 순수 엑셀 파서(XLSX) 및 마켓별 규격 소명 리포트(CSV/인쇄용 PDF) 다운로드
 - [x] 마켓 정산 실시간 API 연동 (스마트스토어 커머스API / 쿠팡 Open API Sandbox)
+- [x] Playwright 브라우저 E2E 테스트 슈트 (파일 업로드 → 대사 검증 → 리포트 다운로드)
 - [ ] 마켓 API 서버 프록시 + 시크릿 보관(KMS) 경로 — 브라우저에 시크릿을 두지 않는 운영 구성
 - [ ] 정산 이력 저장 + 월별 재대사(전월 대비 차액 추적)
 

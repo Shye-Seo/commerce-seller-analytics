@@ -193,6 +193,7 @@ export default function ReconciliationFileUploader({ disabled = false, onParsed,
         role="button"
         tabIndex={0}
         aria-label="정산 파일을 끌어다 놓거나 눌러서 선택"
+        data-testid="settlement-dropzone"
         aria-disabled={disabled || busy}
         onClick={openPicker}
         onKeyDown={(event) => {
@@ -226,6 +227,7 @@ export default function ReconciliationFileUploader({ disabled = false, onParsed,
           ref={inputRef}
           type="file"
           accept={UPLOAD_ACCEPT}
+          data-testid="settlement-file-input"
           className="sr-only"
           disabled={disabled || busy}
           onChange={(event) => {

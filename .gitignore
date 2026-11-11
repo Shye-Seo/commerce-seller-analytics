@@ -40,3 +40,9 @@ yarn-error.log*
 /backend/vendor/
 /backend/.env
 /backend/.phpunit.cache/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
