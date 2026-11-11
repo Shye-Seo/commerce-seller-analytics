@@ -472,6 +472,8 @@ export interface ParseProgress {
   engine: ParseEngine;
   /** 0~100 */
   percent: number;
+  /** 진행 단계. 엑셀 파일은 변환(convert) → 파싱(parse) 두 구간을 지난다. */
+  stage?: "convert" | "parse";
   /** 읽은 데이터 행 수(헤더 제외, 오류 포함) */
   processedRows: number;
   /** 정상 변환된 행 수 */
@@ -494,6 +496,14 @@ export interface ParseMeta {
   chunkCount: number;
   bom: boolean;
   duplicateOrderCount: number;
+  /** 원본 파일 형식. 엑셀은 워커에서 CSV로 변환한 뒤 같은 파이프라인을 탄다. */
+  sourceFormat?: "csv" | "tsv" | "xlsx";
+  /** 엑셀일 때 읽은 시트 이름 */
+  sheetName?: string;
+  /** 엑셀에서 변환된 데이터 행 수(헤더 제외) */
+  convertedRowCount?: number;
+  /** 행 상한(20만)을 넘어 잘렸는지 */
+  truncated?: boolean;
 }
 
 export interface SettlementParseResult {

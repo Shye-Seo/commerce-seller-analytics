@@ -11,8 +11,10 @@ import {
   type ReconciliationSummary,
 } from "@/lib/reconciliationEngine";
 import { generateSettlementCsv, generateSettlementRows } from "@/lib/settlementFixtures";
-import { formatThroughput, SettlementCsvSchemaError } from "@/lib/csvStreamParser";
-import { parseSettlementFile } from "@/lib/settlementFileParser";
+import { formatThroughput } from "@/lib/csvStreamParser";
+import type { FileParseResult } from "@/lib/settlementFileParser";
+import ReconciliationFileUploader from "./ReconciliationFileUploader";
+import ReconciliationClaimPanel from "./ReconciliationClaimPanel";
 import TenantSwitchConsole from "./TenantSwitchConsole";
 import ReconciliationVirtualTable, { matchesFilter, type RowFilterId } from "./ReconciliationVirtualTable";
 import SettlementDetailDrawer from "./SettlementDetailDrawer";
@@ -33,10 +35,10 @@ import { formatPercent, formatWon } from "@/lib/format";
  *
  * 이 컴포넌트가 오케스트레이션하는 것
  *  1. 테넌트/역할 컨텍스트와 RBAC 판정 (거부도 감사 로그에 남긴다)
- *  2. 데이터 유입: 데모 원장 생성 또는 CSV 업로드(Web Worker → 폴백)
+ *  2. 데이터 유입: 데모 원장 생성 또는 파일 업로드(`ReconciliationFileUploader`가 검증·파싱 담당)
  *  3. 배치 대사 + 진행률 + 처리량 계측
  *  4. 필터·검색·가상화 테이블·상세 드로어
- *  5. CSV 반출(권한 검사 후)
+ *  5. 반출: 이상 내역 CSV · 마켓 소명 리포트(`ReconciliationClaimPanel`) · 감사 로그
  *
  * 금액 계산은 전부 `reconciliationEngine`이 한다. 화면은 계산하지 않고 보여 주기만 한다.
  */
@@ -145,8 +147,8 @@ export default function ReconciliationConsole() {
 
   const auditRef = useRef(new AuditTrail());
   const startedRef = useRef(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const deferredQuery = useDeferredValue(query);
+  const [uploading, setUploading] = useState(false);
 
   const activeTenant = DEMO_TENANTS.find((tenant) => tenant.id === tenantId) ?? DEMO_TENANTS[0];
   const roleDefinition = ROLES[role];
@@ -234,38 +236,30 @@ export default function ReconciliationConsole() {
     void loadGenerated(DEMO_ROW_COUNT, DEMO_TENANTS[0]?.id ?? "tn-hq");
   }, [loadGenerated]);
 
-  /** CSV 업로드 → 파싱(워커) → 대사 */
-  const handleFile = useCallback(
-    async (file: File) => {
+  /**
+   * 파싱된 파일 → 대사 실행.
+   * 파일 검증과 파싱은 업로더 컴포넌트가 끝내고 결과만 넘긴다. 여기서는 대사에만 집중한다.
+   */
+  const handleParsed = useCallback(
+    async (parsed: FileParseResult, file: File) => {
       setNotice(null);
-      setProgress({ phase: "parsing", percent: 2, label: `${file.name} 파싱 준비` });
+
+      if (parsed.rows.length === 0) {
+        setProgress({ phase: "error", percent: 0, label: "정산 행을 찾지 못했습니다" });
+        setNotice({
+          tone: "error",
+          text:
+            parsed.errorCount > 0
+              ? `정산 행을 읽지 못했습니다. 오류 ${parsed.errorCount}건. 첫 오류: ${parsed.errors[0]?.message ?? "알 수 없음"}`
+              : "파일에 정산 행이 없습니다. 헤더만 있거나 빈 파일인지 확인해 주세요.",
+        });
+        return;
+      }
+
+      setProgress({ phase: "reconciling", percent: 62, label: "계약 조건으로 기대 정산액 재계산 중" });
       await nextPaint();
 
       try {
-        const parsed = await parseSettlementFile(file, {
-          onProgress: (value) =>
-            setProgress({
-              phase: "parsing",
-              percent: Math.min(60, Math.round(value.percent * 0.6)),
-              label: `${value.engine === "worker" ? "Web Worker" : "메인 스레드"} 파싱 · ${value.processedRows.toLocaleString("ko-KR")}행 · ${formatThroughput(value.rowsPerSecond)}`,
-            }),
-        });
-
-        if (parsed.rows.length === 0) {
-          setProgress({ phase: "error", percent: 0, label: "정산 행을 찾지 못했습니다" });
-          setNotice({
-            tone: "error",
-            text:
-              parsed.errorCount > 0
-                ? `정산 행을 읽지 못했습니다. 오류 ${parsed.errorCount}건. 첫 오류: ${parsed.errors[0]?.message ?? "알 수 없음"}`
-                : "파일에 정산 행이 없습니다. 헤더만 있거나 빈 파일인지 확인해 주세요.",
-          });
-          return;
-        }
-
-        setProgress({ phase: "reconciling", percent: 62, label: "계약 조건으로 기대 정산액 재계산 중" });
-        await nextPaint();
-
         const startedAt = Date.now();
         const result = await reconcileSettlementInBatches(parsed.rows, {
           batchSize: BATCH_SIZE,
@@ -293,6 +287,7 @@ export default function ReconciliationConsole() {
           rowsPerSecond: parsed.meta.rowsPerSecond,
           bytes: parsed.meta.bytesRead,
         });
+        setSelected(null);
         setProgress({ phase: "ready", percent: 100, label: "대사 완료" });
         setNotice({
           tone: parsed.errorCount > 0 ? "warn" : "success",
@@ -304,17 +299,11 @@ export default function ReconciliationConsole() {
         log(
           "RECONCILE_RUN",
           file.name,
-          `${parsed.meta.engine} · ${result.rows.length.toLocaleString("ko-KR")}건 · 오류 ${parsed.errorCount}건`,
+          `${parsed.meta.engine} · ${result.rows.length.toLocaleString("ko-KR")}건 · 오류 ${parsed.errorCount}건 · 누수 ${formatWon(result.summary.totalLeak)}`,
         );
       } catch (error) {
-        const message =
-          error instanceof SettlementCsvSchemaError
-            ? `${error.message} (필수 열을 확인해 주세요)`
-            : error instanceof Error
-              ? error.message
-              : "알 수 없는 오류";
-        setProgress({ phase: "error", percent: 0, label: "업로드 실패" });
-        setNotice({ tone: "error", text: message });
+        setProgress({ phase: "error", percent: 0, label: "대사 실패" });
+        setNotice({ tone: "error", text: error instanceof Error ? error.message : "알 수 없는 오류" });
       }
     },
     [log],
@@ -447,7 +436,7 @@ export default function ReconciliationConsole() {
   }, [summary]);
 
   const biggest = summary ? biggestLeakCause(summary) : null;
-  const busy = progress.phase === "generating" || progress.phase === "parsing" || progress.phase === "reconciling";
+  const busy = progress.phase === "generating" || progress.phase === "parsing" || progress.phase === "reconciling" || uploading;
 
   return (
     <div className="min-h-screen">
@@ -542,6 +531,14 @@ export default function ReconciliationConsole() {
               />
             </div>
 
+            {/* 파일 입구: 검증 → 워커 파싱 → 진행률/통계까지 이 카드가 소유한다 */}
+            <ReconciliationFileUploader
+              disabled={busy}
+              onParsed={handleParsed}
+              onBusyChange={setUploading}
+              onNotice={(next) => setNotice(next)}
+            />
+
             <section className="card p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -573,25 +570,6 @@ export default function ReconciliationConsole() {
                   >
                     10만 건 스트레스
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={busy}
-                    className="rounded-lg bg-emerald-400 px-2.5 py-1.5 text-[11px] font-semibold text-ink-950 transition enabled:hover:bg-emerald-300 disabled:opacity-40"
-                  >
-                    CSV 업로드
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".csv,text/csv"
-                    className="sr-only"
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
-                      if (file) void handleFile(file);
-                      event.target.value = "";
-                    }}
-                  />
                   <button
                     type="button"
                     onClick={handleExport}
@@ -661,6 +639,19 @@ export default function ReconciliationConsole() {
               onSelect={handleSelect}
               activeId={selected?.id}
               totalRows={rows.length}
+            />
+
+            {/* 대사 결과 → 마켓 접수 문서(CSV·PDF). 반출 권한·감사 기록은 콘솔이 관리한다 */}
+            <ReconciliationClaimPanel
+              rows={rows}
+              role={role}
+              tenantName={activeTenant?.name ?? "셀러"}
+              businessNo={activeTenant?.businessNo}
+              period={dataset?.source === "upload" ? undefined : "데모 원장"}
+              sourceFileName={dataset?.source === "upload" ? dataset.label : undefined}
+              disabled={busy}
+              onAudit={(target, detail, outcome) => log("EXPORT_CSV", target, detail, outcome)}
+              onNotice={(next) => setNotice(next)}
             />
 
             {summary && (

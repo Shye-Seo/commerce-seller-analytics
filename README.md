@@ -14,7 +14,7 @@
   <a href="https://nextjs.org"><img alt="Next.js" src="https://img.shields.io/badge/Next.js-14.2-000000?style=flat-square&logo=nextdotjs&logoColor=white" /></a>
   <a href="https://www.typescriptlang.org"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.9_strict-3178C6?style=flat-square&logo=typescript&logoColor=white" /></a>
   <a href="https://tailwindcss.com"><img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" /></a>
-  <a href="https://vitest.dev"><img alt="Tests" src="https://img.shields.io/badge/Vitest-149_tests_passing-4C9A2A?style=flat-square&logo=vitest&logoColor=white" /></a>
+  <a href="https://vitest.dev"><img alt="Tests" src="https://img.shields.io/badge/Vitest-211_tests_passing-4C9A2A?style=flat-square&logo=vitest&logoColor=white" /></a>
   <a href="https://www.php.net/releases/8.2/ko.php"><img alt="PHP" src="https://img.shields.io/badge/PHP-8.2_OOP-777BB4?style=flat-square&logo=php&logoColor=white" /></a>
   <a href="https://dev.mysql.com/doc/refman/8.0/en/"><img alt="MySQL" src="https://img.shields.io/badge/MySQL-8.0_InnoDB-4479A1?style=flat-square&logo=mysql&logoColor=white" /></a>
   <a href="https://api.ncloud-docs.com/docs/sens-alimtalk-send"><img alt="Naver Cloud SENS" src="https://img.shields.io/badge/Naver_Cloud-SENS_알림톡-03C75A?style=flat-square&logo=naver&logoColor=white" /></a>
@@ -64,6 +64,8 @@
 | 3 | 10만 행 가상화 테이블 (rAF 스로틀) | `src/lib/virtualization.ts`, `src/components/reconciliation/ReconciliationVirtualTable.tsx` | 16 케이스 |
 | 4 | 멀티 테넌트 RBAC + 해시체인 감사 로그 | `src/lib/multiTenantRbac.ts`, `src/components/reconciliation/TenantSwitchConsole.tsx` | 22 케이스 |
 | 5 | **PHP 8.2 백엔드 + MySQL 8.0 스키마 + SENS 알림톡** (정산 배치·이상 알림) | `backend/`, `database/schema.sql` | 75 케이스(MySQL 8.0 실연동 6건 포함) |
+| 6 | **드래그앤드롭 파일 입구** — 검증 + 의존성 0 xlsx 파서(워커) | `src/lib/xlsxConvert.ts`, `src/lib/settlementUpload.ts`, `ReconciliationFileUploader.tsx` | 34 케이스 |
+| 7 | **마켓 소명 리포트** — 플랫폼 규격 CSV + 인쇄용 PDF | `src/lib/reconciliationReport.ts`, `ReconciliationClaimPanel.tsx` | 28 케이스 |
 
 **측정값 (이 컨테이너, Node 20.20.2 · 100,000행 기준)**
 
@@ -123,9 +125,11 @@
    └ 법인(본사 / 부산 지사 / 위탁사) × 역할(대표 / 정산 담당자 / 운영 MD)
    └ 역할에 따라 정산액·원가가 마스킹되고, 권한 없는 동작은 감사 로그에 '거부'로 남음
 
-3) 데이터 유입
+3) 데이터 유입 — File intake 카드
    ├ "데모 2만 건" / "10만 건 스트레스" — 고정 시드 데모 원장 생성 + 배치 대사
-   ├ "CSV 업로드" — Web Worker가 file.stream()을 청크로 파싱 (실패 시 메인 스레드 폴백)
+   ├ 드래그앤드롭 업로더 — CSV · TSV · XLSX. 검증(0바이트/용량/가짜 xlsx) → Web Worker 파싱
+   │  ├ 진행률 0~100% (엑셀은 변환 25% → 파싱 75%), 실행 경로·읽은 행·오류·중복·처리 속도 표시
+   │  └ 실패는 사유 + 다음 행동("다시 내려받기", "기간을 나눠 업로드")으로 안내
    └ "샘플 양식" — 업로드 테스트용 500건 CSV (한글 헤더)
 
 4) 탐색
@@ -134,8 +138,10 @@
    ├ 행 클릭 → 상세 드로어: 기대값 vs 실제값, 원인별 귀속 금액, 계산식
    └ 키보드: ↑/↓ 이동, Enter 상세 열기
 
-5) 반출
-   ├ "이상 내역 CSV" — export.csv 권한 검사 후 브라우저 다운로드
+5) 반출 — Claim report 카드
+   ├ "접수용 CSV" — 마켓 규격(스마트스토어 / 쿠팡 / 11번가·G마켓) 소명 요청 파일
+   ├ "인쇄용 PDF" — A4 소명 요청서(브라우저 인쇄 → PDF 저장). 팝업 차단 시 HTML 저장으로 폴백
+   ├ "이상 내역 CSV" — 전체 이상 내역(내부 공유용)
    └ "감사 로그 CSV" — audit.read 권한자만. 해시체인 무결성 배지 상시 표시
 ```
 
@@ -379,6 +385,23 @@ sum(원인별 손실) === shortfall === 이 행의 loss
 
 결과: `FEE_OVERCHARGE` 1건, 귀속 손실 300원. 실효 마진은 `23,587 − 12,800 − 2,800 = 7,987원(28.6%)`.
 
+### 5.5 대사 결과 → 마켓 접수 문서 (소명 리포트)
+
+대사가 "수수료 1,900원 초과"를 찾아도, 셀러가 돈을 돌려받으려면 **고객센터가 받는 형식**이어야 합니다.
+`reconciliationReport.ts`가 그 변환을 담당하며, 정책을 코드로 못 박았습니다.
+
+| 결정 | 왜 |
+| --- | --- |
+| 청구 가능 원인만 6종 (`FEE_OVERCHARGE`, `FEE_ON_CANCELED_ORDER`, `SHIPPING_OVERCHARGE`, `RETURN_FEE_DOUBLE_CHARGED`, `RETURN_FEE_ON_SHIPPED_ORDER`, `SETTLEMENT_SHORTFALL`) | 역마진은 계약 위반이 아니라 판매 조건 문제, 과소 청구는 오히려 소급 청구 위험, 반올림 누수는 건별 실익 없음. 섞으면 담당자가 전체를 반려합니다 |
+| 금액 내림차순 + 하한 1,000원 + 상한 50건 | 문의 1건의 행정 비용이 1,000원을 넘고, 담당자는 상위 N건만 읽습니다(파레토) |
+| 청구액 ≤ 해당 주문 부족분 | 대사 엔진의 귀속 금액을 **다시 계산하지 않고 합산**합니다. 같은 돈을 두 번 청구하지 않습니다 |
+| 마켓별 3가지 규격 CSV | 스마트스토어(문의유형·스토어명·사업자번호·주문번호·차액), 쿠팡(WING 업체코드·정산월), 11번가·G마켓 통합 양식 |
+| UTF-8 BOM + CRLF + 수식 인젝션 방지 | 한국어 엑셀에서 깨지지 않고, 상품명 셀의 `=HYPERLINK(...)`가 담당자 PC에서 실행되지 않습니다 |
+| 인쇄용 A4 HTML | 브라우저 인쇄 엔진으로 PDF를 만듭니다. PDF 라이브러리·폰트 임베딩·서버 없이 같은 결과(의존성 0) |
+
+`buildClaimReport()`는 순수 함수라서 "우리 8건 중 5,600원이 청구 가능하고, 역마진 3건은 청구 대상이 아니다"를
+테스트로 고정할 수 있습니다. 반출은 `export.csv` 권한을 통과해야 하고, 내려받은 파일명과 금액이 감사 로그에 남습니다.
+
 ---
 
 ## 6. 핵심 모듈 2 — Web Worker 스트리밍 파서
@@ -435,6 +458,27 @@ parseSettlementFile(file)
 마켓마다 같은 값을 다르게 부릅니다(`마켓수수료` / `판매수수료` / `수수료`, `실정산액` / `정산금액` / `입금액`).
 `HEADER_ALIASES` 표 하나에 모아 두어 **새 마켓 정산서는 이 표만 늘리면** 붙습니다.
 필수 열은 `주문번호 · 채널 · 결제금액 · 실정산액`이며, `계약수수료율`이 없으면 실효 수수료율로 대체합니다.
+
+### 6.5 엑셀(.xlsx)을 그대로 받는 입구 — 의존성 0
+
+셀러가 마켓에서 내려받는 정산서는 대부분 **엑셀 파일**입니다. "CSV로 저장해서 올려 주세요"는 실무에서 제품이 죽는 지점이라,
+xlsx를 직접 읽습니다. xlsx는 ZIP + XML이므로 라이브러리 없이 필요한 부분만 구현했습니다.
+
+```text
+업로드 → validateUploadFile()            0바이트 · 50MB 상한 · 확장자 · ZIP 매직바이트(가짜 xlsx 차단)
+       → csv.worker.ts 안에서
+           ① ZIP 중앙 디렉터리 → xl/worksheets/sheet1.xml, sharedStrings.xml, styles.xml 해제
+              (DecompressionStream("deflate-raw"), stored/deflate 모두 지원)
+           ② 셀 참조(A1→0, AA→26) 복원, 빈 셀 자리 유지, sharedStrings/인라인 문자열 결합
+           ③ 날짜 서식(numFmt 14~22, 45~47, 사용자 "yyyy-mm-dd")이면 일련번호 → YYYY-MM-DD
+              (1900년 윤년 버그 보정 포함 — 이걸 빼면 주문일이 45678로 들어옵니다)
+           ④ CSV 문자열로 직렬화 → 기존 파이프라인에 그대로 투입
+```
+
+- 변환은 워커에서 하므로 10만 행 엑셀을 풀어도 화면이 멈추지 않습니다. 진행률은 **변환 0~25% / 파싱 25~100%** 로 이어집니다.
+- 파서를 두 벌 유지하지 않습니다. 변환 결과가 CSV이므로 행 매퍼·대사 엔진·오류 격리는 CSV 경로와 완전히 동일합니다.
+- 구형 `.xls`(BIFF)는 ZIP이 아니라서 지원하지 않으며, **거절 사유와 함께 "Excel 통합 문서(.xlsx) 또는 CSV UTF-8로 저장"** 을 안내합니다.
+- 다운로드 실패로 저장된 HTML 오류 페이지를 `.xlsx`로 올리는 경우가 흔해서, ZIP 매직바이트까지 확인합니다.
 
 ---
 
@@ -627,7 +671,7 @@ B2B SaaS로 판매하려면 서버 영속화와 서버 측 권한 강제가 필�
 
 ## 11. 테스트 전략
 
-**149 케이스 / 7 파일 / Vitest (`environment: node`)**
+**211 케이스 / 10 파일 / Vitest (`environment: node`)**
 
 | 파일 | 케이스 | 검증 |
 | --- | --- | --- |
@@ -635,6 +679,9 @@ B2B SaaS로 판매하려면 서버 영속화와 서버 측 권한 강제가 필�
 | `csvStreamParser.test.ts` | 20 | 금액/율/날짜 파서, 따옴표·개행·`""` 이스케이프, 청크 경계(7글자 분할), BOM·CRLF, 필드 길이 초과, 별칭 헤더, 필수 열 누락, 행 격리, 중복 주문, 진행률, **CSV 왕복 동일성**, 5만 행 성능 |
 | `virtualization.test.ts` | 16 | 고정 윈도 계산, overscan 클램프, 음수/초과 스크롤, 0 높이 보정, 누적 합, 이진 탐색, 가변 높이, DOM 절감 계산 |
 | `multiTenantRbac.test.ts` | 22 | 역할 권한, 테넌트 범위 거부, 마스킹 3단계, 사업자번호, 필드별 마스크, 감사 로그 체인, 변조·삭제 탐지, 거부 기록, CSV 반출 권한 |
+| `reconciliationReport.test.ts` | 28 | 청구 대상 선별(역마진·과소청구 제외), 금액 하한/상한, 정렬·플랫폼 분해, 원인별 합계 = 총액, CSV BOM·CRLF·인용·**수식 인젝션 방지**, 플랫폼별 규격 열, 인쇄 HTML 이스케이프 |
+| `xlsxConvert.test.ts` | 20 | ZIP 중앙 디렉터리, stored/deflate, sharedStrings·인라인 문자열, 빈 셀 열 정렬, 날짜 서식 판정과 일련번호 변환, 1900 윤년 보정, 가짜 ZIP 거절, **변환 CSV → 대사 파이프라인 종단 검증** |
+| `settlementUpload.test.ts` | 14 | 0바이트·상한 초과·확장자·가짜 xlsx·구형 xls 거절 사유, 경고 임계값, accept 속성 |
 | `calculator.test.ts` | 22 | (기존) 수수료·마진·BEP·키워드 점수·포맷 |
 | `diagnostics.test.ts` | 23 | (기존) 4축 진단·비용 비율·액션 플랜 |
 | `marketComparison.test.ts` | 13 | (기존) 5개 마켓 비교·배지·순위 |
@@ -642,7 +689,7 @@ B2B SaaS로 판매하려면 서버 영속화와 서버 측 권한 강제가 필�
 ```bash
 npm run typecheck   # tsc --noEmit
 npm run lint        # next lint
-npm test            # vitest run (149)
+npm test            # vitest run (211)
 npm run build       # next build (프로덕션 번들 + 타입 검사)
 ```
 
@@ -680,7 +727,7 @@ npm run build       # next build (프로덕션 번들 + 타입 검사)
 ```bash
 npm install
 npm run dev          # http://localhost:3000  (콘솔: /reconciliation)
-npm test             # 149 tests
+npm test             # 211 tests
 npm run build && npm start
 ```
 

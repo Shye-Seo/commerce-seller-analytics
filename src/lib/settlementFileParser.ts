@@ -5,6 +5,8 @@ import {
   type SettlementParseResult,
 } from "./csvStreamParser";
 import type { WorkerResponse } from "./csvWorkerProtocol";
+import { detectFormat, type SupportedFormat } from "./settlementUpload";
+import { xlsxToCsv } from "./xlsxConvert";
 
 /**
  * 파일 → 정산 행 파서 (브라우저 진입점)
@@ -24,6 +26,12 @@ export interface FileParseMeta {
   engine: "worker" | "main-thread";
   /** 워커가 실패해 폴백했다면 그 사유 */
   engineFallbackReason?: string;
+  /** 원본 파일 형식(엑셀은 변환 후 같은 파이프라인을 탄다) */
+  sourceFormat: SupportedFormat;
+  /** 엑셀일 때 변환에 사용한 시트 */
+  sheetName?: string;
+  /** 엑셀 변환 행 수 초과로 잘렸는지 */
+  truncated?: boolean;
 }
 
 export interface FileParseResult extends SettlementParseResult {
@@ -44,26 +52,32 @@ export function canUseWorker(): boolean {
   return typeof Worker !== "undefined" && typeof URL !== "undefined";
 }
 
+export function detectFileFormat(file: File): SupportedFormat {
+  const format = detectFormat(file.name);
+  return format === "xlsx" || format === "tsv" ? format : "csv";
+}
+
 /**
  * 파일을 파싱한다. 워커 경로가 실패하면 사유를 남기고 메인 스레드로 자동 폴백한다.
  * (폴백은 "성공"으로 숨기지 않는다 — 사용자에게 어느 경로였는지 보여 준다)
  */
 export async function parseSettlementFile(file: File, options: FileParseOptions = {}): Promise<FileParseResult> {
   const { forceMainThread, workerTimeoutMs, ...parseOptions } = options;
+  const sourceFormat = detectFileFormat(file);
 
   if (!forceMainThread && canUseWorker()) {
     try {
       const result = await parseInWorker(file, parseOptions, workerTimeoutMs ?? DEFAULT_WORKER_TIMEOUT);
-      return { ...result, meta: { ...result.meta, engine: "worker" } };
+      return { ...result, meta: { ...result.meta, engine: "worker", sourceFormat: result.meta.sourceFormat ?? sourceFormat } };
     } catch (error) {
       const reason = error instanceof Error ? error.message : "워커 실행 실패";
       const result = await parseOnMainThread(file, parseOptions);
-      return { ...result, meta: { ...result.meta, engine: "main-thread", engineFallbackReason: reason } };
+      return { ...result, meta: { ...result.meta, engine: "main-thread", sourceFormat, engineFallbackReason: reason } };
     }
   }
 
   const result = await parseOnMainThread(file, parseOptions);
-  return { ...result, meta: { ...result.meta, engine: "main-thread" } };
+  return { ...result, meta: { ...result.meta, engine: "main-thread", sourceFormat } };
 }
 
 function parseInWorker(
@@ -125,7 +139,49 @@ function parseInWorker(
 }
 
 async function parseOnMainThread(file: File, options: SettlementParseOptions): Promise<SettlementParseResult> {
-  const pipeline = new SettlementCsvPipeline(file.size, options, "main-thread");
+  const format = detectFileFormat(file);
+  const delimiter = options.delimiter ?? (format === "tsv" ? "\t" : ",");
+  const startedAt = Date.now();
+
+  if (format === "xlsx") {
+    // 워커를 못 쓰는 환경의 폴백 경로. 같은 변환기를 쓰되 결과 메타를 동일하게 남긴다.
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const converted = await xlsxToCsv(bytes, {
+      onProgress: (ratio) =>
+        options.onProgress?.({
+          engine: "main-thread",
+          stage: "convert",
+          percent: Math.round(Math.min(1, Math.max(0, ratio)) * 25),
+          processedRows: 0,
+          parsedRows: 0,
+          errorRows: 0,
+          bytesRead: Math.round(file.size * Math.min(1, Math.max(0, ratio))),
+          totalBytes: file.size,
+          rowsPerSecond: 0,
+          elapsedMs: Date.now() - startedAt,
+        }),
+    });
+    const pipeline = new SettlementCsvPipeline(
+      converted.csvText.length,
+      { ...options, delimiter, onProgress: (progress) => options.onProgress?.({ ...progress, stage: "parse", percent: Math.round(25 + progress.percent * 0.75) }) },
+      "main-thread",
+    );
+    await pipeline.push(converted.csvText);
+    const result = pipeline.finish();
+    return {
+      ...result,
+      meta: {
+        ...result.meta,
+        bytesRead: file.size,
+        sourceFormat: "xlsx",
+        sheetName: converted.sheetName,
+        convertedRowCount: converted.rowCount,
+        truncated: converted.truncated,
+      },
+    };
+  }
+
+  const pipeline = new SettlementCsvPipeline(file.size, { ...options, delimiter }, "main-thread");
   const stream = typeof file.stream === "function" ? file.stream() : null;
 
   if (stream) {
@@ -142,5 +198,6 @@ async function parseOnMainThread(file: File, options: SettlementParseOptions): P
     await pipeline.push(await file.text());
   }
 
-  return pipeline.finish();
+  const result = pipeline.finish();
+  return { ...result, meta: { ...result.meta, sourceFormat: format } };
 }
