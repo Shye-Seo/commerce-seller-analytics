@@ -4,18 +4,21 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "SellerScope — 이커머스 셀러 마진 시뮬레이터 & 키워드 분석",
+    default: "SellerScope — 정산 대사 & 이커머스 셀러 분석 플랫폼",
     template: "%s | SellerScope",
   },
   description:
-    "스마트스토어·쿠팡 셀러를 위한 실시간 마진 시뮬레이터와 키워드 기회 분석 대시보드. 수수료·배송비·광고비·반품률을 반영한 실제 순이익과 손익분기 판매가를 즉시 계산합니다.",
+    "스마트스토어·쿠팡 셀러를 위한 B2B 정산 대사 콘솔과 마진 분석 대시보드. 10만 행 정산서를 Web Worker로 파싱하고, 계약 기준 기대 정산액과 실제 입금액의 차액을 원인별로 귀속합니다.",
   keywords: [
     "이커머스",
+    "정산 대사",
+    "reconciliation",
+    "이상 탐지",
     "스마트스토어",
     "쿠팡",
     "마진 계산기",
-    "키워드 분석",
-    "셀러 대시보드",
+    "Web Worker",
+    "가상화 테이블",
     "Next.js",
     "TypeScript",
   ],
@@ -24,9 +27,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "ko_KR",
-    title: "SellerScope — 이커머스 셀러 마진 시뮬레이터 & 키워드 분석",
+    title: "SellerScope — 정산 대사 & 이커머스 셀러 분석 플랫폼",
     description:
-      "수수료·배송비·광고비·반품률을 반영한 실시간 마진 계산과 키워드 기회 지수 분석을 한 화면에서.",
+      "10만 행 정산서를 Web Worker로 파싱하고, 수수료 초과·반품비 중복·정산 부족을 원인별 금액으로 증명하는 B2B 정산 대사 콘솔.",
     siteName: "SellerScope",
   },
   robots: {

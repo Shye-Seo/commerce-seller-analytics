@@ -1,13 +1,14 @@
 import { MARKET_PRESETS } from "@/lib/calculator";
+import Link from "next/link";
 import { IconGithub } from "./icons";
 
 const NAV_ITEMS = [
-  { href: "#metrics", label: "핵심 지표" },
-  { href: "#diagnosis", label: "AI 진단" },
-  { href: "#simulator", label: "마진 계산기" },
-  { href: "#markets", label: "마켓 비교" },
-  { href: "#trend", label: "매출 추이" },
-  { href: "#keywords", label: "키워드 분석" },
+  { href: "/#metrics", label: "핵심 지표" },
+  { href: "/#diagnosis", label: "AI 진단" },
+  { href: "/#simulator", label: "마진 계산기" },
+  { href: "/#markets", label: "마켓 비교" },
+  { href: "/#reconciliation", label: "정산 대사" },
+  { href: "/#keywords", label: "키워드 분석" },
 ];
 
 const CONNECTED_MARKETS = [MARKET_PRESETS.smartstore, MARKET_PRESETS.coupang];
@@ -65,6 +66,12 @@ export default function Header() {
               </span>
             ))}
           </div>
+          <Link
+            href="/reconciliation"
+            className="hidden rounded-lg border border-emerald-400/25 bg-emerald-400/10 px-3 py-1.5 text-[11.5px] font-semibold text-emerald-200 transition hover:border-emerald-400/50 hover:text-emerald-100 sm:inline-flex"
+          >
+            정산 대사 콘솔
+          </Link>
           <span className="hidden rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1.5 text-[11px] font-medium text-emerald-300 sm:inline-flex">
             데모 데이터
           </span>

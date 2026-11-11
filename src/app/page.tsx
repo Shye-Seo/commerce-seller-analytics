@@ -1,4 +1,5 @@
 import Dashboard from "@/components/Dashboard";
+import EnterpriseEntry from "@/components/EnterpriseEntry";
 import Header from "@/components/Header";
 import { IconArrowUpRight } from "@/components/icons";
 import KeywordRankingTable from "@/components/KeywordRankingTable";
@@ -107,6 +108,8 @@ export default function HomePage() {
 
         <div className="mx-auto w-full max-w-7xl space-y-12 px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
           <Dashboard />
+
+          <EnterpriseEntry />
 
           <section id="trend" className="scroll-mt-24">
             <SectionHeading
