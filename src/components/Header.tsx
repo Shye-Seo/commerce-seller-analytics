@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { href: "/#markets", label: "마켓 비교" },
   { href: "/#reconciliation", label: "정산 대사" },
   { href: "/#keywords", label: "키워드 분석" },
+  { href: "/flash", label: "선착순 드롭" },
 ];
 
 const CONNECTED_MARKETS = [MARKET_PRESETS.smartstore, MARKET_PRESETS.coupang];

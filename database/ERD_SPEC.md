@@ -415,3 +415,222 @@ LIMIT 20;
 | 계약 변경 이력 | 스토어 1행(현재 계약) | `store_contracts(valid_from, valid_to)` + 정산 행에 계약 스냅샷(`contract_fee_rate`) 이미 보관 중 |
 | 읽기 부하 | 단일 인스턴스 | 읽기 복제 + 대시보드는 replica, 쓰기는 primary(애플리케이션에서 라우팅) |
 | 테넌트 폭주 | 인덱스 선두 `tenant_id` | 대형 테넌트는 별도 스키마로 분리(격리 등급 계약) |
+
+---
+
+# 2부. 실시간 선착순 프로모션 & 쿠폰 원장
+
+> 이 파트는 "토스형 선착순 드롭"을 실제로 운영했을 때의 데이터 모델입니다.
+> 1부가 **마켓이 준 정산서를 믿을 수 있는가**를 다뤘다면, 2부는 **우리가 뿌린 쿠폰이
+> 누구 부담으로 얼마 나갔고, 그게 정산서와 맞는가**를 다룹니다. 두 파트는
+> `stores`(쇼핑몰)·`tenants`를 공유하며, 마지막 테이블에서 하나의 사슬로 만납니다.
+
+## 11. 요구 → 설계
+
+| 운영에서 실제로 터지는 문제 | 설계 답 | 테이블 |
+| --- | --- | --- |
+| 오픈 0.3초에 3,000명이 몰리면 재고 100장이 137장 팔린다 | 조건부 UPDATE 1문장 + `remaining_qty >= 0` CHECK | `coupon_inventories` |
+| 사용자가 응답을 못 받고 새로고침하면 쿠폰이 2장 나간다 | `idempotency_key` UNIQUE + 재전송 시 같은 쿠폰 반환 | `issued_coupons`, `event_entries` |
+| 같은 사람이 4개 계정으로 4장 받는다 | `(campaign_id, user_hash)` UNIQUE + 디바이스 핑거프린트 점수 | `event_entries` |
+| "20% 할인"이 1,000만 원 주문에 200만 원을 깎는다 | 정률 쿠폰은 `max_discount_amount > 0` CHECK 필수 | `coupon_templates` |
+| 쿠폰 때문에 마진이 마이너스가 된다 | 캠페인 `min_guaranteed_margin` + 발급 전 가드레일 | `promotional_campaigns` |
+| 쇼핑몰 정산서의 쿠폰 차감액이 우리 장부와 다르다 | 부담 주체 3분할 재계산 + 차액 판정 | `coupon_settlement_reconciliations` |
+| 쿠폰을 받아만 두고 안 써서 재고가 잠긴다 | 15분 TTL + 만료 스윕(`status, expires_at` 인덱스) | `issued_coupons` |
+| 유출된 DB 덤프로 쿠폰을 위조한다 | 코드 원문 미저장, `coupon_hash`(SHA-256)만 보관 | `issued_coupons` |
+
+## 12. ERD (2부)
+
+```mermaid
+erDiagram
+    tenants ||--o{ promotional_campaigns : "스코프"
+    tenants ||--o{ issued_coupons : "스코프"
+    tenants ||--o{ coupon_settlement_reconciliations : "스코프"
+    promotional_campaigns ||--o{ coupon_templates : "1 : N"
+    promotional_campaigns ||--o{ event_entries : "1 : N (응모)"
+    promotional_campaigns ||--o{ issued_coupons : "1 : N"
+    coupon_templates ||--|| coupon_inventories : "1 : 1 (재고)"
+    coupon_templates ||--o{ issued_coupons : "1 : N"
+    event_entries |o--o{ issued_coupons : "응모 1 : 0..N 쿠폰"
+    stores ||--o{ issued_coupons : "사용 스토어"
+    issued_coupons ||--o| coupon_settlement_reconciliations : "1 : 1 (정산 대사)"
+    coupon_settlement_reconciliations }o--|| stores : "정산서 발행"
+
+    promotional_campaigns {
+        bigint  id PK
+        bigint  tenant_id FK
+        varchar code UK
+        enum    campaign_type "FLASH_DEAL|BRAND_DROP|TOSS_STYLE_DROP|WELCOME"
+        int     reward_budget "총 발행 예산(원)"
+        int     token_budget "발행 장수 상한"
+        decimal min_guaranteed_margin "최소 보장 마진율(%)"
+        datetime starts_at
+        datetime ends_at
+        enum    status "draft|scheduled|live|paused|ended|settled"
+    }
+    coupon_templates {
+        bigint  id PK
+        bigint  campaign_id FK
+        varchar code UK
+        enum    discount_type "FIXED|PERCENT"
+        int     discount_amount
+        decimal discount_rate
+        int     min_order_amount
+        int     max_discount_amount "정률은 필수"
+        tinyint per_user_limit
+        smallint validity_minutes "기본 15분"
+        enum    funded_by "SELLER|PLATFORM|PARTNER"
+    }
+    coupon_inventories {
+        bigint  id PK
+        bigint  coupon_template_id FK,UK
+        int     total_qty
+        int     remaining_qty "CHECK >= 0"
+        int     reserved_qty
+        int     consumed_qty
+        int     version "낙관적 락"
+    }
+    event_entries {
+        bigint  id PK
+        bigint  campaign_id FK
+        char    entry_ref UK
+        char    user_hash "UK(캠페인,해시)"
+        char    device_fingerprint_sha256
+        varbinary client_ip
+        tinyint abuse_score "0~100"
+        json    risk_reasons
+        enum    status "ACCEPTED|REJECTED_*"
+        varchar idempotency_key UK
+    }
+    issued_coupons {
+        bigint  id PK
+        bigint  tenant_id FK
+        bigint  campaign_id FK
+        bigint  coupon_template_id FK
+        char    coupon_code "16자리 원문(1회 노출)"
+        char    coupon_hash UK "SHA-256"
+        enum    status "ISSUED|RESERVED|REDEEMED|SETTLED|CANCELLED|EXPIRED"
+        int     discount_amount
+        varchar order_id
+        datetime expires_at
+    }
+    coupon_settlement_reconciliations {
+        bigint  id PK
+        bigint  issued_coupon_id FK,UK
+        char    settlement_month "YYYY-MM"
+        int     mall_discount_amount "원본 불변"
+        int     seller_borne_amount
+        int     platform_borne_amount
+        int     partner_borne_amount
+        int     variance
+        enum    status "PENDING|MATCHED|DISPUTED|ADJUSTED"
+    }
+```
+
+## 13. 동시성 제어 — 락 3종을 어디에 쓰는가
+
+같은 문제를 세 가지 방식으로 풀 수 있을 때, 선택 기준은 **경합 강도**와 **실패했을 때
+누가 재시도하는가**입니다. 이 프로젝트는 한 시스템 안에서 세 가지를 모두 씁니다.
+
+| 방식 | 쓰는 지점 | 장점 | 한계 |
+| --- | --- | --- | --- |
+| **MySQL 조건부 UPDATE** (`WHERE remaining_qty >= 1`) | 오픈 직후 재고 차감(핫패스) | 문장 1개, 행 락이 직렬화 보장, 영향 행 0 = 즉시 SOLD_OUT | DB 왕복 1회가 필요. 3,000 TPS면 커넥션 풀이 병목 |
+| **version 낙관적 락** (`UPDATE ... WHERE version = ?`) | 잔여 조회·사전 예약·관리자 정정 | 락 대기 없음, 읽기 위주 구간에서 처리량 최대 | 충돌 시 애플리케이션이 재시도. 재시도 폭주 구간에서는 역효과 |
+| **Redis 원자 연산** (`DECRBY`/Lua) | 오픈 30초 전 재고 예열 + 게이트 | DB 앞단에서 90%를 걸러 DB 커넥션을 지킨다 | Redis와 DB의 값이 어긋날 수 있어 **DB가 최종 진실** |
+| **`SELECT ... FOR UPDATE`** | 정산 대사·감사로그 체인(한 테넌트 직렬화) | 트랜잭션 안에서 읽고-검증-쓰기를 원자로 | 대기 시간이 길어 핫패스에 쓰면 큐가 무너진다 |
+
+### 13.1 실제 발급 경로 (핫패스)
+
+```
+요청 ──▶ [1] 멱등키 조회 (issued_coupons.idempotency_key)
+          │  hit → 기존 쿠폰 그대로 반환 (재전송 흡수)
+          ▼
+       [2] 중복 응모 차단 (issued_coupons UNIQUE (coupon_template_id, user_hash))
+          │  hit → DUPLICATE_CLAIM
+          ▼
+       [3] 마진 가드레일 (캠페인 min_guaranteed_margin)
+          │  위반 → MARGIN_GUARD_BLOCKED (경고 모드면 통과 + 경고 기록)
+          ▼
+       [4] 재고 원자 차감
+          │  UPDATE coupon_inventories
+          │     SET remaining_qty = remaining_qty - 1, reserved_qty = reserved_qty + 1, version = version + 1
+          │   WHERE id = ? AND remaining_qty >= 1
+          │  0행 → SOLD_OUT
+          ▼
+       [5] 쿠폰 원장 INSERT (ISSUED) — 여기서 UNIQUE 충돌이 나면 [6]으로
+          ▼
+       [6] 보상: 재고 복원(UPDATE ... remaining_qty + 1) 후 결과 반환
+```
+
+**[4]와 [5] 사이에서 프로세스가 죽으면?** 재고만 줄고 쿠폰이 없는 행이 남습니다. 그래서
+발급은 하나의 트랜잭션 안에서 돌리고, 트랜잭션 밖으로 나가는 것은 "커밋된 결과"뿐입니다.
+그럼에도 남는 위험은 **커밋 후 응답 유실**이고, 그 경우는 [1]의 멱등키가 다음 요청에서
+같은 쿠폰을 돌려주는 것으로 복구됩니다. 이 순서(조회 → 차단 → 가드 → 원자차감 → 원장)를
+테스트가 그대로 고정합니다.
+
+### 13.2 오버이슈가 0건인 이유를 숫자로 말하기
+
+1,000건 동시 요청 × 재고 100장 시뮬레이션이 `src/lib/flashCouponEngine.test.ts`에 있습니다.
+검증 항목은 세 가지입니다.
+
+1. `issued === 100` (재고보다 많이 나가지 않음)
+2. `soldOut === 900` (나머지는 전부 SOLD_OUT — 조용히 사라진 요청 0건)
+3. `inventories.remaining === 0 && reserved === 100` (보존식 `remaining + reserved + consumed = total` 유지)
+
+## 14. 쿠폰 원장 상태 머신
+
+```
+                 ┌──────── EXPIRED ◀── expires_at 경과 (스윕)
+                 │
+ISSUED ──▶ RESERVED ──▶ REDEEMED ──▶ SETTLED
+  │            │
+  └────────────┴──▶ CANCELLED (주문취소·중복발급·운영정정)
+```
+
+| 전이 | 계기 | 재고 |
+| --- | --- | --- |
+| `ISSUED` | 발급 API 성공 | remaining −1, reserved +1 |
+| `RESERVED` | 주문 생성(금액 확정) | 변화 없음(이미 reserved) |
+| `REDEEMED` | 결제 완료 웹훅 | reserved −1, consumed +1 |
+| `SETTLED` | 쇼핑몰 정산 대사 일치 | 변화 없음(회계 확정) |
+| `CANCELLED` | 주문취소·운영정정 | reserved −1, remaining +1 (복원) |
+| `EXPIRED` | `expires_at` 경과 | reserved −1, remaining +1 (복원) |
+
+**되돌리는 전이는 없다.** `REDEEMED → ISSUED`를 허용하면 매출이 두 번 잡힙니다. 잘못된
+사용은 `CANCELLED`라는 별도 상태로 남기고, 재발급은 새 `idempotency_key`로 새 행을 만듭니다.
+이 규칙은 `CouponIssuanceService::transition()`이 표로 들고 있고, 테스트가 모든 불법 전이
+(6×5 조합)를 거부하는지 확인합니다.
+
+## 15. 핫패스 실행 계획
+
+```sql
+-- 오픈 중 실시간 대시보드(1초 폴링): 상태별 건수
+SELECT status, COUNT(*) FROM event_entries
+ WHERE campaign_id = ? AND created_at >= NOW(3) - INTERVAL 10 SECOND
+ GROUP BY status;
+-- 기대: idx_entries_campaign_status (campaign_id, status, created_at) — 범위 스캔
+
+-- 잔여 재고 1행(락 없이)
+SELECT remaining_qty, total_qty, version FROM coupon_inventories WHERE coupon_template_id = ?;
+-- 기대: uq_inventories_template — const 1행
+
+-- 어뷰징 클러스터: 같은 기기에서 3명 이상 응모
+SELECT device_fingerprint_sha256, COUNT(DISTINCT user_hash) AS users
+  FROM event_entries WHERE campaign_id = ?
+ GROUP BY device_fingerprint_sha256 HAVING users >= 3;
+-- 기대: idx_entries_device — 캠페인 조건이 없을 때만. 캠페인 한정이면 (campaign_id, device) 보조 인덱스 후보
+
+-- 만료 스윕(10초 주기, LIMIT으로 배치)
+SELECT id FROM issued_coupons
+ WHERE status IN ('ISSUED','RESERVED') AND expires_at < NOW(3) LIMIT 500;
+-- 기대: idx_coupons_expiry_sweep (status, expires_at)
+```
+
+## 16. 한계와 다음 단계(2부)
+
+| 상황 | 지금 | 다음 단계 |
+| --- | --- | --- |
+| 응모 로그가 하루 수천만 건 | 단일 테이블 | `created_at` 일 단위 RANGE 파티셔닝 + 7일 후 아카이브 테이블 |
+| 재고 차감이 DB 커넥션 한계에 걸림 | 조건부 UPDATE | Redis `DECRBY` 예열 → 성공분만 DB 확정(2단 차감), DB는 최종 진실 |
+| 여러 리전에서 동시 오픈 | 단일 MySQL | 템플릿별 재고 샤딩(리전 합산은 배치로 수렴) |
+| 쿠폰 코드 대량 발급 | 애플리케이션 난수 | 코드 공간 프리제너레이션(충돌 0 보장) + HSM 서명 |
+| 정산 대사 월 100만 건 | 쿠폰 단위 1행 | `settlement_month` 파티셔닝 + `(store_id, settlement_month)` 커버링 인덱스 |

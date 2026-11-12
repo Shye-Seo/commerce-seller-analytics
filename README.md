@@ -8,6 +8,7 @@
   이커머스 셀러를 위한 <strong>B2B 정산 대사 &amp; 이상 탐지 플랫폼</strong><br />
   <sub>10만 행 정산서 · Web Worker 파싱 · 가상화 렌더링 · 멀티 테넌트 RBAC · 해시체인 감사 로그</sub><br />
   <sub>마켓 정산 API 자동 수집(스마트스토어 커머스API · 쿠팡 Open API) · Playwright E2E</sub><br />
+  <sub><strong>실시간 선착순 드롭</strong>: 토스형 타임딜 · 멱등 쿠폰 발급 · 쿠폰 원장 · 쇼핑몰 정산 대사</sub><br />
   <sub><strong>Full-Cycle</strong>: Next.js 14 프론트엔드 + PHP 8.2 백엔드 + MySQL 8.0 + 네이버클라우드 SENS 알림톡</sub>
 </p>
 
@@ -15,7 +16,7 @@
   <a href="https://nextjs.org"><img alt="Next.js" src="https://img.shields.io/badge/Next.js-14.2-000000?style=flat-square&logo=nextdotjs&logoColor=white" /></a>
   <a href="https://www.typescriptlang.org"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.9_strict-3178C6?style=flat-square&logo=typescript&logoColor=white" /></a>
   <a href="https://tailwindcss.com"><img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" /></a>
-  <a href="https://vitest.dev"><img alt="Tests" src="https://img.shields.io/badge/Vitest-249_tests_passing-4C9A2A?style=flat-square&logo=vitest&logoColor=white" /></a>
+  <a href="https://vitest.dev"><img alt="Tests" src="https://img.shields.io/badge/Vitest-302_tests_passing-4C9A2A?style=flat-square&logo=vitest&logoColor=white" /></a>
   <a href="https://www.php.net/releases/8.2/ko.php"><img alt="PHP" src="https://img.shields.io/badge/PHP-8.2_OOP-777BB4?style=flat-square&logo=php&logoColor=white" /></a>
   <a href="https://dev.mysql.com/doc/refman/8.0/en/"><img alt="MySQL" src="https://img.shields.io/badge/MySQL-8.0_InnoDB-4479A1?style=flat-square&logo=mysql&logoColor=white" /></a>
   <a href="https://api.ncloud-docs.com/docs/sens-alimtalk-send"><img alt="Naver Cloud SENS" src="https://img.shields.io/badge/Naver_Cloud-SENS_알림톡-03C75A?style=flat-square&logo=naver&logoColor=white" /></a>
@@ -29,6 +30,7 @@
 수수료 초과 청구·반품비 중복 차감·설명되지 않는 정산 부족을 **원인별 금액으로 증명**합니다.
 
 - **라이브 콘솔**: `/reconciliation` — 배포 후 `https://<your-app>.vercel.app/reconciliation`
+- **선착순 드롭 콘솔**: `/flash` — 재고·동시성·TPS를 실제 엔진으로 시뮬레이션 (아래 §16)
 - **서버 계층**: `backend/` (PHP 8.2 OOP API·배치) + `database/` (MySQL 8.0 DDL·ERD) — §4.5, [ERD 설계서](database/ERD_SPEC.md)
 - **마진 대시보드**: `/` — 판매 조건별 실시간 마진·마켓 비교·키워드 기회 분석 (기존 기능, 그대로 유지)
 
@@ -52,7 +54,8 @@
 13. [시작하기 · 배포](#13-시작하기--배포)
 14. [한계와 다음 단계](#14-한계와-다음-단계)
 15. [면접 예상 질문과 답](#15-면접-예상-질문과-답)
-16. [작성자](#16-작성자)
+16. [실시간 선착순 프로모션 & 쿠폰 원장 (Flash Drop)](#16-실시간-선착순-프로모션--쿠폰-원장-flash-drop)
+17. [작성자](#17-작성자)
 
 ---
 
@@ -291,7 +294,7 @@ flowchart LR
 
 | 계층 | 무엇을 보장하나 |
 | --- | --- |
-| **DB (MySQL 8.0)** | 6개 테이블·FK·CHECK·복합 인덱스. 정산서 원본과 대사 결과를 한 행에서 대조하고, 원본 컬럼은 재계산이 덮어쓰지 않는다 |
+| **DB (MySQL 8.0)** | 12개 테이블(정산 6 + 프로모션·쿠폰 6)·FK·CHECK·복합 인덱스. 정산서 원본과 대사 결과를 한 행에서 대조하고, 원본 컬럼은 재계산이 덮어쓰지 않는다 |
 | **배치 저장** | 250행 단위 `INSERT … AS new ON DUPLICATE KEY UPDATE`. 유니크 키가 멱등성을 보장(재업로드해도 행이 늘지 않음) |
 | **이상 탐지** | 원인별 손실 귀속을 서버에서도 동일하게. `(order_id, anomaly_type)` 유니크로 중복 없음, 닫힌 이의 제기는 재대사로 되살아나지 않음 |
 | **알림톡** | SENS HMAC-SHA256 서명 → 202 접수 → `messageStatusCode 0000` 도달 확인. 실패는 배치를 막지 않고 재시도 큐로 |
@@ -304,7 +307,8 @@ docker compose up -d mysql                 # MySQL 8.0.40 + 스키마 + 데모 �
 cd backend && composer install
 php bin/migrate.php --fresh --seed --verify
 php bin/reconcile.php --tenant=1 --file=examples/settlement_2026-10_sample.csv --verify
-composer test                              # 75 tests (MySQL 있으면 실연동 6건 포함)
+composer test                              # 135 tests (MySQL 있으면 실연동 6건 포함)
+php bin/flash-drop-simulate.php --stock=100 --workers=8 --per-worker=50   # 다중 프로세스 오버이슈 검증
 ```
 
 **문서**
@@ -751,7 +755,7 @@ B2B SaaS로 판매하려면 서버 영속화와 서버 측 권한 강제가 필�
 
 ## 11. 테스트 전략
 
-**249 케이스 / 11 파일 / Vitest (`environment: node`)**
+**302 케이스 / 12 파일 / Vitest (`environment: node`)**
 
 | 파일 | 케이스 | 검증 |
 | --- | --- | --- |
@@ -763,6 +767,7 @@ B2B SaaS로 판매하려면 서버 영속화와 서버 측 권한 강제가 필�
 | `xlsxConvert.test.ts` | 20 | ZIP 중앙 디렉터리, stored/deflate, sharedStrings·인라인 문자열, 빈 셀 열 정렬, 날짜 서식 판정과 일련번호 변환, 1900 윤년 보정, 가짜 ZIP 거절, **변환 CSV → 대사 파이프라인 종단 검증** |
 | `settlementUpload.test.ts` | 14 | 0바이트·상한 초과·확장자·가짜 xlsx·구형 xls 거절 사유, 경고 임계값, accept 속성 |
 | `marketApiConnector.test.ts` | 38 | 마스킹·시크릿 세탁, 정산월 계산, 스마트스토어 bcrypt 전자서명, 쿠팡 CEA 서명(**node:crypto 독립 재계산**), 응답 정규화(한/영 필드·정산액 복원), 봉투 해석, 토큰 캐시·401 재발급, 429/5xx 재시도, 네트워크·JSON 구분, 페이지 상한, 샌드박스 결정론·장애 주입, 원장 결합 경고, **API 수집 → 대사 종단**(귀속 합 ≤ 총 누수), localStorage 저장/삭제 |
+| `flashCouponEngine.test.ts` | 53 | 할인 계산(정액·정률·상한·최소주문), 마진 가드레일, 원장 상태 머신 전이 전수, **1,000건 동시 요청 오버이슈 0건**, 멱등 재전송, 사용자 중복 160건 차단, 예산/구간 경계, 취소·만료 재고 1회 복원, 쇼핑몰 정산 대사(부담 주체 3분할·차액 귀속), 시뮬레이터 집계 |
 | `calculator.test.ts` | 22 | (기존) 수수료·마진·BEP·키워드 점수·포맷 |
 | `diagnostics.test.ts` | 23 | (기존) 4축 진단·비용 비율·액션 플랜 |
 | `marketComparison.test.ts` | 13 | (기존) 5개 마켓 비교·배지·순위 |
@@ -770,7 +775,7 @@ B2B SaaS로 판매하려면 서버 영속화와 서버 측 권한 강제가 필�
 ```bash
 npm run typecheck   # tsc --noEmit
 npm run lint        # next lint
-npm test            # vitest run (249)
+npm test            # vitest run (302)
 npm run build       # next build (프로덕션 번들 + 타입 검사)
 npm run test:e2e    # Playwright (프로덕션 빌드를 띄워 5 시나리오)
 ```
@@ -925,7 +930,147 @@ A. 의존성 0개를 유지하면서 윈도 계산을 직접 검증하고 싶었
 
 ---
 
-## 16. 작성자
+## 16. 실시간 선착순 프로모션 & 쿠폰 원장 (Flash Drop)
+
+> 4년 차 실무에서 실제로 운영했던 **"실시간 응모 → 추적 → 쇼핑몰 할인쿠폰 즉시 발급"**(토스형 선착순 드롭)을
+> 이 저장소의 데이터 모델 위에 다시 세운 파트입니다. 1부가 "마켓이 준 정산서를 믿을 수 있는가"였다면,
+> 2부는 **"우리가 뿌린 쿠폰이 누구 부담으로 얼마 나갔고, 그게 정산서와 맞는가"** 입니다.
+
+### 16.1 무엇이 문제인가
+
+선착순 드롭은 기능이 아니라 **동시성 문제**입니다.
+
+| 운영에서 실제로 터지는 일 | 결과 | 이 저장소의 답 |
+| --- | --- | --- |
+| 재고 100장에 1,000명이 동시에 클릭 | 137장 발급(오버이슈) | 조건부 UPDATE 1문장 + `CHECK (remaining_qty >= 0)` |
+| 응답을 못 받고 새로고침 | 쿠폰 2장 발급 | `idempotency_key` UNIQUE + 재전송 시 같은 쿠폰 반환 |
+| 한 사람이 4개 계정 | 쿠폰 4장 | `(template_id, user_hash)` UNIQUE + 디바이스 핑거프린트 점수 |
+| "20% 할인"이 1,000만 원 주문에 | 200만 원 손실 | 정률 쿠폰은 `max_discount_amount > 0` CHECK 필수 |
+| 쿠폰 때문에 마진이 마이너스 | 팔수록 손해 | 캠페인 `min_guaranteed_margin` + 발급 전 가드레일 |
+| 쇼핑몰 정산서의 쿠폰 차감액이 다름 | 셀러가 모른 채 손해 | 부담 주체 3분할 재계산 + 차액 귀속 |
+
+### 16.2 구조
+
+```
+[클라이언트]  POST /api/flash/issues  (Idempotency-Key 헤더)
+     │
+     ▼
+[게이트웨이]  IP/디바이스 레이트리밋(토큰 버킷) ── 어뷰징 점수(0~100) ──▶ event_entries
+     │  통과분만 아래로
+     ▼
+[발급 서비스] ① 멱등 재확인 → ② 캠페인/템플릿 → ③ 중복 수령 → ④ 예산 → ⑤ 마진 가드
+     │                                                        │
+     │                                        (block이면 여기서 종료, 재고 무접촉)
+     ▼
+[재고]  UPDATE coupon_inventories
+          SET remaining_qty = remaining_qty - 1, reserved_qty = reserved_qty + 1
+        WHERE coupon_template_id = ? AND remaining_qty >= 1      ← 영향 행 0 = SOLD_OUT
+     │
+     ▼
+[원장]  INSERT issued_coupons (ISSUED, 16자리 코드는 해시만 저장)
+     │        └ UNIQUE 충돌 = 동시 더블클릭 → 재고 보상 복원 → DUPLICATE_CLAIM
+     ▼
+[정산]  쇼핑몰 정산서 업로드 → coupon_settlement_reconciliations (부담 주체 3분할·차액 판정)
+```
+
+| 계층 | 파일 | 역할 |
+| --- | --- | --- |
+| 프론트 엔진 | `src/lib/flashCouponEngine.ts` | 할인·마진·상태 머신·동시성(AsyncMutex)·정산 대사·트래픽 시뮬레이터 (순수 TS, 의존성 0) |
+| 프론트 콘솔 | `src/components/FlashCouponConsole.tsx` + `/flash` | TPS·소진율·락 경합 방어율·어뷰징 차단·원장 테이블 |
+| 백엔드 서비스 | `backend/src/Services/CouponIssuanceService.php` | 발급·예약·사용·정산·취소·만료·만료 스윕, 마진 가드레일 |
+| 백엔드 트래킹 | `backend/src/Services/EventTrackingService.php` | 토큰 버킷 리미팅 + 기기/전화/IP/UA 신호 점수화 |
+| 저장소 | `backend/src/Repositories/Pdo*Store.php` | 조건부 UPDATE·낙관적 락·compare-and-set 전이 |
+| 스키마 | `database/schema.sql` §7~12 | 캠페인·템플릿·재고·응모·원장·쿠폰 정산 대사 6테이블 |
+| 설계서 | `database/ERD_SPEC.md` §11~16 | ERD(Mermaid) · 락 전략 3종 비교 · 상태 머신 · 핫패스 실행 계획 |
+
+### 16.3 락 전략 — 언제 무엇을 쓰는가
+
+같은 문제를 세 가지로 풀 수 있을 때, 선택 기준은 **경합 강도**와 **실패 시 누가 재시도하는가**입니다.
+
+| 방식 | 쓰는 지점 | 장점 | 한계 |
+| --- | --- | --- | --- |
+| MySQL **조건부 UPDATE** (`WHERE remaining_qty >= 1`) | 오픈 직후 재고 차감(핫패스) | 문장 1개, InnoDB 행 락이 직렬화 보장, 영향 행 0 = 즉시 SOLD_OUT | DB 왕복 1회 필요 |
+| **version 낙관적 락** (`WHERE version = ?`) | 프리뷰·사전 예약·관리자 정정 | 락 대기 없음 | 충돌 시 애플리케이션이 재시도, 폭주 구간에서는 역효과 |
+| **Redis 원자 연산**(DECRBY/Lua) | 오픈 30초 전 게이트 | DB 앞단에서 대부분을 걸러 커넥션 보호 | Redis↔DB 불일치 가능, **DB가 최종 진실** |
+| `SELECT ... FOR UPDATE` | 정산 대사·감사 로그 체인 | 읽고-검증-쓰기를 트랜잭션으로 원자화 | 대기 시간 길어 핫패스에 부적합 |
+
+이 저장소는 프론트엔드(브라우저)에서 락을 흉내 낼 때 `AsyncMutex`를 쓰고, 서버에서는 **DB 제약**이 같은 역할을 합니다.
+프론트 시뮬레이터는 임계 구역 안에서 마이크로태스크를 한 번 양보하기 때문에, 뮤텍스가 없으면 1,000건 동시 요청에서
+반드시 오버이슈가 납니다 — 테스트가 그 사실을 "뮤텍스가 있을 때 0건"으로 고정합니다.
+
+### 16.4 쿠폰 원장 상태 머신
+
+```
+                 ┌──────── EXPIRED ◀── expires_at 경과 (10초 스윕)
+                 │
+ISSUED ──▶ RESERVED ──▶ REDEEMED ──▶ SETTLED
+  │            │
+  └────────────┴──▶ CANCELLED (주문취소·중복발급·운영정정)
+```
+
+| 전이 | 계기 | 재고 |
+| --- | --- | --- |
+| ISSUED | 발급 API 성공 | remaining −1, reserved +1 |
+| RESERVED | 주문 생성(할인액 확정) | 변화 없음 |
+| REDEEMED | 결제 완료 웹훅 | reserved −1, consumed +1 |
+| SETTLED | 쇼핑몰 정산 대사 일치 | 변화 없음 |
+| CANCELLED | 주문취소·운영정정 | reserved −1, remaining +1 |
+| EXPIRED | `expires_at` 경과 | reserved −1, remaining +1 |
+
+되돌리는 전이는 없습니다. `REDEEMED → ISSUED`를 허용하면 매출이 두 번 잡히고, `SETTLED → CANCELLED`는
+이미 정산서에 반영된 금액을 지웁니다. 잘못된 사용은 `CANCELLED`로 남기고 재발급은 새 멱등 키로 새 행을 만듭니다.
+테스트는 6×6 전이 조합을 표와 대조합니다.
+
+### 16.5 실측 — 동시 프로세스로 오버이슈 0건 확인
+
+PHPUnit은 한 프로세스에서 돌기 때문에 진짜 동시성을 만들지 못합니다(커넥션 2개를 번갈아 쓰는 것은 순차 실행입니다).
+그래서 **워커 프로세스를 실제로 여러 개 띄우는** 스크립트를 저장소에 넣었습니다.
+
+```bash
+php backend/bin/migrate.php --fresh --seed            # 스키마 + 데모 데이터
+php backend/bin/flash-drop-simulate.php --stock=100 --workers=8  --per-worker=50
+php backend/bin/flash-drop-simulate.php --stock=1000 --workers=16 --per-worker=120
+```
+
+이 컨테이너(MySQL 8.0.40, unix socket, PHP 8.2 CLI)에서의 **실측 결과**:
+
+| 조건 | 시도 | 성공 | 품절 응답 | 오버이슈 | 재고 보존식 | 소요 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 재고 100 · 워커 8 × 50 | 400 | **100** | 38 | **0건** | 유지 | 3.44s |
+| 재고 1,000 · 워커 16 × 120 | 1,920 | **1,000** | 45 | **0건** | 유지 | 21.7s |
+
+> 처리량(약 90~120 req/s)은 **DB 한계가 아니라 워커 프로세스 기동 + 요청당 카탈로그 조회 + PHP CLI 오버헤드**입니다.
+> 이 스크립트의 목적은 TPS 벤치마크가 아니라 **"재고보다 많이 나가지 않는다"** 를 실제 다중 프로세스로 증명하는 것이고,
+> 그 판정은 스크립트가 스스로 출력합니다(`판정: PASS — 오버이슈 0건, 보존식 유지, 프로세스 합계와 DB 일치`).
+> 초당 수천 TPS가 필요한 구간은 Redis 게이트 + 커넥션 풀 + DB 앞단 필터링으로 넘깁니다(§16.3, ERD_SPEC §13).
+
+브라우저 콘솔(`/flash`)은 같은 엔진을 1,000건 동시 요청으로 돌려 **오버이슈 0건 / 소진율 / 락 방어율**을 즉시 보여줍니다.
+`flashCouponEngine.test.ts`가 이 수치를 테스트로 고정합니다.
+
+### 16.6 쇼핑몰 정산 대사 — "쿠폰 할인은 누구 돈인가"
+
+쿠폰 한 장이 3,000원이면, 그 3,000원은 셀러·플랫폼·제휴사 중 **한 곳이 부담**합니다(`coupon_templates.funded_by`).
+쇼핑몰은 정산서에서 쿠폰 할인을 한 줄로 빼 가는데, 그 금액이 우리 원장과 다르면 셀러는 이유를 모른 채 돈을 잃습니다.
+
+| 판정 | 상황 | 화면 문구(그대로 이의 제기 근거) |
+| --- | --- | --- |
+| `MATCHED` | 3분할 합계 = 쇼핑몰 차감액 | "부담 주체 3분할 합계가 쇼핑몰 차감액과 일치합니다." |
+| `SELLER_OVERBORNE` | 제휴 부담 쿠폰을 셀러에게 더 차감 | "제휴사 부담 쿠폰인데 쇼핑몰이 셀러 부담으로 1,500원 더 차감했습니다." |
+| `PLATFORM_OVERBORNE` | 차감이 원장보다 적음 | "차액 1,000원은 우리(플랫폼)가 부담하게 됩니다." |
+| `UNKNOWN_COUPON` | 원장에 없는 코드 | "우리 원장에 없는 쿠폰 코드가 청구됐습니다(위조·타사 혼입 의심)." |
+| `DUPLICATE_DISCOUNT` | 같은 쿠폰 두 번 차감 | "같은 쿠폰이 한 정산서에서 두 번 차감됐습니다." |
+
+### 16.7 정직한 경계
+
+- **실제 외부 API 호출은 검증 범위 밖**입니다: 알림톡 실발송(SENS), 실결제·실쇼핑몰 정산 API는 자격 증명이 없어
+  서명 벡터·샌드박스까지가 검증 범위입니다(1부와 같은 태도).
+- **Redis 게이트는 코드로 제공하지 않습니다.** 락 전략 비교와 "DB가 최종 진실"이라는 원칙을 문서·테스트로 고정했고,
+  핫패스 구현은 MySQL 조건부 UPDATE입니다.
+- **TPS 수치는 설계 목표(3,500)와 실측(§16.5)을 구분해서** 적었습니다. 측정하지 않은 숫자를 성과로 쓰지 않습니다.
+
+---
+
+## 17. 작성자
 
 **서승혜 (Seunghye Seo)** — Frontend & Fullstack Engineer (4년 차)  
 GitHub [@Shye-Seo](https://github.com/Shye-Seo) · tjtmdgp95@gmail.com · 정보처리기사
