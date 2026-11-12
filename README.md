@@ -1049,6 +1049,32 @@ php backend/bin/flash-drop-simulate.php --stock=1000 --workers=16 --per-worker=1
 브라우저 콘솔(`/flash`)은 같은 엔진을 1,000건 동시 요청으로 돌려 **오버이슈 0건 / 소진율 / 락 방어율**을 즉시 보여줍니다.
 `flashCouponEngine.test.ts`가 이 수치를 테스트로 고정합니다.
 
+### 16.5-1 원장 10만 건 — 인덱스가 실제로 버티는지
+
+"10만 건을 다룰 수 있다"는 말은 행을 넣어 봐야 증명됩니다. 단위 테스트는 로직을 고정하지만
+행 수에 따른 인덱스 동작은 보여주지 못합니다.
+
+```bash
+php backend/bin/coupon-ledger-bench.php --rows=100000
+```
+
+이 컨테이너(MySQL 8.0.40)에서의 실측:
+
+| 구간 | 측정 | 실행 계획 |
+| --- | --- | --- |
+| 원장 10만 행 적재(5,000행 배치 × 20) | **25.3s** (3,957 rows/s) | — |
+| 상태별 건수(캠페인) | 18.4 ms | `idx_coupons_campaign_status (ref)` |
+| 소진율 집계 | 13.7 ms | `idx_coupons_campaign_status (ref)` |
+| 멱등 키 조회 | **0.29 ms** | `uq_coupons_idempotency (const)` |
+| 해시 조회(코드 검증) | **0.20 ms** | `uq_coupons_hash (const)` |
+| 만료 스윕(500건) | 0.20 ms | `idx_coupons_expiry_sweep (range)` |
+| 법인+상태 타임라인 | 37.7 ms | `idx_coupons_expiry_sweep (ref)` — 옵티마이저 선택 |
+
+> 마지막 줄은 정직하게 남깁니다. `(tenant_id, status, issued_at)` 인덱스가 있음에도 옵티마이저가
+> `(status, expires_at)`를 골랐습니다. 10만 건에서는 37ms로 충분하지만, 수백만 건으로 커지면
+> `FORCE INDEX`나 통계 갱신, 또는 `(tenant_id, status, issued_at)` 커버링으로 유도해야 합니다.
+> 재고 보존식은 적재 후에도 `remaining + reserved + consumed = total`로 유지됩니다.
+
 ### 16.6 쇼핑몰 정산 대사 — "쿠폰 할인은 누구 돈인가"
 
 쿠폰 한 장이 3,000원이면, 그 3,000원은 셀러·플랫폼·제휴사 중 **한 곳이 부담**합니다(`coupon_templates.funded_by`).
