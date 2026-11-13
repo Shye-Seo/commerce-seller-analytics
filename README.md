@@ -1,3 +1,8 @@
+<p align="center">
+  <a href="https://github.com/Shye-Seo/commerce-seller-analytics/actions/workflows/ci.yml"><img alt="CI Pipeline" src="https://github.com/Shye-Seo/commerce-seller-analytics/actions/workflows/ci.yml/badge.svg" /></a>
+  <img alt="Tests" src="https://img.shields.io/badge/tests-442_(Vitest_302_%C2%B7_PHPUnit_135_%C2%B7_E2E_5)-2E7D32?style=flat-square" />
+</p>
+
 <div align="center">
   <img src="docs/banner.svg" alt="SellerScope — 이커머스 셀러 정산 대사 & 마진 분석 플랫폼" width="100%" />
 </div>
@@ -990,8 +995,8 @@ A. 의존성 0개를 유지하면서 윈도 계산을 직접 검증하고 싶었
 | 방식 | 쓰는 지점 | 장점 | 한계 |
 | --- | --- | --- | --- |
 | MySQL **조건부 UPDATE** (`WHERE remaining_qty >= 1`) | 오픈 직후 재고 차감(핫패스) | 문장 1개, InnoDB 행 락이 직렬화 보장, 영향 행 0 = 즉시 SOLD_OUT | DB 왕복 1회 필요 |
-| **version 낙관적 락** (`WHERE version = ?`) | 프리뷰·사전 예약·관리자 정정 | 락 대기 없음 | 충돌 시 애플리케이션이 재시도, 폭주 구간에서는 역효과 |
-| **Redis 원자 연산**(DECRBY/Lua) | 오픈 30초 전 게이트 | DB 앞단에서 대부분을 걸러 커넥션 보호 | Redis↔DB 불일치 가능, **DB가 최종 진실** |
+| **version 낙관적 락** (`WHERE version = ?`) | 프리뷰·사전 예약·관리자 정정 | 락 대기 없음 | 충돌 시 애플리케이션 재시도 오버헤드, 고동시성 경합 구간에서는 지연 증가 |
+| **Redis 원자 연산**(DECRBY/Lua) | 오픈 30초 전 게이트 | DB 앞단에서 대부분을 걸러 커넥션 보호 | Redis와 DB 간 일시적 상태 불일치 가능, DB 원장 동기화 필수 |
 | `SELECT ... FOR UPDATE` | 정산 대사·감사 로그 체인 | 읽고-검증-쓰기를 트랜잭션으로 원자화 | 대기 시간 길어 핫패스에 부적합 |
 
 이 저장소는 프론트엔드(브라우저)에서 락을 흉내 낼 때 `AsyncMutex`를 쓰고, 서버에서는 **DB 제약**이 같은 역할을 합니다.
