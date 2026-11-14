@@ -383,7 +383,7 @@ export function collectCriticalAlerts(rows: readonly ReconciledRow[]): AnomalyAl
  * 이상 알림 발송 (PHP `SettlementAlertNotifier::notifyCriticalAnomalies`와 같은 순서)
  *
  *   1. dedupe_key 확인 → 이미 있으면 skip
- *   2. queued로 선적재 (발송 전에 죽어도 "보내려 했다"가 남는다)
+ *   2. queued로 선적재 (발송 전에 프로세스가 중단돼도 "보내려 했다"가 남는다)
  *   3. 발송 → 성공이면 accepted/sent/fallback_sent, 실패면 failed + error
  *   4. 실패는 재시도 가능 여부를 남긴다(429는 재시도, 3016·401은 사람이 고쳐야 한다)
  */
