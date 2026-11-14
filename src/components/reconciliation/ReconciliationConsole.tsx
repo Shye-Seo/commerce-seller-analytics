@@ -20,6 +20,10 @@ import ReconciliationClaimPanel from "./ReconciliationClaimPanel";
 import TenantSwitchConsole from "./TenantSwitchConsole";
 import ReconciliationVirtualTable, { matchesFilter, type RowFilterId } from "./ReconciliationVirtualTable";
 import SettlementDetailDrawer from "./SettlementDetailDrawer";
+import CampaignAttributionPanel from "./CampaignAttributionPanel";
+import AlimtalkConsole from "./AlimtalkConsole";
+import { buildSettlementRowsForOrders, summarizeCampaignPerformance } from "@/lib/campaignBridge";
+import { resetPromotionStore, promotionStore, setCampaignSpend, usePromotionSnapshot } from "@/lib/promotionStore";
 import {
   AuditTrail,
   authorize,
@@ -158,6 +162,9 @@ export default function ReconciliationConsole() {
   const [uploading, setUploading] = useState(false);
   const [intakeMode, setIntakeMode] = useState<IntakeMode>("file");
 
+  // 쿠폰 콘솔에서 저장한 공유 원장. 대사 행과 주문번호로 맞춰 쿠폰 비용·ROAS를 낸다.
+  const promotion = usePromotionSnapshot();
+
   const activeTenant = DEMO_TENANTS.find((tenant) => tenant.id === tenantId) ?? DEMO_TENANTS[0];
   const roleDefinition = ROLES[role];
 
@@ -203,7 +210,12 @@ export default function ReconciliationConsole() {
       setProgress({ phase: "generating", percent: 4, label: `${count.toLocaleString("ko-KR")}건 정산 원장 생성 중` });
       await nextPaint();
 
-      const raw = generateSettlementRows({ count, seed: seedForTenant(targetTenantId) });
+      // 쿠폰 사용 주문은 별도 원장이 아니라 "정산서에 함께 들어온 행"으로 취급한다.
+      // 그래야 대사·필터·반출이 한 파이프라인으로 돌고, 쿠폰 비용도 같은 기준으로 계산된다.
+      // 원장은 훅이 아니라 스토어에서 직접 읽는다. 이 함수는 첫 마운트 이펙트에서 돌기 때문에,
+      // 하이드레이션 직전의 빈 서버 스냅숏을 문 상태로 계산하면 쿠폰 주문을 통과버리게 된다.
+      const couponRows = buildSettlementRowsForOrders(promotionStore().read().orders);
+      const raw = [...couponRows, ...generateSettlementRows({ count, seed: seedForTenant(targetTenantId) })];
       setProgress({ phase: "reconciling", percent: 12, label: "계약 조건으로 기대 정산액 재계산 중" });
       await nextPaint();
 
@@ -214,7 +226,7 @@ export default function ReconciliationConsole() {
           setProgress({
             phase: "reconciling",
             percent: 12 + Math.round(value.percent * 0.88),
-            label: `${value.processed.toLocaleString("ko-KR")} / ${count.toLocaleString("ko-KR")}건 대사 · ${formatThroughput(value.rowsPerSecond)}`,
+            label: `${value.processed.toLocaleString("ko-KR")} / ${raw.length.toLocaleString("ko-KR")}건 대사 · ${formatThroughput(value.rowsPerSecond)}`,
           }),
       });
       const elapsedMs = Date.now() - startedAt;
@@ -223,7 +235,7 @@ export default function ReconciliationConsole() {
       setSummary(result.summary);
       setDataset({
         source: "generated",
-        label: `${count.toLocaleString("ko-KR")}건 데모 정산서 · ${new Date().toISOString().slice(0, 10)}`,
+        label: `${count.toLocaleString("ko-KR")}건 데모 정산서${couponRows.length > 0 ? ` + 쿠폰 주문 ${couponRows.length.toLocaleString("ko-KR")}건` : ""} · ${new Date().toISOString().slice(0, 10)}`,
         rowCount: result.rows.length,
         engine: "generated",
         parseErrorCount: 0,
@@ -479,6 +491,21 @@ export default function ReconciliationConsole() {
   const biggest = summary ? biggestLeakCause(summary) : null;
   const busy = progress.phase === "generating" || progress.phase === "parsing" || progress.phase === "reconciling" || uploading;
 
+  // 쿠폰 원장 × 대사 행 → 쿠폰 비용 매칭 · 캠페인 ROAS. 화면은 계산하지 않고 이 값만 그린다.
+  const campaignPerformance = useMemo(
+    () =>
+      summarizeCampaignPerformance({
+        orders: promotion.orders,
+        rows,
+        campaigns: promotion.campaigns,
+        campaignSpend: promotion.campaignSpend,
+      }),
+    [promotion, rows],
+  );
+
+  // 대사 배치 식별자 — 알림톡 중복 차단(dedupe_key)의 기준이다.
+  const batchId = useMemo(() => `batch-${dataset?.source ?? "init"}-${dataset?.rowCount ?? 0}`, [dataset]);
+
   return (
     <div className="min-h-screen">
       <main className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
@@ -720,6 +747,22 @@ export default function ReconciliationConsole() {
               )}
             </section>
 
+            {/* 쿠폰 원장 → 정산 매칭 → 순마진·ROAS. 대사가 끝난 행과 주문번호로 이어진다 */}
+            <div id="campaign-attribution" className="scroll-mt-24">
+              <CampaignAttributionPanel
+                performance={campaignPerformance}
+                issuedCoupons={promotion.ledger.length}
+                simulation={promotion.simulation}
+                campaignSpend={promotion.campaignSpend}
+                onSpendChange={(campaignId, amount) => setCampaignSpend(campaignId, amount)}
+                onReset={() => {
+                  resetPromotionStore();
+                  setNotice({ tone: "info", text: "쿠폰 원장을 비웠습니다. 다음 데모 원장부터 쿠폰 주문이 빠집니다." });
+                }}
+                onReload={() => void loadGenerated(DEMO_ROW_COUNT, tenantId)}
+              />
+            </div>
+
             <ReconciliationVirtualTable
               rows={filteredRows}
               role={role}
@@ -797,6 +840,14 @@ export default function ReconciliationConsole() {
                 })}
               </div>
             </section>
+
+            {/* 이상 탐지 → 알림톡 발송. 실제 SENS 호출은 자격 증명이 없어 시뮬레이션으로만 동작한다 */}
+            <AlimtalkConsole
+              rows={rows}
+              summary={summary}
+              batchId={batchId}
+              datasetLabel={dataset?.label ?? "데모 원장"}
+            />
 
             <p className="pb-6 text-[10.5px] leading-relaxed text-slate-600">
               계약 프리셋은 공개된 수수료 정책을 참고한 데모 값이며, 실제 계약서 값과 다를 수 있습니다. 데모 원장은 고정 시드로

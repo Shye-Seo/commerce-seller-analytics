@@ -14,6 +14,7 @@
  */
 
 import { useCallback, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import {
   FlashCouponEngine,
   type CampaignSpec,
@@ -22,6 +23,8 @@ import {
   type SimulationReport,
   seededCodeGenerator,
 } from "@/lib/flashCouponEngine";
+import { buildMarketingOrders, type MarketingOrder } from "@/lib/campaignBridge";
+import { savePromotionResult, usePromotionSnapshot, type SimulationSummary } from "@/lib/promotionStore";
 
 const BASE_TIME = Date.parse("2026-11-20T20:30:00+09:00");
 
@@ -118,7 +121,9 @@ export default function FlashCouponConsole() {
   const [report, setReport] = useState<SimulationReport | null>(null);
   const [running, setRunning] = useState(false);
   const [ledger, setLedger] = useState<LedgerEntry[]>([]);
+  const [linkedOrders, setLinkedOrders] = useState<MarketingOrder[]>([]);
   const engineRef = useRef<FlashCouponEngine | null>(null);
+  const storedSnapshot = usePromotionSnapshot();
 
   const preset = PRESETS.find((item) => item.id === presetId) ?? PRESETS[1]!;
 
@@ -138,8 +143,55 @@ export default function FlashCouponConsole() {
       seed: 20261120,
     });
 
+    // 한 캠페인에 부담 주체가 다른 두 템플릿이 같이 도는 상황을 재현한다.
+    // 흔히 제휴사 부담 정액 쿠폰(메인)과 플랫폼 부담 정률 쿠폰(보조)을 함께 걸어 두기 때문에,
+    // 정산 대사에서 "누가 낸 돈인가"를 나눠 볼 수 있어야 한다.
+    await engine.simulateTraffic({
+      requests: Math.round(preset.requests * 0.3),
+      concurrency: preset.concurrency,
+      templateId: 2,
+      abuseRate: preset.abuseRate,
+      seed: 20261121,
+    });
+
+    /**
+     * 발급 원장 → 주문 연결.
+     *
+     * 발급만 하고 끝나면 "쿠폰이 실제로 쓰였는지"를 정산에서 확인할 수 없다. 그래서 발급된 쿠폰 중
+     * 결정적인 비율을 골라 **엔진의 상태 머신을 그대로 통과**시킨다: ISSUED → RESERVED(주문 연결)
+     * → REDEEMED(사용 확정). 화면의 `REDEEMED`는 손으로 쓴 글자가 아니라 전이 결과다.
+     */
+    const candidates = buildMarketingOrders(engine.ledger(), TEMPLATES, [CAMPAIGN], { redemptionRate: 0.62, seed: 20261120 });
+    const linked: MarketingOrder[] = [];
+    for (const order of candidates) {
+      const reserved = engine.reserve(order.entryId, { orderAmount: order.listAmount, orderId: order.orderId });
+      if (!reserved.ok) continue;
+      const redeemed = engine.redeem(order.entryId);
+      if (!redeemed.ok) continue;
+      linked.push(order);
+    }
+
+    const finalLedger = engine.ledger();
+    const simulation: SimulationSummary = {
+      presetId: preset.id,
+      presetLabel: preset.label,
+      requests: result.requests,
+      issued: result.issued,
+      soldOut: result.soldOut,
+      duplicate: result.duplicate,
+      abuseBlocked: result.abuseBlocked,
+      oversell: result.oversell,
+      tps: result.tps,
+      elapsedMs: result.elapsedMs,
+      ranAt: Date.now(),
+    };
+
+    // 페이지를 넘어가도 같은 원장을 보도록 저장한다(정산 대사·메인 대시보드가 읽는다).
+    savePromotionResult({ campaigns: [CAMPAIGN], templates: TEMPLATES, ledger: finalLedger, orders: linked, simulation });
+
     setReport(result);
-    setLedger(engine.ledger().slice(0, 8).reverse());
+    setLedger(finalLedger.slice(0, 8).reverse());
+    setLinkedOrders(linked);
     setRunning(false);
   }, [preset]);
 
@@ -246,7 +298,8 @@ export default function FlashCouponConsole() {
         </button>
         <span className="text-[11.5px] text-slate-500">
           캠페인 <span className="text-slate-300">{CAMPAIGN.name}</span> · 템플릿{" "}
-          <span className="text-slate-300">{TEMPLATES[0]?.name}</span> · 15분 TTL
+          <span className="text-slate-300">{TEMPLATES[0]?.name}</span>(제휴사 부담) +{" "}
+          <span className="text-slate-300">{TEMPLATES[1]?.name}</span>(플랫폼 부담) · 15분 TTL
         </span>
       </div>
 
@@ -355,6 +408,32 @@ export default function FlashCouponConsole() {
                 )}
               </tbody>
             </table>
+          </div>
+
+          <div className="card px-4 py-3" data-testid="flash-handoff">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">Settlement handoff</p>
+                <p className="mt-1 text-[12px] text-slate-300">
+                  발급 원장 <span className="font-semibold text-white">{numberFormat.format(storedSnapshot.ledger.length)}</span>건 중{" "}
+                  <span className="font-semibold text-white">{numberFormat.format(linkedOrders.length)}</span>건을 주문에 연결했습니다. 이 주문들은
+                  주문번호로 정산 행과 매칭되어 쿠폰 비용·순마진·ROAS 계산에 쓰입니다.
+                </p>
+                <p className="mt-0.5 text-[10.5px] text-slate-500">
+                  원장과 주문 연결은 브라우저 localStorage에 저장되며 서버로 전송되지 않습니다. 주문 연결은 데모 시뮬레이터가
+                  결정적으로 생성한 값입니다(고정 시드 → 같은 조건이면 같은 주문).
+                </p>
+              </div>
+              <Link
+                href="/reconciliation#campaign-attribution"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-emerald-400 px-3.5 py-2 text-[12px] font-semibold text-ink-950 transition hover:bg-emerald-300"
+              >
+                정산 대사로 확인
+                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2.2} aria-hidden>
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </Link>
+            </div>
           </div>
         </>
       ) : (

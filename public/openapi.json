@@ -1,0 +1,737 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SellerScope Settlement Reconciliation API",
+    "version": "1.0.0",
+    "description": "정산서 배치를 받아 계약 조건으로 기대 정산액을 재계산하고, 차액을 원인별로 귀속해 저장하는 B2B 정산 대사 API입니다.\n\n- 엔드포인트는 `backend/public/index.php`의 라우터가 실제로 받는 경로와 같습니다.\n- 요청 본문은 `backend/src/Controllers/ReconciliationController.php`의 검증 규칙을 그대로 따릅니다(한 요청 최대 5,000행).\n- 인증은 현재 단계에 없습니다. 운영 배포 시 API 키(헤더)와 IP 허용 목록을 붙이는 전제입니다.\n- 이 문서의 예시 응답은 저장소의 테스트 픽스처에서 만든 값입니다. 실제 응답은 적재된 데이터에 따라 달라집니다.",
+    "contact": {
+      "name": "서승혜",
+      "url": "https://github.com/Shye-Seo/commerce-seller-analytics"
+    },
+    "license": {
+      "name": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8080",
+      "description": "로컬 PHP 내장 서버 (php -S 127.0.0.1:8080 -t backend/public)"
+    }
+  ],
+  "tags": [
+    { "name": "health", "description": "서비스 상태와 알림톡 설정 여부" },
+    { "name": "reconciliation", "description": "정산 배치 수신·요약·행 조회" },
+    { "name": "anomaly", "description": "탐지된 이상 목록" }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["health"],
+        "operationId": "getHealth",
+        "summary": "서비스 상태 확인",
+        "description": "SENS 자격 증명이 없으면 `alimtalk`이 `disabled(no SENS credentials)`로 옵니다. 알림은 부가 기능이므로 대사 API는 그대로 동작합니다.",
+        "responses": {
+          "200": {
+            "description": "서비스 정상",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HealthResponse" },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "status": "ok",
+                      "service": "sellerscope-backend",
+                      "time": "2026-11-14T03:53:58+00:00",
+                      "alimtalk": "disabled(no SENS credentials)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reconciliations": {
+      "post": {
+        "tags": ["reconciliation"],
+        "operationId": "createReconciliationBatch",
+        "summary": "정산 배치 수신·대사·저장",
+        "description": "정산 행을 받아 대사하고 저장합니다. 같은 `batch_id`로 다시 보내도 UPSERT와 이상 유니크 키 덕분에 행이 늘지 않고, 알림톡은 `dedupe_key`로 한 번만 나갑니다.\n\n5,000행을 넘는 배치는 이 엔드포인트가 아니라 CLI(`php backend/bin/reconcile.php --file=...`)로 처리합니다. HTTP 본문으로 10만 행을 받으면 메모리와 타임아웃이 먼저 터집니다.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ReconciliationBatchRequest" },
+              "examples": {
+                "twoRows": {
+                  "summary": "2행 배치",
+                  "value": {
+                    "tenant_id": 1,
+                    "batch_id": "0f8c2a1e-9b3d-4c7a-8f21-5d6e7a8b9c01",
+                    "source_file": "coupang_settlement_2026-10.csv",
+                    "notify_phone": "010-1234-5678",
+                    "tenant_name": "셀러스코프 데모",
+                    "actor": { "id": "kim@acme.co.kr", "role": "SETTLEMENT_MANAGER", "ip": "203.0.113.7" },
+                    "rows": [
+                      {
+                        "order_no": "CP2026100001",
+                        "channel": "coupang",
+                        "order_date": "2026-10-03",
+                        "product_name": "데일리 코튼 셔츠",
+                        "sku": "SKU-SHIRT-01",
+                        "quantity": 1,
+                        "paid_amount": 29900,
+                        "commission": 3229,
+                        "shipping_deduction": 0,
+                        "return_fee": 0,
+                        "settled_amount": 26671,
+                        "order_status": "배송완료",
+                        "contract_fee_rate": 10.8,
+                        "unit_cost": 11400,
+                        "seller_shipping_cost": 2500
+                      },
+                      {
+                        "order_no": "CP2026100002",
+                        "channel": "coupang",
+                        "order_date": "2026-10-04",
+                        "product_name": "데일리 코튼 셔츠",
+                        "sku": "SKU-SHIRT-01",
+                        "quantity": 1,
+                        "paid_amount": 29900,
+                        "commission": 3900,
+                        "shipping_deduction": 0,
+                        "return_fee": 0,
+                        "settled_amount": 26000,
+                        "order_status": "배송완료",
+                        "contract_fee_rate": 10.8,
+                        "unit_cost": 11400,
+                        "seller_shipping_cost": 2500
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "배치 대사·저장 완료",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ReconciliationBatchResponse" },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "batch_id": "0f8c2a1e-9b3d-4c7a-8f21-5d6e7a8b9c01",
+                      "tenant_id": 1,
+                      "persisted": { "orders": 2, "anomalies": 1 },
+                      "summary": {
+                        "totalRows": 2,
+                        "matchedRows": 1,
+                        "flaggedRows": 1,
+                        "matchedRate": 50,
+                        "totalPaidAmount": 59800,
+                        "totalCommission": 7129,
+                        "totalSettledAmount": 52671,
+                        "expectedSettlement": 52671,
+                        "totalLeak": 671,
+                        "totalSurplus": 0,
+                        "marginRiskExposure": 0,
+                        "negativeMarginRows": 0,
+                        "anomalyCounts": { "FEE_OVERCHARGE": 1, "SETTLEMENT_SHORTFALL": 0 },
+                        "anomalyLoss": { "FEE_OVERCHARGE": 671, "SETTLEMENT_SHORTFALL": 0 },
+                        "byChannel": [
+                          { "channel": "coupang", "rows": 2, "paidAmount": 59800, "settledAmount": 52671, "leak": 671, "flaggedRows": 1 }
+                        ],
+                        "topSkusByLoss": [{ "sku": "SKU-SHIRT-01", "productName": "데일리 코튼 셔츠", "rows": 2, "loss": 671 }],
+                        "worstMarginRate": 24.08,
+                        "biggestLeakCause": { "code": "FEE_OVERCHARGE", "label": "수수료 초과 청구", "amount": 671 }
+                      },
+                      "meta": {
+                        "sourceRowCount": 2,
+                        "parsedRows": 2,
+                        "parseErrors": [],
+                        "computeElapsedMs": 3,
+                        "totalElapsedMs": 3
+                      },
+                      "alerts": { "sent": 1, "skipped": 0, "failed": 0, "errors": [] }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "입력 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+                "examples": {
+                  "missingRows": {
+                    "value": {
+                      "error": { "code": "invalid_request", "message": "rows 배열이 필요합니다.", "details": [] }
+                    }
+                  },
+                  "tooManyRows": {
+                    "value": {
+                      "error": {
+                        "code": "invalid_request",
+                        "message": "한 요청에 최대 5,000행까지 처리합니다. 대용량은 CSV 업로드 경로를 사용하세요.",
+                        "details": []
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "error": { "code": "internal_error", "message": "서버 오류가 발생했습니다. 잠시 후 다시 시도하세요.", "details": [] }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reconciliations/summary": {
+      "get": {
+        "tags": ["reconciliation"],
+        "operationId": "getReconciliationSummary",
+        "summary": "기간 요약",
+        "description": "DB에 저장된 값으로 집계합니다(계산값이 아니라 저장된 사실). `from`을 생략하면 `to` 기준 30일, `to`를 생략하면 오늘입니다. 기간은 최대 400일입니다.",
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantId" },
+          { "$ref": "#/components/parameters/From" },
+          { "$ref": "#/components/parameters/To" }
+        ],
+        "responses": {
+          "200": {
+            "description": "기간 요약",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ReconciliationSummaryResponse" },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "tenant_id": 1,
+                      "period": { "from": "2026-10-01", "to": "2026-10-31" },
+                      "totals": {
+                        "total_rows": 1200,
+                        "matched_rows": 1063,
+                        "flagged_rows": 137,
+                        "total_paid": 35280000,
+                        "total_commission": 2549120,
+                        "total_settled": 30874480,
+                        "total_expected": 31120960,
+                        "total_loss": 246480,
+                        "total_surplus": 0,
+                        "margin_risk": 812400,
+                        "negative_margin_rows": 26
+                      },
+                      "matchedRate": 88.58,
+                      "byChannel": [
+                        { "channel": "smartstore", "rows_count": 600, "paid": 17640000, "settled": 15431280, "leak": 121400, "flagged": 68 },
+                        { "channel": "coupang", "rows_count": 600, "paid": 17640000, "settled": 15443200, "leak": 125080, "flagged": 69 }
+                      ],
+                      "topSkusByLoss": [{ "sku": "SKU-SHIRT-01", "product_name": "데일리 코튼 셔츠", "rows": 240, "loss": 68240 }],
+                      "alimtalkSuccessRate24h": 97.4,
+                      "auditChain": { "valid": true, "checked": 42 }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 기간·테넌트",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+                "examples": {
+                  "badPeriod": {
+                    "value": { "error": { "code": "invalid_request", "message": "from이 to보다 늦습니다.", "details": [] } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reconciliations/rows": {
+      "get": {
+        "tags": ["reconciliation"],
+        "operationId": "listReconciliationRows",
+        "summary": "정산 행 목록 (keyset 페이지네이션)",
+        "description": "`cursor`는 직전 응답의 `next_cursor`(마지막 행의 id)입니다. `flagged=1`이면 이상이 있는 행만 옵니다. `limit`은 1~500입니다.",
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantId" },
+          { "$ref": "#/components/parameters/From" },
+          { "$ref": "#/components/parameters/To" },
+          { "$ref": "#/components/parameters/Cursor" },
+          {
+            "name": "flagged",
+            "in": "query",
+            "required": false,
+            "description": "1이면 이상이 있는 행만 반환",
+            "schema": { "type": "string", "enum": ["0", "1"], "default": "0" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "페이지 크기(1~500, 기본 100)",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 500, "default": 100 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "행 목록",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ReconciliationRowsResponse" },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "data": [
+                        {
+                          "id": 1042,
+                          "order_no": "CP2026100001",
+                          "channel": "coupang",
+                          "order_date": "2026-10-03",
+                          "settlement_date": "2026-10-31",
+                          "product_name": "데일리 코튼 셔츠",
+                          "sku": "SKU-SHIRT-01",
+                          "quantity": 1,
+                          "paid_amount": 29900,
+                          "commission": 3229,
+                          "shipping_deduction": 0,
+                          "return_fee": 0,
+                          "settled_amount": 26671,
+                          "order_status": "SHIPPED",
+                          "unit_cost": 11400,
+                          "seller_shipping_cost": 2500,
+                          "expected_commission": 3229,
+                          "expected_settlement": 26671,
+                          "variance": 0,
+                          "shortfall": 0,
+                          "surplus": 0,
+                          "effective_fee_rate": 10.8,
+                          "net_margin": 12771,
+                          "margin_rate": 42.71,
+                          "loss": 0,
+                          "reconciled": 1
+                        }
+                      ],
+                      "next_cursor": 1042,
+                      "limit": 100
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "테넌트 누락",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+                "examples": {
+                  "missingTenant": {
+                    "value": { "error": { "code": "invalid_request", "message": "tenant_id 쿼리 파라미터가 필요합니다.", "details": [] } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/anomalies": {
+      "get": {
+        "tags": ["anomaly"],
+        "operationId": "listAnomalies",
+        "summary": "열린 이상 목록",
+        "description": "심각도순(critical → warning → info)으로 정렬합니다. `store_breakdown`은 마켓별·원인별 집계로, 이의 제기 문서를 쓸 때 그대로 씁니다.",
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantId" },
+          {
+            "name": "severity",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["critical", "warning", "info"] }
+          },
+          { "$ref": "#/components/parameters/Cursor" },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1, "maximum": 200, "default": 50 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "이상 목록",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AnomalyListResponse" },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "data": [
+                        {
+                          "id": 3051,
+                          "store_id": 2,
+                          "order_id": 1042,
+                          "batch_id": "0f8c2a1e-9b3d-4c7a-8f21-5d6e7a8b9c01",
+                          "anomaly_type": "FEE_OVERCHARGE",
+                          "category": "fee",
+                          "severity": "critical",
+                          "expected_amount": 3229,
+                          "actual_amount": 3900,
+                          "loss_amount": 671,
+                          "detail": "계약 10.8% 기준 3,229원이어야 하는데 3,900원이 청구됐습니다(실효 13.04%).",
+                          "status": "open",
+                          "created_at": "2026-11-14 09:12:41"
+                        }
+                      ],
+                      "next_cursor": 3051,
+                      "store_breakdown": [{ "channel": "coupang", "anomaly_type": "FEE_OVERCHARGE", "severity": "critical", "cases": 38, "loss": 26480 }]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "TenantId": {
+        "name": "tenant_id",
+        "in": "query",
+        "required": true,
+        "description": "조회 대상 법인(테넌트) ID",
+        "schema": { "type": "integer", "minimum": 1 }
+      },
+      "From": {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "description": "기간 시작일(YYYY-MM-DD). 생략하면 to 기준 30일 전",
+        "schema": { "type": "string", "format": "date" }
+      },
+      "To": {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "description": "기간 종료일(YYYY-MM-DD). 생략하면 오늘",
+        "schema": { "type": "string", "format": "date" }
+      },
+      "Cursor": {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "description": "직전 응답의 next_cursor",
+        "schema": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "required": ["status", "service", "time", "alimtalk"],
+        "properties": {
+          "status": { "type": "string", "enum": ["ok"] },
+          "service": { "type": "string", "example": "sellerscope-backend" },
+          "time": { "type": "string", "format": "date-time" },
+          "alimtalk": {
+            "type": "string",
+            "description": "SENS 자격 증명 유무",
+            "enum": ["enabled", "disabled(no SENS credentials)"]
+          }
+        }
+      },
+      "SettlementRowInput": {
+        "type": "object",
+        "required": [
+          "order_no",
+          "channel",
+          "order_date",
+          "product_name",
+          "sku",
+          "quantity",
+          "paid_amount",
+          "commission",
+          "shipping_deduction",
+          "return_fee",
+          "settled_amount",
+          "order_status"
+        ],
+        "properties": {
+          "order_no": { "type": "string", "description": "마켓 주문번호", "example": "CP2026100001" },
+          "channel": {
+            "type": "string",
+            "enum": ["smartstore", "coupang", "elevenst", "gmarket"],
+            "description": "판매 채널"
+          },
+          "order_date": { "type": "string", "format": "date", "description": "주문일", "example": "2026-10-03" },
+          "product_name": { "type": "string", "description": "상품명" },
+          "sku": { "type": "string", "description": "셀러 내부 SKU" },
+          "quantity": { "type": "integer", "minimum": 1, "description": "주문 수량" },
+          "paid_amount": { "type": "integer", "minimum": 0, "description": "소비자 결제금액(원)" },
+          "commission": { "type": "integer", "minimum": 0, "description": "마켓이 청구한 판매 수수료(원)" },
+          "shipping_deduction": { "type": "integer", "minimum": 0, "description": "마켓이 차감한 배송비(원)" },
+          "return_fee": { "type": "integer", "minimum": 0, "description": "마켓이 차감한 반품비(원)" },
+          "settled_amount": { "type": "integer", "description": "마켓이 실제 입금한 정산액(원). 차감 정산이면 음수" },
+          "order_status": {
+            "type": "string",
+            "description": "한글 상태명 또는 코드",
+            "enum": ["배송완료", "반품완료", "취소", "교환완료", "SHIPPED", "RETURNED", "CANCELED", "EXCHANGED"]
+          },
+          "contract_fee_rate": { "type": "number", "description": "계약 수수료율(%). 생략하면 서버 프리셋" },
+          "unit_cost": { "type": "integer", "minimum": 0, "description": "매입원가(1개 기준)" },
+          "seller_shipping_cost": { "type": "integer", "minimum": 0, "description": "셀러가 실제 부담한 배송원가(주문 단위)" },
+          "settlement_date": { "type": "string", "format": "date", "description": "정산일. 생략하면 주문일 기준" }
+        }
+      },
+      "Actor": {
+        "type": "object",
+        "description": "감사 로그에 남는 실행 주체",
+        "properties": {
+          "id": { "type": "string", "example": "kim@acme.co.kr" },
+          "role": { "type": "string", "example": "SETTLEMENT_MANAGER" },
+          "ip": { "type": "string", "example": "203.0.113.7" }
+        }
+      },
+      "ReconciliationBatchRequest": {
+        "type": "object",
+        "required": ["tenant_id", "rows"],
+        "properties": {
+          "tenant_id": { "type": "integer", "minimum": 1, "description": "대상 법인(테넌트) ID" },
+          "batch_id": {
+            "type": "string",
+            "description": "배치 UUID. 생략하면 서버가 생성. 같은 값을 다시 보내면 멱등 처리",
+            "example": "0f8c2a1e-9b3d-4c7a-8f21-5d6e7a8b9c01"
+          },
+          "source_file": { "type": "string", "description": "원본 파일명(추적용)" },
+          "tenant_name": { "type": "string", "description": "알림톡 본문에 쓰는 법인명" },
+          "notify_phone": {
+            "type": "string",
+            "description": "알림톡 수신 번호. 없으면 알림을 보내지 않는다",
+            "example": "010-1234-5678"
+          },
+          "actor": { "$ref": "#/components/schemas/Actor" },
+          "rows": {
+            "type": "array",
+            "description": "정산 행. 1~5,000행",
+            "minItems": 1,
+            "maxItems": 5000,
+            "items": { "$ref": "#/components/schemas/SettlementRowInput" }
+          }
+        }
+      },
+      "ChannelSummary": {
+        "type": "object",
+        "properties": {
+          "channel": { "type": "string", "enum": ["smartstore", "coupang", "elevenst", "gmarket"] },
+          "rows": { "type": "integer" },
+          "paidAmount": { "type": "integer" },
+          "settledAmount": { "type": "integer" },
+          "leak": { "type": "integer" },
+          "flaggedRows": { "type": "integer" }
+        }
+      },
+      "SkuLoss": {
+        "type": "object",
+        "properties": {
+          "sku": { "type": "string" },
+          "productName": { "type": "string" },
+          "rows": { "type": "integer" },
+          "loss": { "type": "integer" }
+        }
+      },
+      "BiggestLeakCause": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "code": { "type": "string" },
+          "label": { "type": "string" },
+          "amount": { "type": "integer" }
+        }
+      },
+      "ReconciliationSummary": {
+        "type": "object",
+        "properties": {
+          "totalRows": { "type": "integer" },
+          "matchedRows": { "type": "integer" },
+          "flaggedRows": { "type": "integer" },
+          "matchedRate": { "type": "number", "description": "정상 대사율(%)" },
+          "totalPaidAmount": { "type": "integer" },
+          "totalCommission": { "type": "integer" },
+          "totalSettledAmount": { "type": "integer" },
+          "expectedSettlement": { "type": "integer" },
+          "totalLeak": { "type": "integer" },
+          "totalSurplus": { "type": "integer" },
+          "marginRiskExposure": { "type": "integer" },
+          "negativeMarginRows": { "type": "integer" },
+          "anomalyCounts": { "type": "object", "additionalProperties": { "type": "integer" } },
+          "anomalyLoss": { "type": "object", "additionalProperties": { "type": "integer" } },
+          "byChannel": { "type": "array", "items": { "$ref": "#/components/schemas/ChannelSummary" } },
+          "topSkusByLoss": { "type": "array", "items": { "$ref": "#/components/schemas/SkuLoss" } },
+          "worstMarginRate": { "type": "number" },
+          "biggestLeakCause": { "$ref": "#/components/schemas/BiggestLeakCause" }
+        }
+      },
+      "AlertDispatchResult": {
+        "type": "object",
+        "description": "알림톡 발송 결과. SENS 자격 증명이 없으면 null",
+        "nullable": true,
+        "properties": {
+          "sent": { "type": "integer" },
+          "skipped": { "type": "integer", "description": "dedupe_key로 건너뛴 건수" },
+          "failed": { "type": "integer" },
+          "errors": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "ReconciliationBatchResponse": {
+        "type": "object",
+        "required": ["batch_id", "tenant_id", "persisted", "summary", "meta"],
+        "properties": {
+          "batch_id": { "type": "string" },
+          "tenant_id": { "type": "integer" },
+          "persisted": {
+            "type": "object",
+            "properties": {
+              "orders": { "type": "integer", "description": "적재된 주문 행 수" },
+              "anomalies": { "type": "integer", "description": "적재된 이상 건수" }
+            }
+          },
+          "summary": { "$ref": "#/components/schemas/ReconciliationSummary" },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "sourceRowCount": { "type": "integer" },
+              "parsedRows": { "type": "integer" },
+              "parseErrors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": { "index": { "type": "integer" }, "reason": { "type": "string" } }
+                }
+              },
+              "computeElapsedMs": { "type": "integer" },
+              "totalElapsedMs": { "type": "integer" }
+            }
+          },
+          "alerts": { "$ref": "#/components/schemas/AlertDispatchResult" }
+        }
+      },
+      "ReconciliationSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "tenant_id": { "type": "integer" },
+          "period": {
+            "type": "object",
+            "properties": { "from": { "type": "string", "format": "date" }, "to": { "type": "string", "format": "date" } }
+          },
+          "totals": {
+            "type": "object",
+            "description": "저장된 값의 합계(SQL 집계 결과)",
+            "additionalProperties": true
+          },
+          "matchedRate": { "type": "number" },
+          "byChannel": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+          "topSkusByLoss": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+          "alimtalkSuccessRate24h": { "type": "number", "description": "최근 24시간 알림톡 성공률(%)" },
+          "auditChain": {
+            "type": "object",
+            "properties": { "valid": { "type": "boolean" }, "checked": { "type": "integer" } }
+          }
+        }
+      },
+      "ReconciliationRowRecord": {
+        "type": "object",
+        "description": "저장된 정산 행(대사 결과 포함)",
+        "additionalProperties": true
+      },
+      "ReconciliationRowsResponse": {
+        "type": "object",
+        "properties": {
+          "data": { "type": "array", "items": { "$ref": "#/components/schemas/ReconciliationRowRecord" } },
+          "next_cursor": { "type": "integer", "nullable": true },
+          "limit": { "type": "integer" }
+        }
+      },
+      "AnomalyRecord": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "store_id": { "type": "integer" },
+          "order_id": { "type": "integer" },
+          "batch_id": { "type": "string" },
+          "anomaly_type": {
+            "type": "string",
+            "enum": [
+              "FEE_OVERCHARGE",
+              "FEE_UNDERCHARGE",
+              "FEE_ON_CANCELED_ORDER",
+              "SHIPPING_OVERCHARGE",
+              "RETURN_FEE_DOUBLE_CHARGED",
+              "RETURN_FEE_ON_SHIPPED_ORDER",
+              "SETTLEMENT_SHORTFALL",
+              "SETTLEMENT_SURPLUS",
+              "ROUNDING_LEAK",
+              "NEGATIVE_MARGIN",
+              "MISSING_LEDGER"
+            ]
+          },
+          "category": { "type": "string", "enum": ["fee", "logistics", "settlement", "margin", "data"] },
+          "severity": { "type": "string", "enum": ["critical", "warning", "info"] },
+          "expected_amount": { "type": "integer" },
+          "actual_amount": { "type": "integer" },
+          "loss_amount": { "type": "integer" },
+          "detail": { "type": "string" },
+          "status": { "type": "string", "description": "open / resolved / ignored" },
+          "created_at": { "type": "string" }
+        }
+      },
+      "AnomalyListResponse": {
+        "type": "object",
+        "properties": {
+          "data": { "type": "array", "items": { "$ref": "#/components/schemas/AnomalyRecord" } },
+          "next_cursor": { "type": "integer", "nullable": true },
+          "store_breakdown": { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": ["code", "message"],
+            "properties": {
+              "code": { "type": "string", "enum": ["invalid_request", "not_found", "internal_error"] },
+              "message": { "type": "string" },
+              "details": { "type": "array", "items": {} }
+            }
+          }
+        }
+      }
+    }
+  }
+}

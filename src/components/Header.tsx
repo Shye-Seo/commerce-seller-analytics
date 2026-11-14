@@ -10,6 +10,8 @@ const NAV_ITEMS = [
   { href: "/#reconciliation", label: "정산 대사" },
   { href: "/#keywords", label: "키워드 분석" },
   { href: "/flash", label: "선착순 드롭" },
+  { href: "/reconciliation#alimtalk", label: "알림톡" },
+  { href: "/api-docs", label: "API 문서" },
 ];
 
 const CONNECTED_MARKETS = [MARKET_PRESETS.smartstore, MARKET_PRESETS.coupang];
@@ -42,12 +44,12 @@ export default function Header() {
           </div>
         </div>
 
-        <nav className="hidden items-center gap-1 lg:flex" aria-label="섹션 이동">
+        <nav className="hidden items-center gap-0.5 lg:flex" aria-label="섹션 이동">
           {NAV_ITEMS.map((item) => (
             <a
               key={item.href}
               href={item.href}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-400 transition hover:bg-white/5 hover:text-white"
+              className="rounded-lg px-2.5 py-2 text-[12.5px] font-medium text-slate-400 transition hover:bg-white/5 hover:text-white"
             >
               {item.label}
             </a>
@@ -69,7 +71,7 @@ export default function Header() {
           </div>
           <Link
             href="/reconciliation"
-            className="hidden rounded-lg border border-emerald-400/25 bg-emerald-400/10 px-3 py-1.5 text-[11.5px] font-semibold text-emerald-200 transition hover:border-emerald-400/50 hover:text-emerald-100 sm:inline-flex"
+            className="hidden rounded-lg border border-emerald-400/25 bg-emerald-400/10 px-3 py-1.5 text-[11.5px] font-semibold text-emerald-200 transition hover:border-emerald-400/50 hover:text-emerald-100 xl:inline-flex"
           >
             정산 대사 콘솔
           </Link>

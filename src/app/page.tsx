@@ -1,5 +1,6 @@
 import Dashboard from "@/components/Dashboard";
 import EnterpriseEntry from "@/components/EnterpriseEntry";
+import CampaignPerformanceCard from "@/components/CampaignPerformanceCard";
 import Header from "@/components/Header";
 import { IconArrowUpRight } from "@/components/icons";
 import KeywordRankingTable from "@/components/KeywordRankingTable";
@@ -110,6 +111,8 @@ export default function HomePage() {
           <Dashboard />
 
           <EnterpriseEntry />
+
+          <CampaignPerformanceCard />
 
           <section id="trend" className="scroll-mt-24">
             <SectionHeading

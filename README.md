@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/Shye-Seo/commerce-seller-analytics/actions/workflows/ci.yml"><img alt="CI Pipeline" src="https://github.com/Shye-Seo/commerce-seller-analytics/actions/workflows/ci.yml/badge.svg" /></a>
-  <img alt="Tests" src="https://img.shields.io/badge/tests-442_(Vitest_302_%C2%B7_PHPUnit_135_%C2%B7_E2E_5)-2E7D32?style=flat-square" />
+  <img alt="Tests" src="https://img.shields.io/badge/tests-500_(Vitest_356_%C2%B7_PHPUnit_135_%C2%B7_E2E_9)-2E7D32?style=flat-square" />
 </p>
 
 <div align="center">
@@ -14,6 +14,7 @@
   <sub>10만 행 정산서 · Web Worker 파싱 · 가상화 렌더링 · 멀티 테넌트 RBAC · 해시체인 감사 로그</sub><br />
   <sub>마켓 정산 API 자동 수집(스마트스토어 커머스API · 쿠팡 Open API) · Playwright E2E</sub><br />
   <sub><strong>실시간 선착순 드롭</strong>: 토스형 타임딜 · 멱등 쿠폰 발급 · 쿠폰 원장 · 쇼핑몰 정산 대사</sub><br />
+  <sub><strong>쿠폰 → 정산 → 알림톡</strong>: 쿠폰 사용 주문 매칭 · 캠페인 ROAS · SENS 알림톡 시뮬레이터 · OpenAPI 3.0 문서</sub><br />
   <sub><strong>Full-Cycle</strong>: Next.js 14 프론트엔드 + PHP 8.2 백엔드 + MySQL 8.0 + 네이버클라우드 SENS 알림톡</sub>
 </p>
 
@@ -21,7 +22,7 @@
   <a href="https://nextjs.org"><img alt="Next.js" src="https://img.shields.io/badge/Next.js-14.2-000000?style=flat-square&logo=nextdotjs&logoColor=white" /></a>
   <a href="https://www.typescriptlang.org"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.9_strict-3178C6?style=flat-square&logo=typescript&logoColor=white" /></a>
   <a href="https://tailwindcss.com"><img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" /></a>
-  <a href="https://vitest.dev"><img alt="Tests" src="https://img.shields.io/badge/Vitest-302_tests_passing-4C9A2A?style=flat-square&logo=vitest&logoColor=white" /></a>
+  <a href="https://vitest.dev"><img alt="Tests" src="https://img.shields.io/badge/Vitest-356_tests_passing-4C9A2A?style=flat-square&logo=vitest&logoColor=white" /></a>
   <a href="https://www.php.net/releases/8.2/ko.php"><img alt="PHP" src="https://img.shields.io/badge/PHP-8.2_OOP-777BB4?style=flat-square&logo=php&logoColor=white" /></a>
   <a href="https://dev.mysql.com/doc/refman/8.0/en/"><img alt="MySQL" src="https://img.shields.io/badge/MySQL-8.0_InnoDB-4479A1?style=flat-square&logo=mysql&logoColor=white" /></a>
   <a href="https://api.ncloud-docs.com/docs/sens-alimtalk-send"><img alt="Naver Cloud SENS" src="https://img.shields.io/badge/Naver_Cloud-SENS_알림톡-03C75A?style=flat-square&logo=naver&logoColor=white" /></a>
@@ -34,8 +35,10 @@
 마켓은 매월 정산서를 주고, 셀러는 그 숫자를 검증 없이 받아들입니다. SellerScope는 그 숫자를 **계약 조건으로 다시 계산**해서,
 수수료 초과 청구·반품비 중복 차감·설명되지 않는 정산 부족을 **원인별 금액으로 증명**합니다.
 
-- **라이브 콘솔**: `/reconciliation` — 배포 후 `https://<your-app>.vercel.app/reconciliation`
+- **라이브 데모(정적 배포)**: `https://shye-seo.github.io/commerce-seller-analytics/` — 서버 없이 도는 빌드(`GITHUB_PAGES=1`)
+- **정산 대사 콘솔**: `/reconciliation` — 배포 후 `https://<your-app>.vercel.app/reconciliation`
 - **선착순 드롭 콘솔**: `/flash` — 재고·동시성·TPS를 실제 엔진으로 시뮬레이션 (아래 §16)
+- **API 문서**: `/api-docs` — OpenAPI 3.0 명세 열람 + 브라우저 내 요청 검증 (아래 §18)
 - **서버 계층**: `backend/` (PHP 8.2 OOP API·배치) + `database/` (MySQL 8.0 DDL·ERD) — §4.5, [ERD 설계서](database/ERD_SPEC.md)
 - **마진 대시보드**: `/` — 판매 조건별 실시간 마진·마켓 비교·키워드 기회 분석 (기존 기능, 그대로 유지)
 
@@ -60,7 +63,9 @@
 14. [한계와 다음 단계](#14-한계와-다음-단계)
 15. [면접 예상 질문과 답](#15-면접-예상-질문과-답)
 16. [실시간 선착순 프로모션 & 쿠폰 원장 (Flash Drop)](#16-실시간-선착순-프로모션--쿠폰-원장-flash-drop)
-17. [작성자](#17-작성자)
+17. [쿠폰 → 정산 → 알림톡 통합 흐름](#17-쿠폰--정산--알림톡-통합-흐름)
+18. [API 문서와 라이브 데모](#18-api-문서와-라이브-데모)
+19. [작성자](#19-작성자)
 
 ---
 
@@ -155,6 +160,19 @@
    ├ "인쇄용 PDF" — A4 소명 요청서(브라우저 인쇄 → PDF 저장). 팝업 차단 시 HTML 저장으로 폴백
    ├ "이상 내역 CSV" — 전체 이상 내역(내부 공유용)
    └ "감사 로그 CSV" — audit.read 권한자만. 해시체인 무결성 배지 상시 표시
+
+6) 쿠폰 → 정산 매칭 — Campaign attribution 카드
+   ├ /flash에서 부하를 발생시키면 발급 원장이 브라우저 스토어에 저장되고 주문이 연결됨
+   ├ 이 화면의 데모 원장에 쿠폰 주문이 함께 들어와 주문번호로 매칭됨
+   └ 일치/차액/정산 누락 건수, 쿠폰 반영 전후 순마진, 캠페인 ROAS(광고비 수정 가능)
+
+7) 알림톡 발송 — Naver Cloud SENS 카드
+   ├ [이상 알림 발송] 심각(critical) 이상을 템플릿 본문으로 채워 말풍선 미리보기
+   ├ [배치 요약 발송] 배치당 1통 (같은 배치를 다시 보내면 중복 차단)
+   └ 시나리오(정상 / 3005 / 3016 / 401 / 429 / SMS 대체) × 재시도 → 타임라인에 상태 이력 누적
+
+8) API 문서 — /api-docs
+   └ 5개 엔드포인트의 요청·응답 스키마 열람, 파라미터·본문 수정 후 명세 기준 검증 + curl 복사
 ```
 
 ---
@@ -234,8 +252,10 @@ sequenceDiagram
 ```
 src/
 ├── app/
-│   ├── page.tsx                    # 마진 대시보드 + Enterprise 진입 카드
+│   ├── page.tsx                    # 마진 대시보드 + Enterprise 진입 카드 + 캠페인 현황
+│   ├── flash/page.tsx              # 실시간 선착순 드롭 콘솔
 │   ├── reconciliation/page.tsx     # 정산 대사 콘솔
+│   ├── api-docs/page.tsx           # OpenAPI 3.0 문서 + 요청 검증
 │   └── layout.tsx
 ├── components/
 │   ├── reconciliation/
@@ -243,7 +263,12 @@ src/
 │   │   ├── TenantSwitchConsole.tsx          # 테넌트/역할 전환 + 권한 매트릭스 + 감사 로그
 │   │   ├── ReconciliationVirtualTable.tsx   # 가상화 표 + 필터 + 키보드 탐색
 │   │   ├── MarketApiSyncConsole.tsx         # 마켓 API 수집: 자격 증명·연결 테스트·진행률·오류 안내
+│   │   ├── CampaignAttributionPanel.tsx     # 쿠폰 비용 매칭 · 캠페인별 순마진·ROAS
+│   │   ├── AlimtalkConsole.tsx              # 알림톡 말풍선 미리보기 + 발송 이력 타임라인
 │   │   └── SettlementDetailDrawer.tsx       # 1건 상세: 기대값/실제값/귀속/계산식
+│   ├── api-docs/ApiDocsConsole.tsx # 명세 뷰어 + Try it out (외부 CDN 없음)
+│   ├── FlashCouponConsole.tsx      # 부하 시뮬레이션 + 발급 원장 + 주문 연결 핸드오프
+│   ├── CampaignPerformanceCard.tsx # 홈의 캠페인 현황 (원장 기준)
 │   ├── EnterpriseEntry.tsx         # 홈의 엔터프라이즈 요약 (서버 컴포넌트, 빌드 시 실계산)
 │   └── (기존) Dashboard, MarginSimulator, MarketComparisonMatrix …
 ├── lib/
@@ -254,6 +279,12 @@ src/
 │   ├── virtualization.ts           # 윈도 계산 (고정/가변, 이진 탐색)
 │   ├── multiTenantRbac.ts          # 권한·마스킹·감사 로그(해시체인)
 │   ├── marketApiConnector.ts       # 마켓 API 커넥터: 인증·페이지네이션·재시도·마스킹·원장 결합
+│   ├── flashCouponEngine.ts        # 뮤텍스·멱등·상태머신·원장·시뮬레이터
+│   ├── campaignBridge.ts           # 원장 → 주문 → 정산서 행 → 쿠폰 매칭·ROAS
+│   ├── promotionStore.ts           # 페이지 사이 공유 원장(localStorage + useSyncExternalStore)
+│   ├── alimtalkSimulator.ts        # SENS 템플릿·dedupe·재시도·상태 전이 시뮬레이터
+│   ├── alimtalkLogStore.ts         # 발송 이력 저장소(브라우저)
+│   ├── openapiSimulator.ts         # 명세 해석·스키마 검증·요청 시뮬레이션
 │   ├── settlementFixtures.ts       # 고정 시드 데모 원장 + CSV 직렬화
 │   └── (기존) calculator, diagnostics, marketComparison, format, types
 └── workers/
@@ -262,8 +293,12 @@ src/
 docs/
 └── market-api-connector.md         # 마켓 연동 설계 노트 (인증·샌드박스·프록시·보안 경계)
 
+public/
+└── openapi.json                    # API 명세(단일 소스) — /api-docs가 이 파일을 읽는다
+
 e2e/
-└── reconciliation.spec.ts          # Playwright: 업로드 → 대사 → 필터 → 리포트 다운로드
+├── reconciliation.spec.ts          # Playwright: 업로드 → 대사 → 필터 → 리포트 다운로드
+└── promotion-e2e.spec.ts           # 쿠폰 → 정산 매칭 · 알림톡 · API 문서
 playwright.config.ts                # 프로덕션 빌드를 띄워 실사용 번들로 검증
 ```
 
@@ -760,7 +795,7 @@ B2B SaaS로 판매하려면 서버 영속화와 서버 측 권한 강제가 필�
 
 ## 11. 테스트 전략
 
-**302 케이스 / 12 파일 / Vitest (`environment: node`)**
+**356 케이스 / 16 파일 / Vitest (`environment: node`)**
 
 | 파일 | 케이스 | 검증 |
 | --- | --- | --- |
@@ -773,6 +808,10 @@ B2B SaaS로 판매하려면 서버 영속화와 서버 측 권한 강제가 필�
 | `settlementUpload.test.ts` | 14 | 0바이트·상한 초과·확장자·가짜 xlsx·구형 xls 거절 사유, 경고 임계값, accept 속성 |
 | `marketApiConnector.test.ts` | 38 | 마스킹·시크릿 세탁, 정산월 계산, 스마트스토어 bcrypt 전자서명, 쿠팡 CEA 서명(**node:crypto 독립 재계산**), 응답 정규화(한/영 필드·정산액 복원), 봉투 해석, 토큰 캐시·401 재발급, 429/5xx 재시도, 네트워크·JSON 구분, 페이지 상한, 샌드박스 결정론·장애 주입, 원장 결합 경고, **API 수집 → 대사 종단**(귀속 합 ≤ 총 누수), localStorage 저장/삭제 |
 | `flashCouponEngine.test.ts` | 53 | 할인 계산(정액·정률·상한·최소주문), 마진 가드레일, 원장 상태 머신 전이 전수, **1,000건 동시 요청 오버이슈 0건**, 멱등 재전송, 사용자 중복 160건 차단, 예산/구간 경계, 취소·만료 재고 1회 복원, 쇼핑몰 정산 대사(부담 주체 3분할·차액 귀속), 시뮬레이터 집계 |
+| `campaignBridge.test.ts` | 12 | 발급 원장 → 주문 연결 결정성, 최소주문금액·할인 규칙 일치, 취소·만료 제외, 정산 행 생성 → **대사 결과 이상 0건**, 원장 할인액 = 정산서 역산 할인액, 초과 차감 회수 대상 분리, 정산 누락 제외, **쿠폰 반영 전후 마진 차이 = 할인액**, 제휴사 부담 분리, ROAS·기여이익·원장 추정치 |
+| `promotionStore.test.ts` | 8 | 저장·재로드, 빈 스냅숏 참조 동일성, 스키마 버전 불일치 폐기, 손상 JSON 내성, patch 병합 규칙, 구독 알림·해지, 저장소 예외 시 메모리 유지, 초기화 |
+| `alimtalkSimulator.test.ts` | 22 | 수신 번호 정규화(+82/0082·마스킹), 템플릿 본문 PHP 동일 형식, 1,000자 상한, 정상·3005·3016·401·429·SMS 대체 시나리오, **dedupe_key 중복 차단**, 주문당 알림 상한, 재시도 상한 3회, 성공률 계산(3005 제외) |
+| `openapiSimulator.test.ts` | 12 | `openapi.json` 유효성, **index.php 라우트 = 명세 경로 일치**, 2xx·예시 존재, 필수 쿼리 표기, 예시 본문 201 통과, minimum/enum/maxItems/타입 위반 검출, JSON 파싱 오류, `/health` 무인자 시뮬레이션 |
 | `calculator.test.ts` | 22 | (기존) 수수료·마진·BEP·키워드 점수·포맷 |
 | `diagnostics.test.ts` | 23 | (기존) 4축 진단·비용 비율·액션 플랜 |
 | `marketComparison.test.ts` | 13 | (기존) 5개 마켓 비교·배지·순위 |
@@ -780,9 +819,9 @@ B2B SaaS로 판매하려면 서버 영속화와 서버 측 권한 강제가 필�
 ```bash
 npm run typecheck   # tsc --noEmit
 npm run lint        # next lint
-npm test            # vitest run (302)
+npm test            # vitest run (356)
 npm run build       # next build (프로덕션 번들 + 타입 검사)
-npm run test:e2e    # Playwright (프로덕션 빌드를 띄워 5 시나리오)
+npm run test:e2e    # Playwright (프로덕션 빌드를 띄워 9 시나리오)
 ```
 
 ### E2E — `npm run test:e2e` (Playwright)
@@ -792,7 +831,7 @@ npm run test:e2e    # Playwright (프로덕션 빌드를 띄워 5 시나리오)
 
 ```bash
 npx playwright install --with-deps chromium   # 최초 1회 (브라우저 + 시스템 의존성)
-npm run test:e2e          # 프로덕션 빌드를 띄우고 5 시나리오 실행
+npm run test:e2e          # 프로덕션 빌드를 띄우고 9 시나리오 실행
 npm run test:e2e:ui       # 타임라인 디버깅
 E2E_DEV_SERVER=1 npm run test:e2e   # 빌드 생략(개발 서버, 온디맨드 컴파일)
 ```
@@ -804,6 +843,10 @@ E2E_DEV_SERVER=1 npm run test:e2e   # 빌드 생략(개발 서버, 온디맨드 
 | 소명 리포트 | `접수용 CSV` 다운로드 → 파일명 `소명요청_스마트스토어_YYYY-MM-DD_N건.csv`, 본문에 마켓 규격 헤더 |
 | API 수집 | [API 자동 수집] 탭 → 샌드박스 수집 → 1,200행이 같은 대사 파이프라인으로 반영, 오류 카드 없음 |
 | 연결 테스트 | 인증 + 첫 페이지 확인이 `연결 성공`으로 표시 |
+| 쿠폰 → 정산 | `/flash`에서 부하 발생 → 원장·주문 연결 → 메인 카드와 정산 콘솔에 같은 원장, 쿠폰 주문이 정산 행에 포함되고 ROAS가 계산됨 |
+| 알림톡 중복 차단 | 발송 → 타임라인에 accepted 이력 → 같은 배치로 다시 발송하면 전부 skip되어 이력이 늘지 않음 |
+| 알림톡 재시도 | 429 시나리오 → failed 이력 → 재시도 성공으로 상태 전이 |
+| API 문서 | `/api-docs`가 명세의 5개 엔드포인트를 나열, 예시 본문은 201, `tenant_id: 0`은 400과 위반 경로 표시 |
 
 설계 메모
 
@@ -848,8 +891,8 @@ E2E_DEV_SERVER=1 npm run test:e2e   # 빌드 생략(개발 서버, 온디맨드 
 
 ```bash
 npm install
-npm run dev          # http://localhost:3000  (콘솔: /reconciliation)
-npm test             # 211 tests
+npm run dev          # http://localhost:3000  (콘솔: /reconciliation, API 문서: /api-docs)
+npm test             # 356 tests
 npm run build && npm start
 ```
 
@@ -861,7 +904,7 @@ npm run build && npm start
 docker compose up -d mysql
 cd backend && composer install && php bin/migrate.php --fresh --seed
 php bin/reconcile.php --tenant=1 --file=examples/settlement_2026-10_sample.csv --verify
-composer test        # 75 tests
+composer test        # 135 tests (MySQL 있으면 실연동 6건 포함)
 ```
 
 ### Vercel 원클릭 배포
@@ -871,6 +914,20 @@ composer test        # 75 tests
 - 환경변수·API 키가 필요 없습니다 (모든 계산은 브라우저에서, 데모 데이터는 고정 시드)
 - Next.js 프리셋이 자동 감지되고, `main` 연결 시 이후 푸시마다 자동 배포됩니다
 - 발급된 `*.vercel.app` 주소를 이력서·노션에 라이브 데모로 기재
+
+### GitHub Pages 정적 배포
+
+서버가 없는 환경(리크루터가 링크만 클릭하는 경우)에는 정적 빌드를 씁니다. `GITHUB_PAGES=1`을 주면
+`next.config.mjs`가 `output: 'export'`로 전환하고 저장소 하위 경로를 `basePath`·`assetPrefix`로 붙입니다.
+
+```bash
+GITHUB_PAGES=1 npm run build     # out/ 에 정적 산출물
+```
+
+- **E2E·로컬 개발은 그대로입니다.** 정적 내보내기를 기본값으로 두면 `next start`가 없어 Playwright가 깨지므로,
+  `next.config.mjs`는 환경변수로 분기합니다.
+- `images.unoptimized` · `trailingSlash` · `_next` 자산 경로까지 함께 맞춰야 하위 경로에서 CSS·JS가 404가 나지 않습니다.
+- `out/openapi.json`이 같이 배포되므로 `/api-docs`는 정적 페이지에서도 명세를 읽습니다.
 
 ---
 
@@ -885,7 +942,7 @@ composer test        # 75 tests
 | 감사 로그 | 브라우저 메모리 + 해시체인 | append-only 저장(WORM), 서버 서명, 보존 정책 |
 | 계약 | 채널별 프리셋 | 법인·카테고리·기간별 계약 테이블 |
 | 규모 | 브라우저 10만 건 | 서버 배치(수백만 건), 스트리밍 리포트 |
-| 알림 | 화면 내 표시 | 손실 임계치 초과 시 메일·슬랙 알림 |
+| 알림 | 알림톡 발송 오케스트레이션 + 브라우저 시뮬레이터(실발송은 자격 증명 필요) | 손실 임계치 초과 시 메일·슬랙 알림, 발송 큐 워커 |
 
 > **중요**: 이 저장소의 RBAC은 **포트폴리오용 시뮬레이터**입니다. 클라이언트 권한 검사는 UX이지 보안 경계가 아닙니다.
 > 실서비스에서는 반드시 서버에서 같은 규칙을 강제해야 하며, `multiTenantRbac.ts`의 규칙을 공유 모듈로 서버에 올리는 것이
@@ -903,6 +960,10 @@ composer test        # 75 tests
 - [x] 의존성 제로 순수 엑셀 파서(XLSX) 및 마켓별 규격 소명 리포트(CSV/인쇄용 PDF) 다운로드
 - [x] 마켓 정산 실시간 API 연동 (스마트스토어 커머스API / 쿠팡 Open API Sandbox)
 - [x] Playwright 브라우저 E2E 테스트 슈트 (파일 업로드 → 대사 검증 → 리포트 다운로드)
+- [x] 쿠폰 발급 원장 → 주문 연결 → 정산 매칭 → 캠페인별 순마진·ROAS (화면 사이 공유 상태)
+- [x] SENS 알림톡 발송 시뮬레이터 + 발송 이력 타임라인 (중복 차단·재시도·상태 전이)
+- [x] 인터랙티브 OpenAPI 3.0 문서(`/api-docs`) — 외부 CDN 없이 request/response 스키마와 요청 검증
+- [x] GitHub Pages 정적 내보내기(`GITHUB_PAGES=1`) — 서버 없는 라이브 데모
 - [ ] 마켓 API 서버 프록시 + 시크릿 보관(KMS) 경로 — 브라우저에 시크릿을 두지 않는 운영 구성
 - [ ] 정산 이력 저장 + 월별 재대사(전월 대비 차액 추적)
 
@@ -1105,7 +1166,126 @@ php backend/bin/coupon-ledger-bench.php --rows=100000
 
 ---
 
-## 17. 작성자
+## 17. 쿠폰 → 정산 → 알림톡 통합 흐름
+
+선착순 드롭(§16)은 "발급이 정확한가"를, 정산 대사는 "마켓이 정산을 맞게 했는가"를 보여 줍니다.
+셀러가 실제로 알고 싶은 것은 그 사이의 한 가지입니다: **쿠폰으로 할인해 준 돈이 실제 주문·정산에 그대로 반영됐고,
+그 캠페인이 남는 장사였나.**
+
+세 화면이 서로 다른 원장을 들고 있으면 이 질문에 답할 수 없으므로, 발급 원장을 **하나로 공유**하고
+쿠폰 사용 주문을 정산 행과 **주문번호로** 맞춥니다.
+
+### 17.1 화면 사이 공유 상태 — `promotionStore.ts`
+
+| 결정 | 이유 |
+| --- | --- |
+| localStorage 한 곳 + 버전 필드 | 서버 세션 없이 페이지 사이 상태를 공유하는 가장 단순한 방법. 스키마가 바뀐 뒤 남은 옛 원장을 읽으면 화면이 조용히 틀린 숫자를 보여 주므로 `version`이 다르면 버린다 |
+| `useSyncExternalStore` + 캐시 | 스냅숏 참조가 매번 바뀌면 무한 렌더가 된다. 스토어가 캐시를 들고 있다가 쓰기·다른 탭 변경(`storage` 이벤트) 때만 무효화한다 |
+| 저장소 예외를 삼킴 | Safari 프라이빗 모드·용량 초과에서는 `setItem`이 던진다. 그때는 메모리 상태로만 동작하고 화면은 그대로 뜬다 |
+| 원문 쿠폰 코드를 저장하지 않음 | 원장에는 해시·마스킹 코드만 남는다. 발급 응답에만 원문이 있고, 그 규칙은 서버(PHP)와 같다 |
+
+### 17.2 쿠폰 사용 주문 만들기 — `campaignBridge.ts`
+
+발급만 하고 끝나면 "쿠폰이 실제로 쓰였는지"를 정산에서 확인할 수 없습니다. 그래서 시뮬레이션 직후
+발급 원장에서 결정적 비율(기본 62%)을 골라 **엔진의 상태 머신을 그대로 통과**시킵니다:
+`ISSUED → RESERVED(주문 연결, 할인액 확정) → REDEEMED(사용 확정)`. 화면의 `REDEEMED`는 손으로 적은 글자가 아니라
+전이 결과이고, 주문번호(`SS20261114-000123`)와 주문금액이 이때 확정됩니다.
+
+- 한 캠페인에 **부담 주체가 다른 두 템플릿**(제휴사 부담 정액 / 플랫폼 부담 정률)을 함께 돌려,
+  "쿠폰 할인은 누구 돈인가"를 정산 단계에서 나눠 볼 수 있게 했습니다.
+- 만들어진 주문은 마켓 정산서 형식(`SettlementRow`)으로 변환되어 데모 원장과 **같은 대사 파이프라인**을 탑니다.
+  필터·검색·가상화 테이블·소명 리포트가 쿠폰 주문에도 그대로 동작합니다.
+- 원장 스토어는 훅이 아니라 스토어에서 직접 읽습니다. 첫 마운트 이펙트가 하이드레이션 직전의 빈 스냅숏을
+  문 채로 돌면 쿠폰 주문이 빠진 원장이 만들어지기 때문입니다(실제로 E2E에서 이 순서 문제가 드러나 고쳤습니다).
+
+### 17.3 매칭 규칙과 ROAS 계산
+
+정산서의 결제금액은 이미 **할인 반영 후** 금액입니다. 그래서 역산이 가능합니다.
+
+```
+정산서 할인 차감액 = 주문금액(쿠폰 적용 전) − 결제금액
+차액             = 정산서 할인 차감액 − 원장 할인액
+순마진           = 실정산액 − 매입원가 − 실배송원가        (쿠폰 비용이 이미 차감된 값)
+ROAS             = 귀속 매출 ÷ (우리 부담 쿠폰 비용 + 집행 광고비)
+```
+
+| 판정 | 조건 | 처리 |
+| --- | --- | --- |
+| `MATCHED` | 차액 = 0 | 할인액이 정산서에 그대로 반영됨 |
+| `SELLER_OVERBORNE` | 차액 > 0 | 셀러가 더 냄 → 마켓에 돌려받을 금액으로 분리 |
+| `PLATFORM_OVERBORNE` | 차액 < 0 | 우리가 더 부담 → 손실로 표시 |
+| `DUPLICATE_SETTLEMENT` | 같은 주문이 두 번 | 중복 차감 의심 |
+| `MISSING_SETTLEMENT` | 정산서에 주문 없음 | **매출·마진에 넣지 않음** (정산이 안 들어온 주문을 매출로 세면 캠페인이 좋아 보이기만 한다) |
+
+제휴사 부담 쿠폰은 우리 비용이 아니므로 ROAS 분모에서 빼고 따로 표시합니다.
+분모가 0이면 ROAS는 `0`이 아니라 `null`(화면 `—`)입니다.
+
+### 17.4 화면에서 확인되는 값 (정적 빌드 실측)
+
+| 항목 | 값 |
+| --- | --- |
+| 발급 / 사용 | 300장 / 177장 |
+| 쿠폰 할인 총액 | 527,600원 (우리 부담 170,600원 · 제휴사 357,000원) |
+| 순마진 | 반영 전 2,815,726원 → 반영 후 2,288,126원 (차이 = 할인 총액) |
+| 캠페인 ROAS | 3.49배 (귀속 매출 5,831,400원 ÷ 미디어 비용 1,670,600원) |
+| 광고비 차감 기여이익 | 788,126원 |
+
+숫자는 고정 시드 시뮬레이션이라 같은 조건이면 재현됩니다. 집행 광고비는 화면에서 직접 바꿀 수 있고,
+바꾸면 ROAS·기여이익이 즉시 다시 계산됩니다.
+
+### 17.5 SENS 알림톡 발송 시뮬레이터 — `alimtalkSimulator.ts`
+
+백엔드의 발송 오케스트레이션(`SettlementAlertNotifier`, `SettlementAlertComposer`)을 브라우저에서 같은 순서로 돌립니다.
+
+- **템플릿만 씁니다.** 카카오 알림톡은 자유 문장이 아니라 검수된 템플릿 + 변수 치환입니다. 본문은 `SS_ANOMALY_CRITICAL`·
+  `SS_BATCH_SUMMARY` 두 형식이고, 변수에 개행을 넣지 않으며 1,000자 상한을 지킵니다.
+- **중복 차단.** `dedupe_key`(`anomaly:{tenant}:{order}:{type}`, `summary:{tenant}:{batch}`)가 같으면 다시 보내지 않습니다.
+- **주문당 상한 2통.** 한 주문에 원인이 다섯 개 붙었다고 문자 다섯 통을 보내면 그 알림은 곧 무시됩니다.
+- **상태 전이.** `queued → accepted(202) → delivered(0000)` / `failed`. 3005(AckTimeout)은 성공으로 세지 않고 `sent`로 남깁니다.
+- **재시도.** `attempts < 3`까지. 429는 재시도하면 성공하고, 3016(템플릿 불일치)·401(서명 오류)은 재시도해도 실패합니다 —
+  사람이 템플릿·키를 고쳐야 하는 오류이기 때문입니다.
+
+화면은 카카오톡 말풍선 미리보기 + 발송 이력 타임라인으로 구성되고, 시나리오 선택으로 정상·3005·3016·401·429·SMS 대체를
+재현할 수 있습니다. 이력은 브라우저에 누적됩니다(`sellerscope.alimtalk.v1`).
+
+### 17.6 이 흐름의 경계
+
+- **실제 SENS 발송은 일어나지 않습니다.** 액세스 키·서비스 ID·검수 템플릿이 없으면 발송할 수 없으므로,
+  화면에 `시뮬레이션 · 실제 발송 없음` 배지를 고정 표기하고 각 로그 행에도 `simulated`로 남깁니다.
+  서명(`x-ncp-apigw-signature-v2`)도 흉내 내지 않습니다 — 서버에서 HMAC-SHA256으로 만드는 값입니다.
+- **쿠폰 사용 주문은 데모 시뮬레이터가 결정적으로 만든 값입니다.** 실서비스에서는 마켓 주문 웹훅/주문 API가
+  이 자리를 대신하고, 매칭·ROAS 계산 코드는 그대로 씁니다.
+- 알림톡 본문·상태 코드·재시도 규칙은 백엔드와 같은 규칙이지만, 두 구현이 함께 도는 것은 아닙니다
+  (브라우저는 시뮬레이터, 서버는 실제 SENS 호출).
+
+---
+
+## 18. API 문서와 라이브 데모
+
+### 18.1 `/api-docs` — CDN 없이 도는 OpenAPI 뷰어
+
+Swagger UI를 CDN으로 불러오지 않고, 명세 파일 하나로 직접 그립니다.
+
+- **단일 소스**: `public/openapi.json` (OpenAPI 3.0.3). 엔드포인트 5개 — `/health`, `POST /api/v1/reconciliations`,
+  `GET …/summary`, `GET …/rows`, `GET /api/v1/anomalies`.
+- **명세가 코드보다 앞서지 않게** `openapiSimulator.test.ts`가 `backend/public/index.php`의 라우트를 정규식으로 읽어
+  명세 경로와 **집합이 같은지** 비교합니다. 컨트롤러에 라우트를 추가하고 명세를 잊으면 테스트가 깨집니다.
+- **Try it out**: 브라우저에서 요청을 검증합니다 — 필수 값, 타입, enum, `tenant_id ≥ 1`, `rows` 1~5,000행, `YYYY-MM-DD` 형식.
+  실패하면 PHP와 같은 형식(`{"error":{"code":"invalid_request",...}}`)으로 400을 보여 주고, 통과하면 명세의 예시 응답을 보여 줍니다.
+- **서버를 호출하지 않습니다.** 정적 배포에는 백엔드가 없으므로 화면에 `실제 호출 아님` 배지를 붙이고,
+  같은 요청을 로컬에서 실행할 수 있도록 `curl` 명령을 함께 만들어 줍니다.
+
+### 18.2 정적 내보내기 — 같은 코드로 서버 없이 배포
+
+- `GITHUB_PAGES=1`이면 `next.config.mjs`가 `output: 'export'`, `basePath`·`assetPrefix`(저장소 하위 경로),
+  `images.unoptimized`, `trailingSlash`를 켭니다. 기본값은 기존 `next dev` / `next build` / `next start` 그대로입니다 —
+  정적 내보내기를 기본값으로 두면 `next start`가 없어 Playwright E2E가 통째로 깨지기 때문입니다.
+- `out/`에는 `index.html`, `/flash/`, `/reconciliation/`, `/api-docs/`, `openapi.json`이 함께 나갑니다.
+- 정적 페이지에서 `/api-docs`가 명세를 읽도록 `NEXT_PUBLIC_BASE_PATH`를 basePath와 같은 값으로 주입합니다.
+
+---
+
+## 19. 작성자
 
 **서승혜 (Seunghye Seo)** — Frontend & Fullstack Engineer (4년 차)  
 GitHub [@Shye-Seo](https://github.com/Shye-Seo) · tjtmdgp95@gmail.com · 정보처리기사
