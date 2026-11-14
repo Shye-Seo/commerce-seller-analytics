@@ -35,7 +35,7 @@
 마켓은 매월 정산서를 주고, 셀러는 그 숫자를 검증 없이 받아들입니다. SellerScope는 그 숫자를 **계약 조건으로 다시 계산**해서,
 수수료 초과 청구·반품비 중복 차감·설명되지 않는 정산 부족을 **원인별 금액으로 증명**합니다.
 
-- **라이브 데모(정적 배포)**: `https://shye-seo.github.io/commerce-seller-analytics/` — 서버 없이 도는 빌드(`GITHUB_PAGES=1`)
+- **라이브 데모(정적 배포)**: `https://shye-seo.github.io/commerce-seller-analytics/` — `gh-pages` 브랜치에 정적 빌드가 올라가 있고, 저장소 Settings → Pages에서 소스를 그 브랜치로 지정하면 활성화됩니다(§18.2)
 - **정산 대사 콘솔**: `/reconciliation` — 배포 후 `https://<your-app>.vercel.app/reconciliation`
 - **선착순 드롭 콘솔**: `/flash` — 재고·동시성·TPS를 실제 엔진으로 시뮬레이션 (아래 §16)
 - **API 문서**: `/api-docs` — OpenAPI 3.0 명세 열람 + 브라우저 내 요청 검증 (아래 §18)
@@ -1282,6 +1282,23 @@ Swagger UI를 CDN으로 불러오지 않고, 명세 파일 하나로 직접 그�
   정적 내보내기를 기본값으로 두면 `next start`가 없어 Playwright E2E가 통째로 깨지기 때문입니다.
 - `out/`에는 `index.html`, `/flash/`, `/reconciliation/`, `/api-docs/`, `openapi.json`이 함께 나갑니다.
 - 정적 페이지에서 `/api-docs`가 명세를 읽도록 `NEXT_PUBLIC_BASE_PATH`를 basePath와 같은 값으로 주입합니다.
+
+**배포 상태와 재배포 방법**
+
+- 저장소에는 `gh-pages` 브랜치로 정적 산출물이 올라가 있습니다(`.nojekyll` 포함).
+- GitHub Pages **활성화는 저장소 관리자 권한이 필요**해 자동화하지 못했습니다. Settings → Pages →
+  Source를 `Deploy from a branch` → `gh-pages` / `/ (root)`로 지정하면 바로 열립니다.
+- 코드를 바꿀 뒤 재배포:
+
+```bash
+npm run build:pages                       # out/ 생성
+rm -rf ../csa-gh-pages && git worktree add --detach ../csa-gh-pages
+cd ../csa-gh-pages && git checkout --orphan gh-pages && git rm -rf . -q
+cp -r ../commerce-seller-analytics/out/. . && touch .nojekyll
+git add -A && git commit -m "build: static export" && git push -f origin gh-pages
+```
+
+- `.github/workflows` 푸시는 GitHub 앱 권한 정책상 거부되므로 Actions 기반 자동 배포는 쓰지 않습니다.
 
 ---
 
