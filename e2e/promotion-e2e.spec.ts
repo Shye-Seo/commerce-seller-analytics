@@ -98,12 +98,13 @@ test.describe("API 문서", () => {
     await page.goto("/api-docs");
 
     const list = page.getByTestId("api-op-list");
-    await expect(list).toContainText("/api/v1/reconciliations", { timeout: 20_000 });
-    await expect(list).toContainText("/health");
-    await expect(list).toContainText("/api/v1/anomalies");
+    await expect(list).toContainText("서비스 상태 확인", { timeout: 20_000 });
+    await expect(list).toContainText("정산 배치 수신");
+    await expect(list).toContainText("열린 이상 목록");
 
     // POST 배치: 예시 본문 그대로면 201 예시 응답
-    await list.getByRole("button", { name: /\/api\/v1\/reconciliations$/ }).click();
+    await list.getByRole("button", { name: /정산 배치 수신/ }).click();
+    await expect(page.locator("main")).toContainText("/api/v1/reconciliations");
     await page.getByTestId("api-try-submit").click();
     const result = page.getByTestId("api-try-result");
     await expect(result).toContainText("201", { timeout: 10_000 });

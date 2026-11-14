@@ -223,7 +223,7 @@ export default function ApiDocsConsole() {
           </div>
         )}
 
-        <div className="grid gap-5 lg:grid-cols-[264px_minmax(0,1fr)]">
+        <div className="grid gap-5 lg:grid-cols-[300px_minmax(0,1fr)]">
           <aside className="lg:sticky lg:top-20 lg:self-start">
             <div className="card p-3">
               <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Endpoints</p>
@@ -244,7 +244,9 @@ export default function ApiDocsConsole() {
                               }`}
                             >
                               <MethodBadge method={entry.method} />
-                              <span className="truncate font-mono text-[10.5px]">{entry.path}</span>
+                              <span className="truncate text-[11px]" title={`${entry.method.toUpperCase()} ${entry.path}`}>
+                                {entry.operation.summary ?? entry.path}
+                              </span>
                             </button>
                           </li>
                         );
