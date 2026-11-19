@@ -214,3 +214,47 @@ test.describe("마켓 API 자동 수집", () => {
     await expect(page.getByTestId("api-probe-result")).toContainText("연결 성공", { timeout: 45_000 });
   });
 });
+
+test.describe("월별 재대사 · 전월 대비", () => {
+  test("지난 2개월 샘플을 만들면 원인별 증감이 표에 나오고, 이번 달 요약이 브라우저에 저장된다", async ({ page }) => {
+    await waitForDemoReady(page);
+
+    const panel = page.getByTestId("period-panel");
+    await panel.scrollIntoViewIfNeeded();
+    await expect(panel).toBeVisible();
+    // 이력이 없는 첫 방문자는 빈 상태에서 시작한다(지어낸 과거를 먼저 보여 주지 않는다)
+    await expect(page.getByTestId("period-empty")).toBeVisible();
+    await expect(page.getByTestId("period-month-chip")).toContainText("2026-11");
+
+    await page.getByTestId("period-seed-demo").click();
+
+    await expect(page.getByTestId("period-comparison")).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId("period-verdict")).toContainText("2026-10 대비");
+    await expect(page.getByTestId("period-previous-source")).toContainText("샘플");
+
+    // 비교 기준월은 지난 두 달 중 최신(2026-10)이고, 첫 달로 바꾸면 증감이 다시 계산된다
+    const select = page.getByTestId("period-previous-select");
+    const selected = await select.inputValue();
+    expect(selected).toBe("2026-10");
+    const verdictAtLatest = await page.getByTestId("period-verdict").innerText();
+    await select.selectOption("2026-09");
+    await expect(page.getByTestId("period-verdict")).toContainText("2026-09 대비");
+    expect(await page.getByTestId("period-verdict").innerText()).not.toBe(verdictAtLatest);
+
+    // 원인별 표에는 증감 금액이 붙고, 누수 증감은 숫자로 읽힌다
+    await select.selectOption("2026-10");
+    await expect(page.getByTestId("period-cause-FEE_OVERCHARGE")).toContainText("수수료 초과");
+    const leakDelta = await page.getByTestId("period-leak-delta").innerText();
+    expect(leakDelta).toMatch(/[+\-−]?[\d,]+원/);
+
+    // 이번 달 요약 저장 → 안내 문구
+    await page.getByTestId("period-save").click();
+    await expect(page.getByRole("status")).toContainText("2026-11 요약을 저장했습니다", { timeout: 15_000 });
+
+    // 새로고침해도 저장된 이력으로 같은 비교가 다시 뜬다(localStorage 왕복)
+    await page.reload();
+    await expect(page.getByTestId("kpi-matched-rate")).toContainText("%", { timeout: 45_000 });
+    await page.getByTestId("period-panel").scrollIntoViewIfNeeded();
+    await expect(page.getByTestId("period-verdict")).toContainText("2026-10 대비", { timeout: 20_000 });
+  });
+});

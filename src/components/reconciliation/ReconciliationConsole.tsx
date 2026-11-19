@@ -10,7 +10,7 @@ import {
   type ReconciledRow,
   type ReconciliationSummary,
 } from "@/lib/reconciliationEngine";
-import { generateSettlementCsv, generateSettlementRows } from "@/lib/settlementFixtures";
+import { generateSettlementCsv, generateSettlementRows, SETTLEMENT_SNAPSHOT_DATE } from "@/lib/settlementFixtures";
 import { formatThroughput } from "@/lib/csvStreamParser";
 import type { FileParseResult } from "@/lib/settlementFileParser";
 import ReconciliationFileUploader from "./ReconciliationFileUploader";
@@ -21,6 +21,7 @@ import TenantSwitchConsole from "./TenantSwitchConsole";
 import ReconciliationVirtualTable, { matchesFilter, type RowFilterId } from "./ReconciliationVirtualTable";
 import SettlementDetailDrawer from "./SettlementDetailDrawer";
 import CampaignAttributionPanel from "./CampaignAttributionPanel";
+import PeriodComparisonPanel from "./PeriodComparisonPanel";
 import AlimtalkConsole from "./AlimtalkConsole";
 import { buildSettlementRowsForOrders, summarizeCampaignPerformance } from "@/lib/campaignBridge";
 import { resetPromotionStore, promotionStore, setCampaignSpend, usePromotionSnapshot } from "@/lib/promotionStore";
@@ -35,6 +36,7 @@ import {
   type RoleId,
 } from "@/lib/multiTenantRbac";
 import { formatPercent, formatWon } from "@/lib/format";
+import { monthOf } from "@/lib/periodComparison";
 
 /**
  * 정산 대사 콘솔 (클라이언트 셸)
@@ -489,6 +491,8 @@ export default function ReconciliationConsole() {
   }, [summary]);
 
   const biggest = summary ? biggestLeakCause(summary) : null;
+  // 월별 재대사 기준월. 데모 원장은 고정 기준일을 쓰고, 업로드·수집은 오늘 기준으로 본다.
+  const settlementMonth = dataset?.source === "generated" ? monthOf(SETTLEMENT_SNAPSHOT_DATE) : monthOf(new Date());
   const busy = progress.phase === "generating" || progress.phase === "parsing" || progress.phase === "reconciling" || uploading;
 
   // 쿠폰 원장 × 대사 행 → 쿠폰 비용 매칭 · 캠페인 ROAS. 화면은 계산하지 않고 이 값만 그린다.
@@ -786,6 +790,18 @@ export default function ReconciliationConsole() {
               sourceFileName={dataset?.source === "upload" ? dataset.label : undefined}
               disabled={busy}
               onAudit={(target, detail, outcome) => log("EXPORT_CSV", target, detail, outcome)}
+              onNotice={(next) => setNotice(next)}
+            />
+
+            {/* 이번 달 대사 요약 ↔ 저장된 지난 달. 장기 추세와 원인별 증감은 이 패널이 담당한다 */}
+            <PeriodComparisonPanel
+              tenantId={tenantId}
+              role={role}
+              month={settlementMonth}
+              summary={summary}
+              source={dataset?.source ?? "generated"}
+              datasetLabel={dataset?.label}
+              onAudit={(target, detail, outcome) => log("RECONCILE_RUN", target, detail, outcome)}
               onNotice={(next) => setNotice(next)}
             />
 

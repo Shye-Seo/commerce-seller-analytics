@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/Shye-Seo/commerce-seller-analytics/actions/workflows/ci.yml"><img alt="CI Pipeline" src="https://github.com/Shye-Seo/commerce-seller-analytics/actions/workflows/ci.yml/badge.svg" /></a>
-  <img alt="Tests" src="https://img.shields.io/badge/tests-500_(Vitest_356_%C2%B7_PHPUnit_135_%C2%B7_E2E_9)-2E7D32?style=flat-square" />
+  <img alt="Tests" src="https://img.shields.io/badge/tests-545_(Vitest_400_%C2%B7_PHPUnit_135_%C2%B7_E2E_10)-2E7D32?style=flat-square" />
 </p>
 
 <div align="center">
@@ -15,6 +15,7 @@
   <sub>마켓 정산 API 자동 수집(스마트스토어 커머스API · 쿠팡 Open API) · Playwright E2E</sub><br />
   <sub><strong>실시간 선착순 드롭</strong>: 토스형 타임딜 · 멱등 쿠폰 발급 · 쿠폰 원장 · 쇼핑몰 정산 대사</sub><br />
   <sub><strong>쿠폰 → 정산 → 알림톡</strong>: 쿠폰 사용 주문 매칭 · 캠페인 ROAS · SENS 알림톡 시뮬레이터 · OpenAPI 3.0 문서</sub><br />
+  <sub><strong>월별 재대사</strong>: 월별 요약 이력 저장 · 전월 대비 원인별 차액 추적 · 신규/해소 원인 판정</sub><br />
   <sub><strong>Full-Cycle</strong>: Next.js 14 프론트엔드 + PHP 8.2 백엔드 + MySQL 8.0 + 네이버클라우드 SENS 알림톡</sub>
 </p>
 
@@ -22,7 +23,7 @@
   <a href="https://nextjs.org"><img alt="Next.js" src="https://img.shields.io/badge/Next.js-14.2-000000?style=flat-square&logo=nextdotjs&logoColor=white" /></a>
   <a href="https://www.typescriptlang.org"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.9_strict-3178C6?style=flat-square&logo=typescript&logoColor=white" /></a>
   <a href="https://tailwindcss.com"><img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" /></a>
-  <a href="https://vitest.dev"><img alt="Tests" src="https://img.shields.io/badge/Vitest-356_tests_passing-4C9A2A?style=flat-square&logo=vitest&logoColor=white" /></a>
+  <a href="https://vitest.dev"><img alt="Tests" src="https://img.shields.io/badge/Vitest-400_tests_passing-4C9A2A?style=flat-square&logo=vitest&logoColor=white" /></a>
   <a href="https://www.php.net/releases/8.2/ko.php"><img alt="PHP" src="https://img.shields.io/badge/PHP-8.2_OOP-777BB4?style=flat-square&logo=php&logoColor=white" /></a>
   <a href="https://dev.mysql.com/doc/refman/8.0/en/"><img alt="MySQL" src="https://img.shields.io/badge/MySQL-8.0_InnoDB-4479A1?style=flat-square&logo=mysql&logoColor=white" /></a>
   <a href="https://api.ncloud-docs.com/docs/sens-alimtalk-send"><img alt="Naver Cloud SENS" src="https://img.shields.io/badge/Naver_Cloud-SENS_알림톡-03C75A?style=flat-square&logo=naver&logoColor=white" /></a>
@@ -39,6 +40,7 @@
 - **정산 대사 콘솔**: `/reconciliation` — 배포 후 `https://<your-app>.vercel.app/reconciliation`
 - **선착순 드롭 콘솔**: `/flash` — 재고·동시성·TPS를 실제 엔진으로 시뮬레이션 (아래 §16)
 - **API 문서**: `/api-docs` — OpenAPI 3.0 명세 열람 + 브라우저 내 요청 검증 (아래 §18)
+- **월별 재대사**: `/reconciliation` 하단 — 이번 달 요약 저장 · 전월 대비 원인별 차액 · 신규/해소 원인 (아래 §19)
 - **서버 계층**: `backend/` (PHP 8.2 OOP API·배치) + `database/` (MySQL 8.0 DDL·ERD) — §4.5, [ERD 설계서](database/ERD_SPEC.md)
 - **마진 대시보드**: `/` — 판매 조건별 실시간 마진·마켓 비교·키워드 기회 분석 (기존 기능, 그대로 유지)
 
@@ -65,7 +67,8 @@
 16. [실시간 선착순 프로모션 & 쿠폰 원장 (Flash Drop)](#16-실시간-선착순-프로모션--쿠폰-원장-flash-drop)
 17. [쿠폰 → 정산 → 알림톡 통합 흐름](#17-쿠폰--정산--알림톡-통합-흐름)
 18. [API 문서와 라이브 데모](#18-api-문서와-라이브-데모)
-19. [작성자](#19-작성자)
+19. [월별 재대사 — 전월 대비 차액 추적](#19-월별-재대사--전월-대비-차액-추적)
+20. [작성자](#20-작성자)
 
 ---
 
@@ -81,7 +84,8 @@
 | 6 | **드래그앤드롭 파일 입구** — 검증 + 의존성 0 xlsx 파서(워커) | `src/lib/xlsxConvert.ts`, `src/lib/settlementUpload.ts`, `ReconciliationFileUploader.tsx` | 34 케이스 |
 | 7 | **마켓 소명 리포트** — 플랫폼 규격 CSV + 인쇄용 PDF | `src/lib/reconciliationReport.ts`, `ReconciliationClaimPanel.tsx` | 28 케이스 |
 | 8 | **마켓 정산 API 자동 수집** — 스마트스토어 커머스API(OAuth2+bcrypt 전자서명) / 쿠팡 Open API(CEA HMAC-SHA256), 샌드박스·재시도·마스킹·원장 결합 | `src/lib/marketApiConnector.ts`, `MarketApiSyncConsole.tsx` | 38 케이스 |
-| 9 | **Playwright 브라우저 E2E** — 업로드 → 대사 → 필터 → 소명 리포트 다운로드 | `playwright.config.ts`, `e2e/reconciliation.spec.ts` | 5 시나리오 |
+| 9 | **Playwright 브라우저 E2E** — 업로드 → 대사 → 필터 → 소명 리포트 다운로드 → 전월 대비 | `playwright.config.ts`, `e2e/reconciliation.spec.ts` | 10 시나리오 |
+| 10 | **월별 재대사** — 월 요약 이력(localStorage, 스키마 버전·검증·24개월 상한) + 전월 대비 원인별 차액·신규/해소 판정 | `src/lib/periodComparison.ts`, `src/lib/settlementHistory.ts`, `PeriodComparisonPanel.tsx` | 44 케이스 + E2E 1 |
 
 **측정값 (이 컨테이너, Node 20.20.2 · 100,000행 기준)**
 
@@ -171,7 +175,12 @@
    ├ [배치 요약 발송] 배치당 1통 (같은 배치를 다시 보내면 중복 차단)
    └ 시나리오(정상 / 3005 / 3016 / 401 / 429 / SMS 대체) × 재시도 → 타임라인에 상태 이력 누적
 
-8) API 문서 — /api-docs
+8) 월별 재대사 — Month over month 카드
+   ├ [이번 달 요약 저장] — 이번 달 요약을 브라우저 이력에 저장(같은 달은 덮어씀)
+   ├ [지난 2개월 샘플] — 이력이 없을 때 지난 두 달을 실제 대사 엔진으로 계산해 비교 화면 구성(데모 표시)
+   └ 비교 기준월 선택 → 누수·정상 대사율·이상 건수 증감, 원인별 증감 표, 신규·해소 원인 칩
+
+9) API 문서 — /api-docs
    └ 5개 엔드포인트의 요청·응답 스키마 열람, 파라미터·본문 수정 후 명세 기준 검증 + curl 복사
 ```
 
@@ -795,7 +804,7 @@ B2B SaaS로 판매하려면 서버 영속화와 서버 측 권한 강제가 필�
 
 ## 11. 테스트 전략
 
-**356 케이스 / 16 파일 / Vitest (`environment: node`)**
+**400 케이스 / 19 파일 / Vitest (`environment: node`)**
 
 | 파일 | 케이스 | 검증 |
 | --- | --- | --- |
@@ -815,13 +824,16 @@ B2B SaaS로 판매하려면 서버 영속화와 서버 측 권한 강제가 필�
 | `calculator.test.ts` | 22 | (기존) 수수료·마진·BEP·키워드 점수·포맷 |
 | `diagnostics.test.ts` | 23 | (기존) 4축 진단·비용 비율·액션 플랜 |
 | `marketComparison.test.ts` | 13 | (기존) 5개 마켓 비교·배지·순위 |
+| `periodComparison.test.ts` | 17 | 월 문자열 이동·간격(연 경계), 두 달 누수/정상 대사율/건수 중감, 이전 값이 0일 때 중감률 `null`, 신규·해소·악화·개선·변화 없음 판정, 양쪽 0인 원인 제외, 정렬 결정성, 채널 4개 고정 순서, 같은 달·뒤집힌 순서 오류, 원 단위 중감, 한 줄 요약 문장 |
+| `settlementHistory.test.ts` | 20 | 스냅숏 추리기, 저장→읽기 왕복, 손상 JSON·버전 불일치·형식 오류 레코드 폐기, 숫자가 아닌 필드 정규화, 같은 테넌트·달 덮어쓰기, 테넌트당 24개월 상한, 이전 달 선택, `QuotaExceededError` 시 기존 이력 보존, SSR에서 저장소 없음 |
+| `demoMonthHistory.test.ts` | 7 | 고정 시드 결정성, 테넌트별 다른 원장, 실제 대사 엔진 통과, 두 달 전→지난달 범위비 중복 감소·수수료 초과 증가, 윤년 말일 |
 
 ```bash
 npm run typecheck   # tsc --noEmit
 npm run lint        # next lint
-npm test            # vitest run (356)
+npm test            # vitest run (400)
 npm run build       # next build (프로덕션 번들 + 타입 검사)
-npm run test:e2e    # Playwright (프로덕션 빌드를 띄워 9 시나리오)
+npm run test:e2e    # Playwright (프로덕션 빌드를 띄워 10 시나리오)
 ```
 
 ### E2E — `npm run test:e2e` (Playwright)
@@ -831,7 +843,7 @@ npm run test:e2e    # Playwright (프로덕션 빌드를 띄워 9 시나리오)
 
 ```bash
 npx playwright install --with-deps chromium   # 최초 1회 (브라우저 + 시스템 의존성)
-npm run test:e2e          # 프로덕션 빌드를 띄우고 9 시나리오 실행
+npm run test:e2e          # 프로덕션 빌드를 띄우고 10 시나리오 실행
 npm run test:e2e:ui       # 타임라인 디버깅
 E2E_DEV_SERVER=1 npm run test:e2e   # 빌드 생략(개발 서버, 온디맨드 컴파일)
 ```
@@ -847,6 +859,7 @@ E2E_DEV_SERVER=1 npm run test:e2e   # 빌드 생략(개발 서버, 온디맨드 
 | 알림톡 중복 차단 | 발송 → 타임라인에 accepted 이력 → 같은 배치로 다시 발송하면 전부 skip되어 이력이 늘지 않음 |
 | 알림톡 재시도 | 429 시나리오 → failed 이력 → 재시도 성공으로 상태 전이 |
 | API 문서 | `/api-docs`가 명세의 5개 엔드포인트를 나열, 예시 본문은 201, `tenant_id: 0`은 400과 위반 경로 표시 |
+| 월별 재대사 | 지난 2개월 샘플 생성 → `2026-10 대비` 요약·원인별 표 → 기준월 변경 시 재계산 → 이번 달 요약 저장 → 새로고침 후에도 같은 비교 |
 
 설계 메모
 
@@ -892,7 +905,7 @@ E2E_DEV_SERVER=1 npm run test:e2e   # 빌드 생략(개발 서버, 온디맨드 
 ```bash
 npm install
 npm run dev          # http://localhost:3000  (콘솔: /reconciliation, API 문서: /api-docs)
-npm test             # 356 tests
+npm test             # 400 tests
 npm run build && npm start
 ```
 
@@ -965,7 +978,7 @@ GITHUB_PAGES=1 npm run build     # out/ 에 정적 산출물
 - [x] 인터랙티브 OpenAPI 3.0 문서(`/api-docs`) — 외부 CDN 없이 request/response 스키마와 요청 검증
 - [x] GitHub Pages 정적 내보내기(`GITHUB_PAGES=1`) — 서버 없는 라이브 데모
 - [ ] 마켓 API 서버 프록시 + 시크릿 보관(KMS) 경로 — 브라우저에 시크릿을 두지 않는 운영 구성
-- [ ] 정산 이력 저장 + 월별 재대사(전월 대비 차액 추적)
+- [x] 정산 이력 저장 + 월별 재대사(전월 대비 차액 추적) — §19
 
 ---
 
@@ -993,6 +1006,17 @@ A. 맞습니다. 그래서 코드와 README 양쪽에 **시뮬레이터**라고 
 A. 의존성 0개를 유지하면서 윈도 계산을 직접 검증하고 싶었습니다. 계산이 40줄 남짓이고, 이진 탐색·클램프 같은
 경계 조건을 테스트로 고정하는 편이 라이브러리 옵션을 해석하는 것보다 이 프로젝트에 유리했습니다.
 (가변 높이·동적 측정이 복잡해지면 라이브러리로 교체하는 것이 맞습니다.)
+
+**Q. 월별 비교를 왜 서버가 아니라 브라우저에 저장했나?**
+A. 정적 배포(§18.2)에서도 기능이 살아 있어야 하기 때문입니다. 대신 저장 계층을 따로 두고 스키마 버전·값 검증·
+용량 초과 처리를 했고, 이력은 버전이 다르면 읽지 않습니다. 서버 영속화가 필요해지면 `settlement_periods`
+테이블과 `GET /api/v1/reconciliations/periods`를 추가하고 **지금의 비교 함수를 그대로 서버에서 재사용**합니다.
+비교 로직과 저장 로직을 분리해 둔 이유가 이것입니다.
+
+**Q. 지난달 값이 0이면 증감률을 어떻게 처리하나?**
+A. 만들지 않고 `null`로 둡니다. 화면에는 `비교 불가`로 표시합니다. 지난달 0원에서 이번 달 5만원이 된 경우를
+`+0%`나 `+∞%`로 쓰면 읽는 사람이 "변화 없음" 또는 "폭발적 증가"로 잘못 해석합니다. 원인 상태는 별도로
+`신규`로 판정해 표에 남깁니다.
 
 ---
 
@@ -1302,7 +1326,78 @@ git add -A && git commit -m "build: static export" && git push -f origin gh-page
 
 ---
 
-## 19. 작성자
+## 19. 월별 재대사 — 전월 대비 차액 추적
+
+이번 달 대사 결과만으로는 "지난달보다 나아졌는가"를 말할 수 없습니다. 이 모듈은 매월 대사 요약을
+남겨 두고, 다음 달에 **원인별로 얼마가 늘고 줄었는지**를 계산합니다. 마켓에 이의를 제기할 때 필요한
+문장은 "이번 달 32만원"이 아니라 "지난달보다 수수료 초과 청구가 18만원 늘었다"입니다.
+
+### 19.1 구성
+
+| 모듈 | 역할 |
+| --- | --- |
+| `src/lib/periodComparison.ts` | 두 달 요약을 받아 누수·정상 대사율·이상 건수의 증감, 원인별 증감과 상태, 채널별 증감, 가장 크게 움직인 원인을 낸다. 저장소·시계·화면에 의존하지 않는 순수 함수 |
+| `src/lib/settlementHistory.ts` | 월 요약 스냅숏의 직렬화·검증·상한·저장. localStorage에 버전과 함께 보관하고, 읽을 때 값 타입을 다시 검사한다 |
+| `src/lib/demoMonthHistory.ts` | 이력이 없는 방문자에게 비교 화면을 보여 줄 지난 2개월 샘플. 실제 대사 엔진으로 계산하되 `source: "demo"`로 출처를 남긴다 |
+| `src/components/reconciliation/PeriodComparisonPanel.tsx` | 콘솔의 "월별 재대사" 카드. 저장·기준월 선택·표시만 하고 계산은 위 모듈에 맡긴다 |
+
+### 19.2 판정 규칙
+
+- **원인 상태**: 지난달 0 → 이번 달 양수는 `신규`, 반대는 `해소`, 증감이 양수면 `악화`, 음수면 `개선`,
+  같으면 `변화 없음`. 두 달 모두 0인 원인은 표에 넣지 않습니다(표는 "움직인 것"을 보여 주는 자리입니다).
+- **증감률은 말할 수 있을 때만**: 지난달 값이 0이면 `null`로 두고 화면에는 `비교 불가`로 표시합니다.
+  `0%`와 `비교 불가`는 다른 뜻이고, 지표 화면에서 이 둘을 섞으면 읽는 사람이 잘못 판단합니다.
+- **금액은 정수 원**: 증감은 `roundWon(이번 달 − 지난달)`로 계산해 부동소수점 잔재가 남지 않습니다.
+- **정렬은 결정적**: 증감 절대값 → 이번 달 금액 → 원인 코드 순. 같은 입력이면 표 순서가 항상 같습니다.
+- **같은 달·뒤집힌 순서는 계산하지 않습니다**: 부호가 뒤집히면 화면이 반대말을 하므로 `MONTH_ORDER`
+  오류로 멈추고, UI는 비교 불가 안내를 띄웁니다.
+
+### 19.3 저장 방식
+
+`localStorage`의 `sellerscope.settlement-history.v1` 한 곳에 `{version, snapshots[]}`로 저장합니다.
+
+- **스키마 버전이 다르면 읽지 않습니다.** 요약 필드가 바뀐 뒤 옛 레코드를 그대로 읽으면 화면이 조용히
+  틀린 숫자를 비교합니다.
+- **읽은 값을 다시 검증합니다.** localStorage는 사용자가 고칠 수 있는 저장소입니다. 숫자가 아닌 값이
+  섞인 레코드는 통째로 버리고, 비교에 필요한 필드만 추려 새 객체로 만듭니다.
+- **상한을 둡니다.** 테넌트당 24개월, 전체 120레코드. 용량 초과로 저장 자체가 실패하는 편이 더 나쁩니다.
+- **같은 테넌트·같은 달은 덮어씁니다.** 한 달을 여러 번 저장해도 레코드가 늘지 않습니다.
+- **저장 공간이 없어도 죽지 않습니다.** 프라이빗 모드·SSR·용량 초과에서는 `{ok:false, reason}`을
+  돌려주고 화면은 안내 문구만 띄웁니다.
+
+이번 달 요약을 저장할 때 남기는 값은 대사 요약에서 비교에 필요한 항목뿐입니다(총 행 수, 정상 대사율,
+누수, 원인별 건수·금액, 채널별 분해). 상위 SKU처럼 다음 달 비교에 쓰지 않는 값은 저장하지 않습니다.
+
+### 19.4 화면에서 확인하는 것
+
+`/reconciliation`의 "월별 재대사 · 전월 대비 차액" 카드에서:
+
+1. **이번 달 요약 저장** — 저장 후 다음 달부터 비교 대상이 됩니다. 같은 달을 다시 저장하면 덮어씁니다.
+2. **지난 2개월 샘플** — 이력이 없을 때 비교 화면을 바로 보여 줍니다. 실제 정산 이력이 아닌 데모
+   데이터이며, 카드에 `샘플 데이터` 배지가 붙고 표·저장소 모두에서 `source: demo`로 구분됩니다.
+3. **비교 기준월 선택** — 저장된 달 중 이번 달보다 앞선 달을 고릅니다. 연속되지 않은 달은 `N개월 간격`
+   배지로 표시합니다.
+4. **증감 표** — 누수·정상 대사율·이상 건수의 증감과 원인 상위 5개, 신규·해소 원인 칩.
+
+금액 마스킹은 콘솔의 역할 규칙을 그대로 따릅니다(운영 MD는 부분 마스킹). 저장·샘플 생성은
+`reconcile.run` 권한이 있는 역할만 할 수 있고, 권한 없는 시도는 감사 로그에 `denied`로 남습니다.
+
+### 19.5 검증
+
+| 구분 | 내용 |
+| --- | --- |
+| 단위 | `periodComparison.test.ts` 17 · `settlementHistory.test.ts` 20 · `demoMonthHistory.test.ts` 7 |
+| E2E | 지난 2개월 샘플 생성 → `2026-10 대비` 요약·원인 표 → 기준월 변경 시 재계산 → 이번 달 저장 → 새로고침 후에도 같은 비교(localStorage 왕복) |
+| 손상 내성 | 잘못된 JSON·버전 불일치·형식 오류 레코드·`QuotaExceededError`에서 화면이 죽지 않고 기존 이력을 잃지 않음 |
+
+**한계**: 이력은 이 브라우저에만 있습니다. 서버에 남기려면 `settlement_periods` 같은 테이블과
+`GET /api/v1/reconciliations/periods` 엔드포인트가 필요하고, 그때 비교 엔진은 지금의 순수 함수를
+그대로 서버에서 재사용할 수 있습니다. 브라우저 저장소를 쓰는 이유는 정적 배포(§18.2)에서도 기능이
+살아 있어야 하기 때문입니다.
+
+---
+
+## 20. 작성자
 
 **서승혜 (Seunghye Seo)** — Frontend & Fullstack Engineer (4년 차)  
 GitHub [@Shye-Seo](https://github.com/Shye-Seo) · tjtmdgp95@gmail.com · 정보처리기사
