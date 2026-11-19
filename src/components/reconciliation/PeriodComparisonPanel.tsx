@@ -179,7 +179,10 @@ export default function PeriodComparisonPanel({
       onNotice?.({ tone: "error", text: "이 역할에는 대사 실행 권한이 없습니다." });
       return;
     }
-    const demo = buildDemoHistory(tenantId, month).filter(
+    // 이번 달 원장과 같은 건수로 만든다. 건수가 다르면 "누수 증가"가 원인 변화가 아니라
+    // 표본 크기 차이를 말하게 된다.
+    const rows = Math.min(20_000, Math.max(600, summary?.totalRows ?? 600));
+    const demo = buildDemoHistory(tenantId, month, { rows }).filter(
       (entry) =>
         !snapshots.some(
           (saved) => saved.tenantId === entry.tenantId && saved.month === entry.month,
@@ -200,7 +203,7 @@ export default function PeriodComparisonPanel({
     } else {
       onNotice?.({ tone: "error", text: "샘플을 저장하지 못했습니다(저장 공간 또는 브라우저 설정)." });
     }
-  }, [permissive, tenantId, month, snapshots, onNotice, onAudit]);
+  }, [permissive, tenantId, month, snapshots, summary, onNotice, onAudit]);
 
   const topCauses = comparison ? comparison.causes.slice(0, 5) : [];
   const maxDelta = comparison

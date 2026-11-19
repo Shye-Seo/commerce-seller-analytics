@@ -492,7 +492,12 @@ export default function ReconciliationConsole() {
 
   const biggest = summary ? biggestLeakCause(summary) : null;
   // 월별 재대사 기준월. 데모 원장은 고정 기준일을 쓰고, 업로드·수집은 오늘 기준으로 본다.
-  const settlementMonth = dataset?.source === "generated" ? monthOf(SETTLEMENT_SNAPSHOT_DATE) : monthOf(new Date());
+  // 서버 프리렌더와 클라이언트 첫 렌더가 같은 값을 내도록 오늘 날짜는 마운트 뒤에만 반영한다.
+  const [clockMonth, setClockMonth] = useState<string>(() => monthOf(SETTLEMENT_SNAPSHOT_DATE));
+  useEffect(() => {
+    setClockMonth(monthOf(new Date()));
+  }, []);
+  const settlementMonth = dataset?.source === "generated" ? monthOf(SETTLEMENT_SNAPSHOT_DATE) : clockMonth;
   const busy = progress.phase === "generating" || progress.phase === "parsing" || progress.phase === "reconciling" || uploading;
 
   // 쿠폰 원장 × 대사 행 → 쿠폰 비용 매칭 · 캠페인 ROAS. 화면은 계산하지 않고 이 값만 그린다.
