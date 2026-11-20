@@ -104,7 +104,14 @@ function MarginCurves({
             : null,
       }));
 
-    const rateTicks = [rateMax, rateMax - span / 4, rateMax - span / 2, rateMax - (span * 3) / 4, rateMin];
+    // 눈금은 5·10·20·25처럼 읽기 좋은 단위로 맞춘다(10% 간격이면 -10·0·10·20…).
+    const rough = span / 5;
+    const magnitude = 10 ** Math.floor(Math.log10(rough));
+    const step = [1, 2, 2.5, 5, 10].map((m) => m * magnitude).find((candidate) => candidate >= rough) ?? rough;
+    const rateTicks: number[] = [];
+    for (let value = Math.ceil(rateMin / step) * step; value <= rateMax + 1e-9; value += step) {
+      rateTicks.push(Math.round(value * 10) / 10);
+    }
     const priceTicks = [0, 0.25, 0.5, 0.75, 1].map((ratio) => min + (max - min) * ratio);
 
     return {
