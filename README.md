@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/Shye-Seo/commerce-seller-analytics/actions/workflows/ci.yml"><img alt="CI Pipeline" src="https://github.com/Shye-Seo/commerce-seller-analytics/actions/workflows/ci.yml/badge.svg" /></a>
-  <img alt="Tests" src="https://img.shields.io/badge/tests-545_(Vitest_400_%C2%B7_PHPUnit_135_%C2%B7_E2E_10)-2E7D32?style=flat-square" />
+  <img alt="Tests" src="https://img.shields.io/badge/tests-581_(Vitest_431_%C2%B7_PHPUnit_135_%C2%B7_E2E_15)-2E7D32?style=flat-square" />
 </p>
 
 <div align="center">
@@ -23,7 +23,7 @@
   <a href="https://nextjs.org"><img alt="Next.js" src="https://img.shields.io/badge/Next.js-14.2-000000?style=flat-square&logo=nextdotjs&logoColor=white" /></a>
   <a href="https://www.typescriptlang.org"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.9_strict-3178C6?style=flat-square&logo=typescript&logoColor=white" /></a>
   <a href="https://tailwindcss.com"><img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" /></a>
-  <a href="https://vitest.dev"><img alt="Tests" src="https://img.shields.io/badge/Vitest-400_tests_passing-4C9A2A?style=flat-square&logo=vitest&logoColor=white" /></a>
+  <a href="https://vitest.dev"><img alt="Tests" src="https://img.shields.io/badge/Vitest-431_tests_passing-4C9A2A?style=flat-square&logo=vitest&logoColor=white" /></a>
   <a href="https://www.php.net/releases/8.2/ko.php"><img alt="PHP" src="https://img.shields.io/badge/PHP-8.2_OOP-777BB4?style=flat-square&logo=php&logoColor=white" /></a>
   <a href="https://dev.mysql.com/doc/refman/8.0/en/"><img alt="MySQL" src="https://img.shields.io/badge/MySQL-8.0_InnoDB-4479A1?style=flat-square&logo=mysql&logoColor=white" /></a>
   <a href="https://api.ncloud-docs.com/docs/sens-alimtalk-send"><img alt="Naver Cloud SENS" src="https://img.shields.io/badge/Naver_Cloud-SENS_알림톡-03C75A?style=flat-square&logo=naver&logoColor=white" /></a>
@@ -42,6 +42,8 @@
 - **API 문서**: `/api-docs` — OpenAPI 3.0 명세 열람 + 브라우저 내 요청 검증 (아래 §18)
 - **월별 재대사**: `/reconciliation` 하단 — 이번 달 요약 저장 · 전월 대비 원인별 차액 · 신규/해소 원인 (아래 §19)
 - **서버 계층**: `backend/` (PHP 8.2 OOP API·배치) + `database/` (MySQL 8.0 DDL·ERD) — §4.5, [ERD 설계서](database/ERD_SPEC.md)
+- **가격 탄력성 시뮬레이터**: `/` — 정가·할인율·ROAS 슬라이더로 5개 마켓 손익분기·마진 곡선 비교 (아래 §20)
+- **경보 룰 빌더**: `/reconciliation` — 수수료율·정산 지연·쿠폰 부담률 룰을 켜고 끄면 위반 행 즉시 하이라이트 (§20.2)
 - **마진 대시보드**: `/` — 판매 조건별 실시간 마진·마켓 비교·키워드 기회 분석 (기존 기능, 그대로 유지)
 
 ---
@@ -68,7 +70,8 @@
 17. [쿠폰 → 정산 → 알림톡 통합 흐름](#17-쿠폰--정산--알림톡-통합-흐름)
 18. [API 문서와 라이브 데모](#18-api-문서와-라이브-데모)
 19. [월별 재대사 — 전월 대비 차액 추적](#19-월별-재대사--전월-대비-차액-추적)
-20. [작성자](#20-작성자)
+20. [가격 탄력성 & 경보 룰 빌더](#20-가격-탄력성--경보-룰-빌더)
+21. [작성자](#21-작성자)
 
 ---
 
@@ -273,9 +276,11 @@ src/
 │   │   ├── ReconciliationVirtualTable.tsx   # 가상화 표 + 필터 + 키보드 탐색
 │   │   ├── MarketApiSyncConsole.tsx         # 마켓 API 수집: 자격 증명·연결 테스트·진행률·오류 안내
 │   │   ├── CampaignAttributionPanel.tsx     # 쿠폰 비용 매칭 · 캠페인별 순마진·ROAS
+│   │   ├── AlertRuleBuilderPanel.tsx        # 경보 룰 토글·임계값 + 위반 건 + 알림톡 미리보기
 │   │   ├── AlimtalkConsole.tsx              # 알림톡 말풍선 미리보기 + 발송 이력 타임라인
 │   │   └── SettlementDetailDrawer.tsx       # 1건 상세: 기대값/실제값/귀속/계산식
 │   ├── api-docs/ApiDocsConsole.tsx # 명세 뷰어 + Try it out (외부 CDN 없음)
+│   ├── ElasticityPanel.tsx         # 정가·할인·ROAS → 5개 마켓 마진 곡선(SVG) + 손익분기 표
 │   ├── FlashCouponConsole.tsx      # 부하 시뮬레이션 + 발급 원장 + 주문 연결 핸드오프
 │   ├── CampaignPerformanceCard.tsx # 홈의 캠페인 현황 (원장 기준)
 │   ├── EnterpriseEntry.tsx         # 홈의 엔터프라이즈 요약 (서버 컴포넌트, 빌드 시 실계산)
@@ -292,6 +297,8 @@ src/
 │   ├── campaignBridge.ts           # 원장 → 주문 → 정산서 행 → 쿠폰 매칭·ROAS
 │   ├── promotionStore.ts           # 페이지 사이 공유 원장(localStorage + useSyncExternalStore)
 │   ├── alimtalkSimulator.ts        # SENS 템플릿·dedupe·재시도·상태 전이 시뮬레이터
+│   ├── elasticity.ts               # 판매가·할인·ROAS → 마켓별 마진 곡선·손익분기 계산
+│   ├── alertRules.ts               # 커스텀 경보 룰 평가 · 정산 입금일 시뮬레이션 · 알림톡 합성
 │   ├── alimtalkLogStore.ts         # 발송 이력 저장소(브라우저)
 │   ├── openapiSimulator.ts         # 명세 해석·스키마 검증·요청 시뮬레이션
 │   ├── settlementFixtures.ts       # 고정 시드 데모 원장 + CSV 직렬화
@@ -804,7 +811,7 @@ B2B SaaS로 판매하려면 서버 영속화와 서버 측 권한 강제가 필�
 
 ## 11. 테스트 전략
 
-**400 케이스 / 19 파일 / Vitest (`environment: node`)**
+**431 케이스 / 21 파일 / Vitest (`environment: node`)**
 
 | 파일 | 케이스 | 검증 |
 | --- | --- | --- |
@@ -831,9 +838,9 @@ B2B SaaS로 판매하려면 서버 영속화와 서버 측 권한 강제가 필�
 ```bash
 npm run typecheck   # tsc --noEmit
 npm run lint        # next lint
-npm test            # vitest run (400)
+npm test            # vitest run (431)
 npm run build       # next build (프로덕션 번들 + 타입 검사)
-npm run test:e2e    # Playwright (프로덕션 빌드를 띄워 10 시나리오)
+npm run test:e2e    # Playwright (프로덕션 빌드를 띄워 15 시나리오)
 ```
 
 ### E2E — `npm run test:e2e` (Playwright)
@@ -843,7 +850,7 @@ npm run test:e2e    # Playwright (프로덕션 빌드를 띄워 10 시나리오)
 
 ```bash
 npx playwright install --with-deps chromium   # 최초 1회 (브라우저 + 시스템 의존성)
-npm run test:e2e          # 프로덕션 빌드를 띄우고 10 시나리오 실행
+npm run test:e2e          # 프로덕션 빌드를 띄우고 15 시나리오 실행
 npm run test:e2e:ui       # 타임라인 디버깅
 E2E_DEV_SERVER=1 npm run test:e2e   # 빌드 생략(개발 서버, 온디맨드 컴파일)
 ```
@@ -860,6 +867,8 @@ E2E_DEV_SERVER=1 npm run test:e2e   # 빌드 생략(개발 서버, 온디맨드 
 | 알림톡 재시도 | 429 시나리오 → failed 이력 → 재시도 성공으로 상태 전이 |
 | API 문서 | `/api-docs`가 명세의 5개 엔드포인트를 나열, 예시 본문은 201, `tenant_id: 0`은 400과 위반 경로 표시 |
 | 월별 재대사 | 지난 2개월 샘플 생성 → `2026-10 대비` 요약·원인별 표 → 기준월 변경 시 재계산 → 이번 달 요약 저장 → 새로고침 후에도 같은 비교 |
+| 가격 탄력성 | 범례 토글로 곡선 5→4→5 · 정가 60,000·할인 30% → 실제 판매가 42,000원 · ROAS 1배 → `도달 불가`, 8배 → 해소 |
+| 경보 룰 | 룰 off → 건수 `꺼짐`·행 하이라이트 소멸 → on → 같은 건수 복귀 · 임계값↑ → 위반↓ · 위반 클릭 → 상세 드로어 + 알림톡 미리보기 |
 
 설계 메모
 
@@ -905,7 +914,7 @@ E2E_DEV_SERVER=1 npm run test:e2e   # 빌드 생략(개발 서버, 온디맨드 
 ```bash
 npm install
 npm run dev          # http://localhost:3000  (콘솔: /reconciliation, API 문서: /api-docs)
-npm test             # 400 tests
+npm test             # 431 tests
 npm run build && npm start
 ```
 
@@ -1397,7 +1406,55 @@ git add -A && git commit -m "build: static export" && git push -f origin gh-page
 
 ---
 
-## 20. 작성자
+## 20. 가격 탄력성 & 경보 룰 빌더
+
+정산 대사가 "이미 어긋난 돈"을 찾는 일이라면, 이 두 기능은 "바꾸기 전에 어디서 깨지는지"를 먼저 본다.
+둘 다 화면에서 계산하지 않는다. 순수 함수 엔진(`elasticity.ts` · `alertRules.ts`)이 값을 내고, 컴포넌트는 그리기만 한다.
+
+### 20.1 정가·할인·ROAS를 5개 마켓에 같은 조건으로 — `elasticity.ts`
+
+마켓 5곳의 원가·배송·반품 조건은 같고, 수수료율과 광고비만 다르다. 세 슬라이더(정가, 할인율, 목표 ROAS)로
+같은 조건을 흔들었을 때 마켓마다 **어디서 적자로 넘어가는지**를 한 좌표계에 놓는다.
+
+```
+순이익(P) = P × (1 − 수수료율 − 1/ROAS) − 고정비성 원가
+손익분기  = 고정비성 원가 ÷ (1 − 수수료율 − 1/ROAS)   ← 100원 단위 올림
+```
+
+- 광고비는 ROAS를 유지한다고 보고 `판매가 ÷ ROAS`로 둔다. 광고를 켠 채 가격을 올리면 광고비도 같이 오른다.
+- 상품 원가·셀러 부담 배송비·기대 반품 손실은 판매가와 무관한 고정비성 원가다. 반품 손실은 기존 마진 계산기와 같은 식을 쓴다.
+- 세로축은 **건당 순이익이 아니라 마진율**이다. 순이익은 판매가에 대한 1차식이라 5개 마켓이 평행선처럼 보이고,
+  마진율은 분모가 판매가라 곡선이 휘면서 0% 교차점(손익분기)이 눈에 들어온다. 계산 오차처럼 보이는 직선을 피하려는 선택이다.
+- 수수료율+광고비율이 100%를 넘으면(예: ROAS 1배) 손익분기가 존재하지 않으므로 `Infinity`를 반환하고 화면은 `도달 불가`로 표시한다.
+  `0`으로 적으면 "0원에 팔면 된다"는 거짓말이 된다.
+- 차트는 SVG 폴리라인 5개다. 차트 라이브러리를 넣지 않은 이유는 §9.3과 같다 — 필요한 것은 축·격자·선뿐이다.
+
+### 20.2 룰을 켜고 끄는 순간, 같은 데이터가 다시 평가된다 — `alertRules.ts`
+
+대사 엔진의 11개 탐지 규칙은 고정이다. 운영자는 그 전에 자기 기준으로 선을 긋고 싶어 한다.
+경보 룰 빌더는 그 기준을 데이터에서 매번 다시 계산한다.
+
+| 룰 | 지표 | 기본 임계값 | 노출 금액 |
+| --- | --- | --- | --- |
+| 수수료율 +1%p 초과 | 실효 수수료율 − 계약 수수료율 | 1%p | 초과 청구액 |
+| 정산 지연 3일 이상 | 예정일(D+n 영업일) 대비 입금일 | 3일 | 미입금 정산액 |
+| 쿠폰 부담률 임계치 초과 | 우리 부담 쿠폰 비용 ÷ 결제금액 | 8% | 임계값 초과분 |
+
+- 룰을 끄거나 임계값을 바꾸면 콘솔이 같은 행 집합을 다시 평가하고, **표의 행 하이라이트와 패널 건수가 같은 값을 읽는다**(상태 하나, 소비자 둘).
+- 알림톡 미리보기는 실제 발송에 쓰는 `composeAnomalyContent`를 그대로 태운다. 미리보기 전용 문구를 만들면 검수 템플릿과 화면이 어긋난다.
+- **데이터 출처를 섞지 않는다.** 정산서 CSV에는 입금일 열이 없다. 데모 원장에서는 마켓 정산 주기로 입금일을 시뮬레이션하지만,
+  업로드·API 수집 데이터에는 만들어 넣지 않고 정산 지연 룰을 `평가 불가`로 남긴다. 없는 값을 지어내면 룰이 거짓 위반을 만든다.
+- 쿠폰 부담률은 선착순 드롭 콘솔의 원장(`promotionStore`)과 주문번호로 맞춘 값만 계산한다. 쿠폰 주문이 없으면 0건이고, 0건을 "안전"으로 말하지 않는다.
+
+### 20.3 검증
+
+| 구분 | 내용 |
+| --- | --- |
+| 단위 (`elasticity.test.ts`, 15) | 손익분기에서 순이익 0 수렴 · ROAS·할인 단조성 · 도달 불가 · 차트 축 0 포함 · 결정성 |
+| 단위 (`alertRules.test.ts`, 16) | 영업일/달력일 · 입금일 결정성 · 임계값 경계 · 룰 on/off · 미입금 노출액 · 알림톡 본문 |
+| E2E (`elasticity-alerts.spec.ts`, 5) | 슬라이더 → 곡선/표 재계산 · 범례 토글 · 룰 off → 하이라이트 소멸 · 임계값↑ → 위반↓ · 위반 클릭 → 드로어 + 미리보기 |
+
+## 21. 작성자
 
 **서승혜 (Seunghye Seo)** — Frontend & Fullstack Engineer (4년 차)  
 GitHub [@Shye-Seo](https://github.com/Shye-Seo) · tjtmdgp95@gmail.com · 정보처리기사
