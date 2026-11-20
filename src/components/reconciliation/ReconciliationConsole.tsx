@@ -20,10 +20,21 @@ import ReconciliationClaimPanel from "./ReconciliationClaimPanel";
 import TenantSwitchConsole from "./TenantSwitchConsole";
 import ReconciliationVirtualTable, { matchesFilter, type RowFilterId } from "./ReconciliationVirtualTable";
 import SettlementDetailDrawer from "./SettlementDetailDrawer";
+import AlertRuleBuilderPanel from "./AlertRuleBuilderPanel";
 import CampaignAttributionPanel from "./CampaignAttributionPanel";
 import PeriodComparisonPanel from "./PeriodComparisonPanel";
 import AlimtalkConsole from "./AlimtalkConsole";
-import { buildSettlementRowsForOrders, summarizeCampaignPerformance } from "@/lib/campaignBridge";
+import {
+  buildSettlementRowsForOrders,
+  matchCouponSettlement,
+  summarizeCampaignPerformance,
+} from "@/lib/campaignBridge";
+import {
+  buildSettlementReceipts,
+  defaultAlertRules,
+  evaluateAlertRules,
+  type AlertRuleConfig,
+} from "@/lib/alertRules";
 import { resetPromotionStore, promotionStore, setCampaignSpend, usePromotionSnapshot } from "@/lib/promotionStore";
 import {
   AuditTrail,
@@ -156,6 +167,8 @@ export default function ReconciliationConsole() {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<ReconciledRow | null>(null);
   const [auditVersion, setAuditVersion] = useState(0);
+  // 경보 룰은 화면 상태다. 룰을 바꾸면 아래 useMemo가 같은 행 집합을 다시 평가한다.
+  const [alertRules, setAlertRules] = useState<AlertRuleConfig[]>(defaultAlertRules);
   const [chainValid, setChainValid] = useState(true);
 
   const auditRef = useRef(new AuditTrail());
@@ -515,6 +528,41 @@ export default function ReconciliationConsole() {
   // 대사 배치 식별자 — 알림톡 중복 차단(dedupe_key)의 기준이다.
   const batchId = useMemo(() => `batch-${dataset?.source ?? "init"}-${dataset?.rowCount ?? 0}`, [dataset]);
 
+  /**
+   * 경보 룰 평가.
+   *
+   * 정산 입금일은 데모 원장에서만 시뮬레이션한다(정산서 CSV에 없는 열이라서). 업로드·API 수집
+   * 데이터에는 만들어 넣지 않고, 정산 지연 룰은 "평가 불가"로 남긴다.
+   */
+  const receipts = useMemo(
+    () => (dataset?.source === "generated" ? buildSettlementReceipts(rows, SETTLEMENT_SNAPSHOT_DATE) : null),
+    [rows, dataset?.source],
+  );
+
+  const couponCosts = useMemo(() => {
+    const map = new Map<string, { ourCost: number; paidAmount: number }>();
+    if (promotion.orders.length === 0) return map;
+    const report = matchCouponSettlement(promotion.orders, rows);
+    for (const match of report.rows) {
+      const ourCost = Math.max(0, match.sellerBorne + match.overborne);
+      if (ourCost <= 0) continue;
+      map.set(match.orderId, { ourCost, paidAmount: match.paidAmount });
+    }
+    return map;
+  }, [promotion.orders, rows]);
+
+  const alertEvaluation = useMemo(
+    () =>
+      evaluateAlertRules({
+        rows,
+        rules: alertRules,
+        receipts,
+        couponCosts,
+        snapshotDate: SETTLEMENT_SNAPSHOT_DATE,
+      }),
+    [rows, alertRules, receipts, couponCosts],
+  );
+
   return (
     <div className="min-h-screen">
       <main className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
@@ -772,6 +820,24 @@ export default function ReconciliationConsole() {
               />
             </div>
 
+            {/* 룰 빌더의 결과가 바로 아래 표의 행 하이라이트로 이어진다 */}
+            <AlertRuleBuilderPanel
+              rules={alertRules}
+              onRulesChange={(next) => {
+                setAlertRules(next);
+                log("RECONCILE_RUN", "alert-rule", `경보 룰 변경: ${next.map((rule) => `${rule.id}:${rule.enabled ? "on" : "off"}(${rule.threshold})`).join(", ")}`);
+              }}
+              evaluation={alertEvaluation}
+              rows={rows}
+              tenantName={activeTenant?.name ?? "셀러"}
+              onSelect={handleSelect}
+              dataNote={
+                dataset?.source === "generated"
+                  ? undefined
+                  : "업로드·API 수집 정산서에는 입금일 열이 없어 '정산 지연' 룰은 평가하지 않습니다. 수수료율·쿠폰 부담률 룰은 같은 기준으로 평가됩니다."
+              }
+            />
+
             <ReconciliationVirtualTable
               rows={filteredRows}
               role={role}
@@ -783,6 +849,7 @@ export default function ReconciliationConsole() {
               onSelect={handleSelect}
               activeId={selected?.id}
               totalRows={rows.length}
+              alertRowIndex={alertEvaluation.rowIndex}
             />
 
             {/* 대사 결과 → 마켓 접수 문서(CSV·PDF). 반출 권한·감사 기록은 콘솔이 관리한다 */}

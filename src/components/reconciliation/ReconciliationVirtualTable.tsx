@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { AlertRuleId } from "@/lib/alertRules";
+import { ALERT_RULE_BY_ID } from "@/lib/alertRules";
 import type { AnomalyCode, MarketChannel, ReconciledRow } from "@/lib/reconciliationEngine";
 import { maskAmount, resolveFieldMask, type RoleId } from "@/lib/multiTenantRbac";
 import { computeVirtualWindow, estimateDomNodes } from "@/lib/virtualization";
@@ -86,6 +88,7 @@ export default function ReconciliationVirtualTable({
   onSelect,
   activeId,
   totalRows,
+  alertRowIndex,
 }: {
   rows: ReconciledRow[];
   role: RoleId;
@@ -97,6 +100,8 @@ export default function ReconciliationVirtualTable({
   onSelect: (row: ReconciledRow) => void;
   activeId?: string;
   totalRows: number;
+  /** 경보 룰 위반 행 id → 걸린 룰. 있으면 행 왼쪽에 색선을 남긴다 */
+  alertRowIndex?: Record<string, AlertRuleId[]>;
 }) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef(0);
@@ -267,11 +272,23 @@ export default function ReconciliationVirtualTable({
               const primary = item.anomalies[0];
               const isActive = item.id === activeId || index === activeIndex;
               const marginMask = resolveFieldMask(role, "netMargin");
+              const alertRules = alertRowIndex?.[item.id];
+              // 위반 룰이 하나라도 있으면 왼쪽에 색선을 남긴다. 심각 룰이 걸리면 붉게.
+              const alertCritical = alertRules?.some(
+                (id) => ALERT_RULE_BY_ID[id]?.severity === "critical",
+              );
               return (
                 <tr
                   key={item.id}
                   onClick={() => onSelect(item)}
-                  style={{ height: ROW_HEIGHT }}
+                  data-alert-hit={alertRules ? "true" : undefined}
+                  title={alertRules?.map((id) => ALERT_RULE_BY_ID[id]?.label ?? id).join(" · ")}
+                  style={{
+                    height: ROW_HEIGHT,
+                    ...(alertRules
+                      ? { boxShadow: `inset 3px 0 0 ${alertCritical ? "#FB7185" : "#FBBF24"}` }
+                      : {}),
+                  }}
                   className={`cursor-pointer border-b border-white/[0.035] transition-colors ${
                     isActive ? "bg-emerald-400/[0.07]" : index % 2 === 0 ? "bg-transparent" : "bg-white/[0.012]"
                   } hover:bg-white/[0.04]`}

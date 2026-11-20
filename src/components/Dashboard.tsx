@@ -7,6 +7,7 @@ import { DEFAULT_MARGIN_INPUT } from "@/lib/mockData";
 import type { MarginInput, MarketId } from "@/lib/types";
 import { IconPercent, IconTarget, IconTrend, IconWallet } from "./icons";
 import MarginSimulator from "./MarginSimulator";
+import ElasticityPanel from "./ElasticityPanel";
 import MarketComparisonMatrix from "./MarketComparisonMatrix";
 import MetricCard from "./MetricCard";
 import SmartInsightBox from "./SmartInsightBox";
@@ -108,6 +109,11 @@ export default function Dashboard() {
           onChange={handleChange}
           onSelectMarket={handleSelectMarket}
         />
+      </div>
+
+      {/* 가격을 움직였을 때 어디서 적자가 되는지는 마켓 비교 다음에 읽는 순서가 자연스럽다. */}
+      <div id="elasticity" className="mt-10 scroll-mt-24">
+        <ElasticityPanel input={input} onApply={handleChange} />
       </div>
 
       <div className="mt-10">

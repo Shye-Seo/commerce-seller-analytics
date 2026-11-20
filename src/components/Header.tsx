@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { href: "/#metrics", label: "핵심 지표" },
   { href: "/#diagnosis", label: "AI 진단" },
   { href: "/#simulator", label: "마진 계산기" },
+  { href: "/#elasticity", label: "가격 탄력성" },
   { href: "/#markets", label: "마켓 비교" },
   { href: "/#reconciliation", label: "정산 대사" },
   { href: "/#keywords", label: "키워드 분석" },
