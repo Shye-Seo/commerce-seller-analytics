@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/Shye-Seo/commerce-seller-analytics/actions/workflows/ci.yml"><img alt="CI Pipeline" src="https://github.com/Shye-Seo/commerce-seller-analytics/actions/workflows/ci.yml/badge.svg" /></a>
-  <img alt="Tests" src="https://img.shields.io/badge/tests-581_(Vitest_431_%C2%B7_PHPUnit_135_%C2%B7_E2E_15)-2E7D32?style=flat-square" />
+  <img alt="Tests" src="https://img.shields.io/badge/tests-640_(Vitest_481_%C2%B7_PHPUnit_135_%C2%B7_E2E_24)-2E7D32?style=flat-square" />
 </p>
 
 <div align="center">
@@ -16,6 +16,7 @@
   <sub><strong>실시간 선착순 드롭</strong>: 토스형 타임딜 · 멱등 쿠폰 발급 · 쿠폰 원장 · 쇼핑몰 정산 대사</sub><br />
   <sub><strong>쿠폰 → 정산 → 알림톡</strong>: 쿠폰 사용 주문 매칭 · 캠페인 ROAS · SENS 알림톡 시뮬레이터 · OpenAPI 3.0 문서</sub><br />
   <sub><strong>월별 재대사</strong>: 월별 요약 이력 저장 · 전월 대비 원인별 차액 추적 · 신규/해소 원인 판정</sub><br />
+  <sub><strong>운영 모듈 3종</strong>: 실수령 순수익·손익분기 ROAS · 정산 누락·지연 감시 · 품절 임박·발주량 계산</sub><br />
   <sub><strong>Full-Cycle</strong>: Next.js 14 프론트엔드 + PHP 8.2 백엔드 + MySQL 8.0 + 네이버클라우드 SENS 알림톡</sub>
 </p>
 
@@ -23,7 +24,7 @@
   <a href="https://nextjs.org"><img alt="Next.js" src="https://img.shields.io/badge/Next.js-14.2-000000?style=flat-square&logo=nextdotjs&logoColor=white" /></a>
   <a href="https://www.typescriptlang.org"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.9_strict-3178C6?style=flat-square&logo=typescript&logoColor=white" /></a>
   <a href="https://tailwindcss.com"><img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" /></a>
-  <a href="https://vitest.dev"><img alt="Tests" src="https://img.shields.io/badge/Vitest-431_tests_passing-4C9A2A?style=flat-square&logo=vitest&logoColor=white" /></a>
+  <a href="https://vitest.dev"><img alt="Tests" src="https://img.shields.io/badge/Vitest-481_tests_passing-4C9A2A?style=flat-square&logo=vitest&logoColor=white" /></a>
   <a href="https://www.php.net/releases/8.2/ko.php"><img alt="PHP" src="https://img.shields.io/badge/PHP-8.2_OOP-777BB4?style=flat-square&logo=php&logoColor=white" /></a>
   <a href="https://dev.mysql.com/doc/refman/8.0/en/"><img alt="MySQL" src="https://img.shields.io/badge/MySQL-8.0_InnoDB-4479A1?style=flat-square&logo=mysql&logoColor=white" /></a>
   <a href="https://api.ncloud-docs.com/docs/sens-alimtalk-send"><img alt="Naver Cloud SENS" src="https://img.shields.io/badge/Naver_Cloud-SENS_알림톡-03C75A?style=flat-square&logo=naver&logoColor=white" /></a>
@@ -44,6 +45,9 @@
 - **서버 계층**: `backend/` (PHP 8.2 OOP API·배치) + `database/` (MySQL 8.0 DDL·ERD) — §4.5, [ERD 설계서](database/ERD_SPEC.md)
 - **가격 탄력성 시뮬레이터**: `/` — 정가·할인율·ROAS 슬라이더로 5개 마켓 손익분기·마진 곡선 비교 (아래 §20)
 - **경보 룰 빌더**: `/reconciliation` — 수수료율·정산 지연·쿠폰 부담률 룰을 켜고 끄면 위반 행 즉시 하이라이트 (§20.2)
+- **실수령 순수익 계산기**: `/payout` — 카테고리별 수수료 + 광고비(ROAS) + 반품·교환 배송비를 차감한 통장 순수익과 손익분기 ROAS (§21.1)
+- **정산 누락·지연 감시**: `/settlement-watch` — 구매확정일 + 마켓 정산 기한으로 누락 의심·지연·부분 정산만 추출 (§21.2)
+- **품절 임박·발주량**: `/inventory` — 7일 판매 속도로 예상 품절일·발주 마감일·MOQ 반올림 발주량 계산 (§21.3)
 - **마진 대시보드**: `/` — 판매 조건별 실시간 마진·마켓 비교·키워드 기회 분석 (기존 기능, 그대로 유지)
 
 > 화면 표기 원칙: 웹 UI에는 데이터 출처·수집 파이프라인·API 스펙 같은 내부 구현 표기를 두지 않습니다. 이 저장소의 라이브 데모는
@@ -75,7 +79,8 @@
 18. [API 문서와 라이브 데모](#18-api-문서와-라이브-데모)
 19. [월별 재대사 — 전월 대비 차액 추적](#19-월별-재대사--전월-대비-차액-추적)
 20. [가격 탄력성 & 경보 룰 빌더](#20-가격-탄력성--경보-룰-빌더)
-21. [작성자](#21-작성자)
+21. [운영 모듈 3종 — 순수익·정산 감시·발주](#21-운영-모듈-3종--순수익정산-감시발주)
+22. [작성자](#22-작성자)
 
 ---
 
@@ -815,7 +820,7 @@ B2B SaaS로 판매하려면 서버 영속화와 서버 측 권한 강제가 필�
 
 ## 11. 테스트 전략
 
-**431 케이스 / 21 파일 / Vitest (`environment: node`)**
+**481 케이스 / 24 파일 / Vitest (`environment: node`)**
 
 | 파일 | 케이스 | 검증 |
 | --- | --- | --- |
@@ -838,13 +843,16 @@ B2B SaaS로 판매하려면 서버 영속화와 서버 측 권한 강제가 필�
 | `periodComparison.test.ts` | 17 | 월 문자열 이동·간격(연 경계), 두 달 누수/정상 대사율/건수 중감, 이전 값이 0일 때 중감률 `null`, 신규·해소·악화·개선·변화 없음 판정, 양쪽 0인 원인 제외, 정렬 결정성, 채널 4개 고정 순서, 같은 달·뒤집힌 순서 오류, 원 단위 중감, 한 줄 요약 문장 |
 | `settlementHistory.test.ts` | 20 | 스냅숏 추리기, 저장→읽기 왕복, 손상 JSON·버전 불일치·형식 오류 레코드 폐기, 숫자가 아닌 필드 정규화, 같은 테넌트·달 덮어쓰기, 테넌트당 24개월 상한, 이전 달 선택, `QuotaExceededError` 시 기존 이력 보존, SSR에서 저장소 없음 |
 | `demoMonthHistory.test.ts` | 7 | 고정 시드 결정성, 테넌트별 다른 원장, 실제 대사 엔진 통과, 두 달 전→지난달 범위비 중복 감소·수수료 초과 증가, 윤년 말일 |
+| `netPayout.test.ts` | 16 | 카테고리별 요율표, 정산금·통장 순수익 차감 순서, 정산서 차액, 손익분기 ROAS 수렴(0원·적자·흑자), 공헌이익 0 이하일 때 도달 불가, ROAS 시뮬레이션 단조성, 목표 순수익 역산, 카테고리·마켓 시나리오 일관성, NaN·음수 입력 방어 |
+| `settlementWatch.test.ts` | 18 | 구매확정일 + 영업일 기한(주말 제외), 위험/경고/대기/정상 경계, 예정만 잡힌 지연, 부분 정산 부족액, 지연 입금, 1% 오차 허용, 집계·정렬·채널 분해, 필터 조합, 알림 문구, 고정 시드 원장 결정성 |
+| `inventory.test.ts` | 16 | 7일·3일 평균, 품절일·보호 구간(리드타임+안전재고) 판정, MOQ 배수 올림, 입고 예정 차감/미적용, 판매 정체 분류, 집계·필터, 발주서 CSV, 알림 문구 |
 
 ```bash
 npm run typecheck   # tsc --noEmit
 npm run lint        # next lint
-npm test            # vitest run (431)
+npm test            # vitest run (481)
 npm run build       # next build (프로덕션 번들 + 타입 검사)
-npm run test:e2e    # Playwright (프로덕션 빌드를 띄워 15 시나리오)
+npm run test:e2e    # Playwright (프로덕션 빌드를 띄워 24 시나리오)
 ```
 
 ### E2E — `npm run test:e2e` (Playwright)
@@ -854,7 +862,7 @@ npm run test:e2e    # Playwright (프로덕션 빌드를 띄워 15 시나리오)
 
 ```bash
 npx playwright install --with-deps chromium   # 최초 1회 (브라우저 + 시스템 의존성)
-npm run test:e2e          # 프로덕션 빌드를 띄우고 15 시나리오 실행
+npm run test:e2e          # 프로덕션 빌드를 띄우고 24 시나리오 실행
 npm run test:e2e:ui       # 타임라인 디버깅
 E2E_DEV_SERVER=1 npm run test:e2e   # 빌드 생략(개발 서버, 온디맨드 컴파일)
 ```
@@ -873,6 +881,9 @@ E2E_DEV_SERVER=1 npm run test:e2e   # 빌드 생략(개발 서버, 온디맨드 
 | 월별 재대사 | 지난 2개월 샘플 생성 → `2026-10 대비` 요약·원인별 표 → 기준월 변경 시 재계산 → 이번 달 요약 저장 → 새로고침 후에도 같은 비교 |
 | 가격 탄력성 | 범례 토글로 곡선 5→4→5 · 정가 60,000·할인 30% → 실제 판매가 42,000원 · ROAS 1배 → `도달 불가`, 8배 → 해소 |
 | 경보 룰 | 룰 off → 건수 `꺼짐`·행 하이라이트 소멸 → on → 같은 건수 복귀 · 임계값↑ → 위반↓ · 위반 클릭 → 상세 드로어 + 알림톡 미리보기 |
+| 순수익 계산 | 카테고리 4.5%→6.0%→3.63% 전환 시 통장 순수익 증감 · ROAS 4.2→2배 광고비↑·순수익↓ · 광고 0배 → 광고비 0 · 정산서 30만원 부족 입력 → 음수 차액 표시 |
+| 정산 감시 | 기본 위험·경고만 표시 → 행 수 = 위험+경고 · 위험/경고 필터 → 해당 상태만 · 전체 → 감시 대상 전부 · 채널 필터 → 해당 채널만, 알림 문구에 위험·최장 경과 반영 |
+| 품절·발주 | 수요 +60% → 발주량↑ · −30% → 발주량↓ · 안전재고 2.0배 → 발주량↑ · 상태 필터로 목록 축소 · 발주서 CSV 다운로드 · 홈 카드 → 콘솔 이동 |
 
 설계 메모
 
@@ -918,7 +929,7 @@ E2E_DEV_SERVER=1 npm run test:e2e   # 빌드 생략(개발 서버, 온디맨드 
 ```bash
 npm install
 npm run dev          # http://localhost:3000  (콘솔: /reconciliation, API 문서: /api-docs)
-npm test             # 431 tests
+npm test             # 481 tests
 npm run build && npm start
 ```
 
@@ -1317,7 +1328,7 @@ Swagger UI를 CDN으로 불러오지 않고, 명세 파일 하나로 직접 그�
 - `GITHUB_PAGES=1`이면 `next.config.mjs`가 `output: 'export'`, `basePath`·`assetPrefix`(저장소 하위 경로),
   `images.unoptimized`, `trailingSlash`를 켭니다. 기본값은 기존 `next dev` / `next build` / `next start` 그대로입니다 —
   정적 내보내기를 기본값으로 두면 `next start`가 없어 Playwright E2E가 통째로 깨지기 때문입니다.
-- `out/`에는 `index.html`, `/flash/`, `/reconciliation/`, `/api-docs/`, `openapi.json`이 함께 나갑니다.
+- `out/`에는 `index.html`, `/flash/`, `/reconciliation/`, `/api-docs/`, `/payout/`, `/settlement-watch/`, `/inventory/`, `openapi.json`이 함께 나갑니다.
 - 정적 페이지에서 `/api-docs`가 명세를 읽도록 `NEXT_PUBLIC_BASE_PATH`를 basePath와 같은 값으로 주입합니다.
 
 **배포 상태와 재배포 방법**
@@ -1458,7 +1469,84 @@ git add -A && git commit -m "build: static export" && git push -f origin gh-page
 | 단위 (`alertRules.test.ts`, 16) | 영업일/달력일 · 입금일 결정성 · 임계값 경계 · 룰 on/off · 미입금 노출액 · 알림톡 본문 |
 | E2E (`elasticity-alerts.spec.ts`, 5) | 슬라이더 → 곡선/표 재계산 · 범례 토글 · 룰 off → 하이라이트 소멸 · 임계값↑ → 위반↓ · 위반 클릭 → 드로어 + 미리보기 |
 
-## 21. 작성자
+## 21. 운영 모듈 3종 — 순수익·정산 감시·발주
+
+대사 콘솔이 "이미 어긋난 돈"을 증명하는 도구라면, 이 세 화면은 **매달·매주 반복되는 판단**을 계산한다.
+셀러가 정산서를 받은 뒤 실제로 하는 일은 세 가지다 — 통장에 얼마가 남았나, 안 들어온 돈이 있나,
+다음 발주를 언제 얼마나 하나. 각각을 별도 콘솔로 분리하고, 계산은 모두 순수 함수 모듈이 한다.
+
+### 21.1 실수령 순수익 — `netPayout.ts` · `/payout`
+
+매출과 정산금, 통장에 남는 돈은 셋 다 다르다. 이 모듈은 세 단계를 분리해서 계산한다.
+
+```
+반품 후 매출 = 매출 − 반품 매출                    (반품률)
+판매 수수료   = 반품 후 매출 × 카테고리 요율        (마켓 × 카테고리 표)
+예상 정산금   = 반품 후 매출 − 판매 수수료 − 결제 수수료 − 반품 회수 배송비(왕복)
+통장 순수익   = 정산금 − 광고비 − 교환 재발송비 − 상품 원가 − 고정비
+손익분기 ROAS = 매출 ÷ 광고 전 공헌이익            (공헌이익 ≤ 0이면 도달 불가)
+```
+
+- **마켓 × 카테고리 요율표**: 같은 마켓이라도 패션·뷰티·식품·디지털·생활·유아·스포츠·반려용품의 요율이 다르다.
+  표에서 고르면 계약 요율로 채워지고, 실제 계약이 다르면 입력란에서 고칠 수 있다.
+- **정산서 대조**: 정산서에 찍힌 금액을 넣으면 예상 정산금과의 차액을 배지로 표시한다. 차액은 "안 들어온 돈"이므로 §21.2 감시 화면과 같은 숫자를 본다.
+- **손익분기 ROAS의 `Infinity`**: 광고 전 공헌이익이 0 이하면 어떤 ROAS로도 흑자가 될 수 없다. `0`으로 적으면
+  "광고를 아주 잘하면 된다"로 오해되므로 `도달 불가`로 구분한다.
+- **세로축이 순수익인 곡선**: ROAS 1~10배 구간의 순수익을 그려 0원 선과 만나는 점을 손익분기로 표시한다.
+  ROAS 0은 스케일의 끝이 아니라 "광고 미집행" 상태이므로 별도로 다룬다(광고비 0원 · 순수익 최대).
+- **카테고리·마켓 시나리오**: 같은 매출을 다른 카테고리·마켓에 올렸을 때의 순수익 차액을 바로 보여 준다.
+  "쿠팡 10.8%와 스마트스토어 4.5%의 차이가 월 얼마인가"를 문장이 아니라 금액으로 답한다.
+
+### 21.2 정산 누락·지연 감시 — `settlementWatch.ts` · `/settlement-watch`
+
+정산서에 **등장하지 않는 주문**은 대사로도 잡히지 않는다. 감시는 그 앞 단계다.
+
+```
+정산 예정일 = 구매확정일 + 마켓 정산 기한(N영업일)     ← 주말 제외, 기존 alertRules의 영업일 계산 재사용
+```
+
+| 상태 | 판정 |
+| --- | --- |
+| 위험 | 기한 경과 3일 이상 · 정산 내역 없음 (누락 의심) |
+| 경고 | 기한 1~2일 경과 누락 · "예정"만 잡힌 지연 · 예상보다 1% 초과 부족 · 예정일보다 늦은 입금 |
+| 대기 | 아직 기한 전 |
+| 정상 | 기한 안에 예상 금액과 일치 |
+
+- **금액 기준**: 예상 정산액 = 결제금액 − 마켓 기본 수수료. 주문 단위로 카테고리 요율을 확정할 수 없으므로 기본 요율을 쓰고,
+  화면 하단에 그 가정을 적는다(모르는 값을 정확한 것처럼 보이게 하지 않는다).
+- **표시 순서**: 위험 → 경고 → 대기 → 정상, 같은 상태면 경과일·금액 순. 기본 필터는 위험·경고라, 화면을 열면 확인할 것부터 보인다.
+- **운영 알림 문구**: 위험·경고 건수, 금액, 최장 경과와 주문번호를 한 문구로 합성한다. 발송 채널 연동은 백엔드 SENS 계층이 담당한다.
+- **기준일 고정**: `new Date()`를 쓰면 서버 렌더와 하이드레이션이 어긋나므로 기준일을 상수로 둔다(기존 데모 원장과 같은 규칙).
+
+### 21.3 품절 임박·발주량 — `inventory.ts` · `/inventory`
+
+```
+일평균 판매    = 최근 7일 판매 합 ÷ 7
+보호 구간      = 리드타임 + 안전재고일
+예상 품절일    = 오늘 + floor(가용 재고 ÷ 일평균)
+발주 마감일    = 오늘 + floor(재고 ÷ 일평균 − 보호 구간)
+권장 발주량    = ceil((일평균 × 보호 구간 − 재고 − 입고 예정) ÷ MOQ) × MOQ
+```
+
+- **7일 평균**: 하루 판매량은 요일·광고 집행으로 2~3배 흔들린다. 하루치로 발주하면 주말 수요를 놓친다.
+  대신 최근 3일 평균을 함께 계산해 ▲▼ 추세로 보여 준다.
+- **판정**: 재고가 리드타임보다 짧으면 위험(오늘 발주해도 끊김), 보호 구간보다 짧으면 주의, 그보다 여유가 있으면 안전.
+  판매가 0인 SKU는 품절이 아니라 **판매 정체**로 따로 분류한다(재고 정리 대상).
+- **입고 예정 차감**: 품절일 전에 도착하는 입고만 권장 발주량에서 뺀다. 도착이 늦으면 발주량에 포함한다.
+  입고만으로 충분한 SKU는 발주량 0으로 두고 "입고 예정 물량으로 충당"이라고 적는다 — 무조건 발주하라고 말하지 않는다.
+- **수요 가정 슬라이더**: 판매량 −30~+60%, 안전재고일 0~2배를 바꾸면 같은 원장이 다시 계산된다. 프로모션 전 발주량을 미리 잡는 용도다.
+- **발주서 CSV**: 발주 대상만, BOM 포함 UTF-8로 내려받는다. 엑셀에서 열어 그대로 발주 담당자에게 넘길 수 있는 형식이다.
+
+### 21.4 검증
+
+| 구분 | 내용 |
+| --- | --- |
+| 단위 (`netPayout.test.ts`, 16) | 요율표 · 차감 순서 불변식(정산금·통장 순수익) · 정산서 차액 · 손익분기 ROAS 0원 수렴 · 도달 불가 · 시뮬레이션 단조성 · 역산 · NaN 입력 방어 |
+| 단위 (`settlementWatch.test.ts`, 18) | 영업일 기한 · 위험/경고/대기/정상 경계 · 부분 정산·지연 입금 · 1% 오차 허용 · 집계·정렬·채널 분해 · 필터 · 알림 문구 · 시드 결정성 |
+| 단위 (`inventory.test.ts`, 16) | 7일·3일 평균 · 품절일·발주 마감일 · MOQ 올림 · 입고 차감 · 판매 정체 · 집계·필터 · CSV · 알림 문구 |
+| E2E (`ops-modules.spec.ts`, 9) | 카테고리 전환 → 순수익 증감 · ROAS 슬라이더 → 광고비·순수익·손익분기 · 정산서 차액 배지 · 위험/경고 필터와 행 수 일치 · 채널 필터 · 수요·안전재고 슬라이더 → 발주량 증감 · CSV 다운로드 · 홈 카드 → 콘솔 이동 |
+
+## 22. 작성자
 
 **서승혜 (Seunghye Seo)** — Frontend & Fullstack Engineer (4년 차)  
 GitHub [@Shye-Seo](https://github.com/Shye-Seo) · tjtmdgp95@gmail.com · 정보처리기사

@@ -4,6 +4,7 @@ import CampaignPerformanceCard from "@/components/CampaignPerformanceCard";
 import Header from "@/components/Header";
 import { IconArrowUpRight } from "@/components/icons";
 import KeywordRankingTable from "@/components/KeywordRankingTable";
+import OpsEntry from "@/components/OpsEntry";
 import SalesTrendChart from "@/components/SalesTrendChart";
 import { DAILY_SALES, DEMO_SNAPSHOT_DATE, MONTHLY_SALES, SCORED_KEYWORDS } from "@/lib/mockData";
 
@@ -108,6 +109,8 @@ export default function HomePage() {
 
         <div className="mx-auto w-full max-w-7xl space-y-12 px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
           <Dashboard />
+
+          <OpsEntry />
 
           <EnterpriseEntry />
 
