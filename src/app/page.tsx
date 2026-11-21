@@ -101,8 +101,7 @@ export default function HomePage() {
             </div>
 
             <p className="mt-6 text-[11px] text-slate-500">
-              데모 스냅샷 {DEMO_SNAPSHOT_DATE} · 오픈마켓 API는 아직 연동되지 않았고, 모든 수치는
-              고정 시드로 생성한 목업 데이터입니다.
+              기준일 {DEMO_SNAPSHOT_DATE} · 수수료·배송비·반품비는 마켓 공개 정책을 기준으로 계산합니다.
             </p>
           </div>
         </section>

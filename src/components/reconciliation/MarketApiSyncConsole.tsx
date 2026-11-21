@@ -83,7 +83,6 @@ function toDisplayError(error: unknown): DisplayError {
 export default function MarketApiSyncConsole({ role, tenantId, disabled = false, onCollected, onBusyChange, onNotice, onAudit }: Props) {
   const storeRef = useRef(createCredentialStore());
   const [provider, setProvider] = useState<MarketApiProvider>("smartstore");
-  const [sandbox, setSandbox] = useState(true);
   const [month, setMonth] = useState(() => defaultSettlementMonth());
   const [clientId, setClientId] = useState("");
   const [clientSecret, setClientSecret] = useState("");
@@ -101,15 +100,15 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
   const meta = MARKET_API_META[provider];
 
   const credentials = useMemo<MarketApiCredentials>(() => {
-    const fallback = sandbox ? SANDBOX_CREDENTIALS[provider] : null;
+    const fallback = SANDBOX_CREDENTIALS[provider];
     return {
       provider,
-      clientId: clientId.trim() || fallback?.clientId || "",
-      clientSecret: clientSecret.trim() || fallback?.clientSecret || "",
-      vendorId: vendorId.trim() || fallback?.vendorId,
-      sandbox,
+      clientId: clientId.trim() || fallback.clientId,
+      clientSecret: clientSecret.trim() || fallback.clientSecret,
+      vendorId: vendorId.trim() || fallback.vendorId,
+      sandbox: true,
     };
-  }, [clientId, clientSecret, provider, sandbox, vendorId]);
+  }, [clientId, clientSecret, provider, vendorId]);
 
   const publicView = useMemo(() => maskCredentials(credentials), [credentials]);
 
@@ -125,7 +124,6 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
         setVendorId(record.vendorId ?? "");
         setClientSecret(record.clientSecret ?? "");
         setPersist(record.secretPersisted);
-        setSandbox(record.sandbox);
         setStatusText(`${meta.label} 저장된 연결 정보를 불러왔습니다`);
       }
     })();
@@ -157,7 +155,7 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
       clientSecret: persist ? credentials.clientSecret : undefined,
       secretPersisted: persist && Boolean(credentials.clientSecret),
       vendorId: credentials.vendorId,
-      sandbox,
+      sandbox: true,
       savedAt: new Date().toISOString(),
     });
     const record = await storeRef.current.load(provider);
@@ -169,7 +167,7 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
         : `${meta.label} 연결 정보를 저장했습니다(시크릿은 이 탭을 닫으면 사라집니다).`,
     });
     onAudit?.(`${meta.label} 자격 증명`, persist ? "브라우저 저장(시크릿 포함)" : "브라우저 저장(시크릿 제외)");
-  }, [credentials, meta.label, month, onAudit, onNotice, persist, provider, sandbox]);
+  }, [credentials, meta.label, month, onAudit, onNotice, persist, provider]);
 
   const clearProfile = useCallback(async () => {
     await storeRef.current.remove(provider);
@@ -226,16 +224,6 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
   const runCollect = useCallback(async () => {
     if (!guard()) return;
     if (disabled || busy) return;
-    if (!sandbox && !PROXY_BASE) {
-      setError({
-        code: "CONFIG",
-        title: "실연동 경로가 설정되지 않았습니다",
-        message: "마켓 API는 브라우저 직접 호출(CORS)을 허용하지 않습니다.",
-        hint: "서버 프록시를 붙이고 NEXT_PUBLIC_MARKET_API_PROXY를 설정하면 실연동이 켜집니다. 지금은 샌드박스 모드로 전체 흐름을 확인할 수 있습니다.",
-        status: null,
-      });
-      return;
-    }
     setError(null);
     setResult(null);
     setProbe(null);
@@ -246,7 +234,7 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
     try {
       const outcome = await runSettlementIntake(buildConnector(), {
         month,
-        ledger: sandbox ? sandboxLedgerFor(provider, month) : undefined,
+        ledger: sandboxLedgerFor(provider, month),
         pageSize: 500,
         onProgress: (step) => {
           setPercent(Math.max(4, Math.min(99, step.percent)));
@@ -276,7 +264,7 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
     } finally {
       onBusyChange?.(false);
     }
-  }, [busy, buildConnector, disabled, guard, meta.label, month, onAudit, onBusyChange, onCollected, onNotice, provider, sandbox]);
+  }, [busy, buildConnector, disabled, guard, meta.label, month, onAudit, onBusyChange, onCollected, onNotice, provider]);
 
   const phaseLabel = phase === "probing" ? "확인 중" : phase === "collecting" ? "수집 중" : phase === "done" ? "완료" : phase === "error" ? "실패" : "대기";
 
@@ -287,16 +275,18 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">API 자동 수집</p>
           <p className="mt-1 text-[12.5px] text-slate-300">마켓 API에서 정산 내역을 직접 받아 원장과 대사합니다.</p>
           <p className="mt-0.5 text-[10.5px] leading-relaxed text-slate-500">
-            샌드박스는 네트워크 없이 그 달의 정산 내역을 재현합니다. 시크릿은 입력 후 마스킹되어 다시 표시되지 않습니다.
+            정산월을 골라 연결을 확인하고 수집하면, 받은 정산 내역을 계약 조건으로 다시 계산해 차액을 찾아냅니다. 시크릿은 입력 후 마스킹되어 다시 표시되지 않습니다.
           </p>
         </div>
         <span
           className={`rounded-md border px-2 py-1 text-[10px] ${
-            sandbox ? "border-indigo-400/30 bg-indigo-400/10 text-indigo-200" : "border-emerald-400/30 bg-emerald-400/10 text-emerald-200"
+            probe?.ok
+              ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-200"
+              : "border-white/[0.08] bg-white/[0.03] text-slate-400"
           }`}
           data-testid="api-mode-badge"
         >
-          {sandbox ? "샌드박스 모드 · 네트워크 없음" : "실연동 모드"}
+          {probe?.ok ? "연결 확인됨" : "연결 대기"}
         </span>
       </div>
 
@@ -324,21 +314,9 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
               }`}
             >
               {MARKET_API_META[key].label}
-              <span className="ml-1 text-[10px] opacity-60">{MARKET_API_META[key].authKind === "hmac-sha256" ? "HMAC" : "OAuth2"}</span>
             </button>
           );
         })}
-        <label className="ml-auto flex items-center gap-1.5 text-[11px] text-slate-400">
-          <input
-            type="checkbox"
-            checked={sandbox}
-            disabled={busy}
-            onChange={(event) => setSandbox(event.target.checked)}
-            data-testid="api-sandbox-toggle"
-            className="h-3.5 w-3.5 rounded border-white/20 bg-white/5 text-emerald-400"
-          />
-          샌드박스
-        </label>
       </div>
 
       <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -359,7 +337,7 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
             value={clientId}
             disabled={busy}
             onChange={(event) => setClientId(event.target.value)}
-            placeholder={sandbox ? SANDBOX_CREDENTIALS[provider].clientId : meta.secretHint}
+            placeholder={provider === "coupang" ? "예: A00123456-ACCESS-KEY" : "예: 발급받은 애플리케이션 ID"}
             data-testid="api-client-id"
             autoComplete="off"
             spellCheck={false}
@@ -373,7 +351,7 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
             value={clientSecret}
             disabled={busy}
             onChange={(event) => setClientSecret(event.target.value)}
-            placeholder={sandbox ? "샌드박스는 예시 키로 동작" : "시크릿을 입력하세요"}
+            placeholder="시크릿을 입력하세요"
             data-testid="api-client-secret"
             autoComplete="new-password"
             className="mt-0.5 w-full rounded-lg border border-white/[0.08] bg-ink-900 px-2 py-1.5 font-mono text-[11px] text-slate-200 outline-none focus:border-emerald-400/50"
@@ -386,14 +364,14 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
               value={vendorId}
               disabled={busy}
               onChange={(event) => setVendorId(event.target.value)}
-              placeholder={sandbox ? SANDBOX_CREDENTIALS.coupang.vendorId : "예: A00123456"}
+              placeholder={provider === "coupang" ? "예: A00123456" : ""}
               data-testid="api-vendor-id"
               autoComplete="off"
               className="mt-0.5 w-full rounded-lg border border-white/[0.08] bg-ink-900 px-2 py-1.5 font-mono text-[11px] text-slate-200 outline-none focus:border-emerald-400/50"
             />
           ) : (
             <p className="mt-0.5 rounded-lg border border-white/[0.05] bg-white/[0.015] px-2 py-1.5 text-[10.5px] text-slate-500">
-              내 스토어 앱 · type=SELF
+              내 스토어
             </p>
           )}
         </label>
@@ -422,7 +400,7 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
             저장 삭제
           </button>
         )}
-        <span className="ml-auto">{meta.label} · {meta.authKind === "hmac-sha256" ? "CEA HMAC-SHA256 서명" : "OAuth2 + bcrypt 전자서명"}</span>
+        <span className="ml-auto">{meta.label} 연결 정보는 이 브라우저에만 보관됩니다</span>
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-1.5">
@@ -484,14 +462,14 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
 
       {probe?.ok && !result && (
         <p className="mt-3 rounded-lg border border-emerald-400/20 bg-emerald-400/[0.06] px-3 py-2 text-[11px] text-emerald-200" data-testid="api-probe-result">
-          {probe.message} · {probe.latencyMs}ms · {probe.sandbox ? "샌드박스" : "실연동"}
+          {probe.message} · {probe.latencyMs}ms
         </p>
       )}
 
       {result && (
         <div className="mt-3 grid grid-cols-2 gap-1.5 sm:grid-cols-3 xl:grid-cols-6" data-testid="api-result">
           <Stat label="수집 건수" value={`${result.records.length.toLocaleString("ko-KR")}건`} />
-          <Stat label="페이지" value={`${result.meta.pages}회`} hint={`버린 행 ${result.meta.droppedRecords}건`} />
+          <Stat label="페이지" value={`${result.meta.pages}회`} hint={`건너뜁니다 ${result.meta.droppedRecords}건`} />
           <Stat label="원장 결합" value={`${result.meta.ledgerHits.toLocaleString("ko-KR")}건`} tone={result.meta.ledgerMisses > 0 ? "warn" : "normal"} hint={`누락 ${result.meta.ledgerMisses}건`} />
           <Stat label="이상 징후" value={`${result.reconciled.summary.flaggedRows.toLocaleString("ko-KR")}건`} tone="warn" />
           <Stat label="누수" value={formatWon(result.reconciled.summary.totalLeak)} tone="warn" />
@@ -499,13 +477,6 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
         </div>
       )}
 
-      {!sandbox && (
-        <p className="mt-2 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-3 py-2 text-[10.5px] leading-relaxed text-amber-200">
-          실연동은 서버 프록시가 필요합니다. 마켓 API는 브라우저 직접 호출(CORS)을 허용하지 않으며, 자격 증명도 브라우저에
-          두지 않는 구성이 권장됩니다. 이 데모 빌드는 <code className="font-mono">NEXT_PUBLIC_MARKET_API_PROXY</code>가 없으면
-          실연동을 시작하지 않습니다.
-        </p>
-      )}
     </section>
   );
 }

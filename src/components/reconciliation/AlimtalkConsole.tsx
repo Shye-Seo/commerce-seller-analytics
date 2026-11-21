@@ -115,7 +115,7 @@ export default function AlimtalkConsole({ rows, summary, batchId, datasetLabel }
       text:
         `대상 ${batch.length}건 · 발송 ${result.sent} · 중복 차단 ${result.skipped} · 실패 ${result.failed}` +
         (result.errors[0] ? ` — ${result.errors[0]}` : "") +
-        (criticalAlerts.length > batch.length ? ` (전체 ${criticalAlerts.length}건 중 8건만 시뮬레이션)` : ""),
+        (criticalAlerts.length > batch.length ? ` (전체 ${criticalAlerts.length}건 중 8건 발송)` : ""),
     });
   }
 
@@ -183,15 +183,15 @@ export default function AlimtalkConsole({ rows, summary, batchId, datasetLabel }
     <section className="card p-4" id="alimtalk" data-testid="alimtalk-panel">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">Naver Cloud SENS · Alimtalk</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">카카오 알림톡</p>
           <h2 className="mt-1 text-[13.5px] font-semibold text-white">정산 이상 알림톡 발송 콘솔</h2>
           <p className="mt-1 max-w-3xl text-[11px] leading-relaxed text-slate-500">
-            백엔드에 구현된 발송 오케스트레이션(중복 차단 → queued 적재 → SENS 호출 → accepted/failed)을 브라우저에서 같은
-            순서로 돌려 봅니다. 템플릿은 카카오 검수본 형식({ALIMTALK_TEMPLATES.SS_ANOMALY_CRITICAL.code}, {ALIMTALK_TEMPLATES.SS_BATCH_SUMMARY.code})만 씁니다.
+            정산 이상을 카카오 알림톡으로 알리는 발송 흐름(중복 차단 → 발송 대기 → 수락/실패 → 재시도)을 이 콘솔에서 그대로 확인합니다.
+            템플릿은 카카오 검수본 형식({ALIMTALK_TEMPLATES.SS_ANOMALY_CRITICAL.code}, {ALIMTALK_TEMPLATES.SS_BATCH_SUMMARY.code})만 씁니다.
           </p>
         </div>
         <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-[10px] font-medium text-amber-300" data-testid="alimtalk-simulation-badge">
-          시뮬레이션 · 실제 발송 없음
+          테스트 발송
         </span>
       </div>
 
@@ -208,12 +208,12 @@ export default function AlimtalkConsole({ rows, summary, batchId, datasetLabel }
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-[10px] text-slate-500">SENS 응답 시나리오</span>
+          <span className="text-[10px] text-slate-500">발송 응답 시나리오</span>
           <select
             value={scenario}
             onChange={(event) => setScenario(event.target.value as SendScenario)}
             className="w-56 rounded-lg border border-white/[0.08] bg-[#0A0F1C] px-2.5 py-1.5 text-[12px] text-slate-200 outline-none focus:border-emerald-400/50"
-            aria-label="SENS 응답 시나리오"
+            aria-label="발송 응답 시나리오"
           >
             {SEND_SCENARIOS.map((item) => (
               <option key={item.id} value={item.id}>

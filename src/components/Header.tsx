@@ -74,15 +74,6 @@ export default function Header() {
           >
             정산 대사 콘솔
           </Link>
-          <Link
-            href="/api-docs"
-            className="hidden whitespace-nowrap rounded-lg border border-white/[0.1] bg-white/[0.03] px-2.5 py-1.5 text-[11.5px] font-medium text-slate-300 transition hover:border-white/25 hover:text-white md:inline-flex"
-          >
-            API 문서
-          </Link>
-          <span className="hidden whitespace-nowrap rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1.5 text-[11px] font-medium text-emerald-300 xl:inline-flex">
-            데모 데이터
-          </span>
           <a
             href="https://github.com/Shye-Seo/commerce-seller-analytics"
             target="_blank"

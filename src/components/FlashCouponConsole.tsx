@@ -260,8 +260,8 @@ export default function FlashCouponConsole() {
           실시간 선착순 응모 · 쿠폰 발급 콘솔
         </h1>
         <p className="max-w-2xl text-[12.5px] leading-relaxed text-slate-500">
-          재고 100장에 1,000명이 동시에 눌러도 101장이 나가지 않아야 합니다. 이 콘솔은 실제 엔진에
-          가상 트래픽을 넣고, <span className="text-slate-300">발급/품절/중복/오버이슈</span>를 그대로 집계합니다.
+          재고 100장에 1,000명이 동시에 눌러도 101장이 나가지 않아야 합니다. 이 콘솔은 엔진에 동시 요청을 넣고,
+          <span className="text-slate-300">발급/품절/중복/오버이슈</span>를 그대로 집계합니다.
         </p>
       </header>
 
@@ -294,7 +294,7 @@ export default function FlashCouponConsole() {
           disabled={running}
           className="rounded-lg bg-emerald-500 px-4 py-2 text-[13px] font-semibold text-ink-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {running ? "트래픽 발생 중…" : "부하 발생 (시뮬레이션)"}
+          {running ? "트래픽 발생 중…" : "부하 발생"}
         </button>
         <span className="text-[11.5px] text-slate-500">
           캠페인 <span className="text-slate-300">{CAMPAIGN.name}</span> · 템플릿{" "}
@@ -420,8 +420,8 @@ export default function FlashCouponConsole() {
                   주문번호로 정산 행과 매칭되어 쿠폰 비용·순마진·ROAS 계산에 쓰입니다.
                 </p>
                 <p className="mt-0.5 text-[10.5px] text-slate-500">
-                  원장과 주문 연결은 브라우저 localStorage에 저장되며 서버로 전송되지 않습니다. 주문 연결은 데모 시뮬레이터가
-                  결정적으로 생성한 값입니다(고정 시드 → 같은 조건이면 같은 주문).
+                  원장과 주문 연결은 이 브라우저에 보관되며, 주문번호로 정산 행과 매칭되어 쿠폰 비용·순마진·ROAS
+                  계산에 그대로 이어집니다.
                 </p>
               </div>
               <Link

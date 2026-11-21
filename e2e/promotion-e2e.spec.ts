@@ -58,7 +58,7 @@ test.describe("알림톡 시뮬레이터", () => {
 
     const panel = page.getByTestId("alimtalk-panel");
     await panel.scrollIntoViewIfNeeded();
-    await expect(page.getByTestId("alimtalk-simulation-badge")).toContainText("실제 발송 없음");
+    await expect(page.getByTestId("alimtalk-simulation-badge")).toContainText("테스트 발송");
 
     await page.getByTestId("alimtalk-send").click();
 
@@ -81,7 +81,7 @@ test.describe("알림톡 시뮬레이터", () => {
     await waitForReconciliationReady(page);
 
     await page.getByTestId("alimtalk-panel").scrollIntoViewIfNeeded();
-    await page.getByLabel("SENS 응답 시나리오").selectOption("rate-limit");
+    await page.getByLabel("발송 응답 시나리오").selectOption("rate-limit");
     await page.getByTestId("alimtalk-send").click();
 
     const timeline = page.getByTestId("alimtalk-timeline");

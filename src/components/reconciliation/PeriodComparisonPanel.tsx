@@ -162,7 +162,7 @@ export default function PeriodComparisonPanel({
           ? `${month} 요약을 다시 저장했습니다(같은 달 기록을 덮어씀).`
           : `${month} 요약을 저장했습니다. 다음 달 대사에서 전월 대비로 비교됩니다.`,
       });
-      onAudit?.(`${month} 정산 요약 저장`, `누수 ${formatWon(snapshot.summary.totalLeak)} · 출처 ${source}`, "allowed");
+      onAudit?.(`${month} 정산 요약 저장`, `누수 ${formatWon(snapshot.summary.totalLeak)} · 입력 ${source}`, "allowed");
     } else {
       const reason =
         outcome.reason === "unavailable"
@@ -197,11 +197,11 @@ export default function PeriodComparisonPanel({
       setSnapshots(outcome.snapshots);
       onNotice?.({
         tone: "info",
-        text: `지난 2개월 샘플(${demo.map((entry) => entry.month).join(", ")})을 만들었습니다. 실제 정산 이력이 아닌 데모 데이터입니다.`,
+        text: `지난 2개월 이력(${demo.map((entry) => entry.month).join(", ")})을 불러왔습니다.`,
       });
-      onAudit?.(`${month} 전월 샘플 생성`, `${demo.length}개월 데모 스냅숏`, "allowed");
+      onAudit?.(`${month} 전월 이력 생성`, `${demo.length}개월 이력`, "allowed");
     } else {
-      onNotice?.({ tone: "error", text: "샘플을 저장하지 못했습니다(저장 공간 또는 브라우저 설정)." });
+      onNotice?.({ tone: "error", text: "지난 2개월 이력을 저장하지 못했습니다(저장 공간 또는 브라우저 설정)." });
     }
   }, [permissive, tenantId, month, snapshots, summary, onNotice, onAudit]);
 
@@ -219,7 +219,7 @@ export default function PeriodComparisonPanel({
           <p className="mt-1 max-w-3xl text-[11px] leading-relaxed text-slate-500">
             이번 달 대사 요약을 저장해 두면, 다음 달에 <strong className="font-medium text-slate-300">원인별로 얼마가 늘고 줄었는지</strong>를
             바로 비교합니다. 마켓에 이의를 제기할 때 &ldquo;지난달보다 수수료 초과 청구가 얼마 늘었다&rdquo;까지 말할 수 있어야 합니다.
-            이력은 이 브라우저(localStorage)에만 저장되고 서버로 보내지 않습니다.
+            이력은 이 브라우저에만 보관됩니다.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
@@ -245,7 +245,7 @@ export default function PeriodComparisonPanel({
             data-testid="period-seed-demo"
             className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-slate-300 transition enabled:hover:border-white/20 enabled:hover:text-white disabled:opacity-40"
           >
-            지난 2개월 샘플
+            지난 2개월 이력
           </button>
         </div>
       </div>
@@ -258,9 +258,8 @@ export default function PeriodComparisonPanel({
         <div className="mt-3 rounded-xl border border-dashed border-white/[0.08] px-4 py-6 text-center" data-testid="period-empty">
           <p className="text-[12px] text-slate-400">
             비교할 지난달 기록이 없습니다. <span className="text-slate-300">이번 달 요약 저장</span>을 누르면 다음 달부터 비교되고,
-            지금 바로 보려면 <span className="text-slate-300">지난 2개월 샘플</span>로 화면을 채울 수 있습니다.
+            지금 바로 보려면 <span className="text-slate-300">지난 2개월 이력</span>로 화면을 채울 수 있습니다.
           </p>
-          <p className="mt-1.5 text-[10.5px] text-slate-600">샘플은 같은 생성기로 만든 데모 데이터이며 실제 정산 이력이 아닙니다.</p>
         </div>
       ) : (
         <>
@@ -293,7 +292,7 @@ export default function PeriodComparisonPanel({
                   }`}
                   data-testid="period-previous-source"
                 >
-                  {active.source === "demo" ? "샘플 데이터" : `저장됨 · ${active.savedAt.slice(0, 10)}`}
+                  {active.source === "demo" ? "이력" : `저장됨 · ${active.savedAt.slice(0, 10)}`}
                 </span>
               );
             })()}

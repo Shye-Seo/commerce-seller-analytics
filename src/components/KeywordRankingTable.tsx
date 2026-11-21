@@ -268,7 +268,6 @@ export default function KeywordRankingTable({ rows }: KeywordRankingTableProps) 
         <span>
           {visibleRows.length}개 키워드 · 기회 지수 70 이상은 <span className="text-emerald-300">진입 추천</span>
         </span>
-        <span>검색량·경쟁 강도는 데모 데이터입니다.</span>
       </div>
     </div>
   );

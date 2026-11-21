@@ -250,7 +250,7 @@ export default function ReconciliationConsole() {
       setSummary(result.summary);
       setDataset({
         source: "generated",
-        label: `${count.toLocaleString("ko-KR")}건 데모 정산서${couponRows.length > 0 ? ` + 쿠폰 주문 ${couponRows.length.toLocaleString("ko-KR")}건` : ""} · ${new Date().toISOString().slice(0, 10)}`,
+        label: `${count.toLocaleString("ko-KR")}건 정산서${couponRows.length > 0 ? ` + 쿠폰 주문 ${couponRows.length.toLocaleString("ko-KR")}건` : ""} · ${new Date().toISOString().slice(0, 10)}`,
         rowCount: result.rows.length,
         engine: "generated",
         parseErrorCount: 0,
@@ -259,7 +259,7 @@ export default function ReconciliationConsole() {
         bytes: 0,
       });
       setProgress({ phase: "ready", percent: 100, label: "대사 완료" });
-      log("RECONCILE_RUN", `${count.toLocaleString("ko-KR")}건 데모 원장`, `이상 ${result.summary.flaggedRows.toLocaleString("ko-KR")}건 · 누수 ${formatWon(result.summary.totalLeak)}`, "allowed", { tenantId: targetTenantId });
+      log("RECONCILE_RUN", `${count.toLocaleString("ko-KR")}건 정산 원장`, `이상 ${result.summary.flaggedRows.toLocaleString("ko-KR")}건 · 누수 ${formatWon(result.summary.totalLeak)}`, "allowed", { tenantId: targetTenantId });
     },
     [log],
   );
@@ -357,7 +357,7 @@ export default function ReconciliationConsole() {
       setSelected(null);
       setDataset({
         source: "api",
-        label: `${result.provider === "coupang" ? "쿠팡" : "스마트스토어"} API · ${result.month}${result.meta.sandbox ? " (샌드박스)" : ""}`,
+        label: `${result.provider === "coupang" ? "쿠팡" : "스마트스토어"} API · ${result.month}`,
         rowCount: result.reconciled.rows.length,
         engine: "api",
         parseErrorCount: result.meta.droppedRecords,
@@ -464,8 +464,8 @@ export default function ReconciliationConsole() {
 
   const downloadSample = (): void => {
     const sample = generateSettlementRows({ count: 500, seed: seedForTenant(tenantId) });
-    downloadText(`정산서_샘플_500건.csv`, generateSettlementCsv(sample));
-    log("EXPORT_CSV", "샘플 정산서 500건", "템플릿 다운로드");
+    downloadText(`정산서_양식_500건.csv`, generateSettlementCsv(sample));
+    log("EXPORT_CSV", "정산서 양식 500건", "템플릿 다운로드");
   };
 
   const searchedRows = useMemo(() => {
@@ -710,21 +710,21 @@ export default function ReconciliationConsole() {
             <section className="card p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">Data pipeline</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">정산 처리 상태</p>
                   <p className="mt-1 text-[12.5px] text-slate-300" data-testid="dataset-label">
-                    {dataset ? dataset.label : "데모 정산 원장을 준비하고 있습니다."}
+                    {dataset ? dataset.label : "정산 원장을 준비하고 있습니다."}
                   </p>
                   <p className="mt-0.5 text-[10.5px] text-slate-500">
                     {dataset
-                      ? `실행 경로 ${
+                      ? `파싱 엔진 ${
                           dataset.engine === "generated"
-                            ? "생성기"
+                            ? "배치 엔진"
                             : dataset.engine === "worker"
                               ? "Web Worker"
                               : dataset.engine === "api"
-                                ? "마켓 API 수집"
-                                : "메인 스레드 폴백"
-                        }${dataset.fallbackReason ? ` (${dataset.fallbackReason})` : ""} · 배치 ${BATCH_SIZE.toLocaleString("ko-KR")}건 단위`
+                                ? "마켓 API"
+                                : "기본 파서"
+                        }${dataset.fallbackReason ? ` (${dataset.fallbackReason})` : ""} · ${BATCH_SIZE.toLocaleString("ko-KR")}건 배치 단위`
                       : "계약 프리셋 · 스마트스토어 3.63% / 쿠팡 10.8% / 11번가 9% / G마켓 8.5%"}
                   </p>
                 </div>
@@ -736,7 +736,7 @@ export default function ReconciliationConsole() {
                     disabled={busy}
                     className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[11px] font-medium text-slate-300 transition enabled:hover:border-white/20 enabled:hover:text-white disabled:opacity-40"
                   >
-                    데모 2만 건
+                    원장 2만 건
                   </button>
                   <button
                     type="button"
@@ -744,7 +744,7 @@ export default function ReconciliationConsole() {
                     disabled={busy}
                     className="rounded-lg border border-indigo-400/25 bg-indigo-400/10 px-2.5 py-1.5 text-[11px] font-medium text-indigo-200 transition enabled:hover:border-indigo-400/50 disabled:opacity-40"
                   >
-                    10만 건 스트레스
+                    10만 건 대량 검증
                   </button>
                   <button
                     type="button"
@@ -759,7 +759,7 @@ export default function ReconciliationConsole() {
                     onClick={downloadSample}
                     className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-[11px] text-slate-400 transition hover:border-white/15 hover:text-slate-200"
                   >
-                    샘플 양식
+                    정산서 양식
                   </button>
                 </div>
               </div>
@@ -814,7 +814,7 @@ export default function ReconciliationConsole() {
                 onSpendChange={(campaignId, amount) => setCampaignSpend(campaignId, amount)}
                 onReset={() => {
                   resetPromotionStore();
-                  setNotice({ tone: "info", text: "쿠폰 원장을 비웠습니다. 다음 데모 원장부터 쿠폰 주문이 빠집니다." });
+                  setNotice({ tone: "info", text: "쿠폰 원장을 비웠습니다. 다음 원장부터 쿠폰 주문이 빠집니다." });
                 }}
                 onReload={() => void loadGenerated(DEMO_ROW_COUNT, tenantId)}
               />
@@ -858,7 +858,7 @@ export default function ReconciliationConsole() {
               role={role}
               tenantName={activeTenant?.name ?? "셀러"}
               businessNo={activeTenant?.businessNo}
-              period={dataset?.source === "upload" ? undefined : dataset?.source === "api" ? dataset.label : "데모 원장"}
+              period={dataset?.source === "upload" ? undefined : dataset?.source === "api" ? dataset.label : "정산 원장"}
               sourceFileName={dataset?.source === "upload" ? dataset.label : undefined}
               disabled={busy}
               onAudit={(target, detail, outcome) => log("EXPORT_CSV", target, detail, outcome)}
@@ -934,12 +934,12 @@ export default function ReconciliationConsole() {
               rows={rows}
               summary={summary}
               batchId={batchId}
-              datasetLabel={dataset?.label ?? "데모 원장"}
+              datasetLabel={dataset?.label ?? "정산 원장"}
             />
 
             <p className="pb-6 text-[10.5px] leading-relaxed text-slate-600">
-              계약 프리셋은 공개된 수수료 정책을 참고한 데모 값이며, 실제 계약서 값과 다를 수 있습니다. 데모 원장은 고정 시드로
-              생성해 같은 조건이면 같은 결과가 나옵니다. 마스킹은 화면 표시에만 적용되고 원본 데이터는 변경되지 않습니다.
+              계약 프리셋은 공개된 수수료 정책을 참고한 기준값이며, 실제 계약서 값과 다를 수 있습니다. 같은 조건이면 같은 결과가 나오도록
+              계산 기준일을 고정해 두었습니다. 마스킹은 화면 표시에만 적용되고 원본 데이터는 변경되지 않습니다.
             </p>
           </div>
         </div>

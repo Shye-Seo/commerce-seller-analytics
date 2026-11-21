@@ -202,8 +202,8 @@ export default function CampaignAttributionPanel({ performance, issuedCoupons, s
       <p className="mt-3 border-t border-white/[0.05] pt-2 text-[10px] leading-relaxed text-slate-600">
         계산식: 순마진 = 실정산액 − 매입원가 − 실배송원가(결제금액이 할인 반영 후이므로 쿠폰 비용이 이미 차감된 값).
         ROAS = 귀속 매출 ÷ (우리 부담 쿠폰 비용 + 집행 광고비). 제휴사 부담 쿠폰은 우리 비용이 아니므로 분모에서 뺍니다.
-        쿠폰 사용 주문과 집행 광고비는 데모 시뮬레이터가 만든 값이며, 광고비는 위 표에서 직접 바꿀 수 있습니다.
-        {simulation ? ` 마지막 시뮬레이션: ${simulation.presetLabel} · 요청 ${simulation.requests.toLocaleString("ko-KR")}건 · 발급 ${simulation.issued.toLocaleString("ko-KR")}장.` : ""}
+        광고비는 위 표에서 직접 바꿀 수 있습니다.
+        {simulation ? ` 마지막 실행: ${simulation.presetLabel} · 요청 ${simulation.requests.toLocaleString("ko-KR")}건 · 발급 ${simulation.issued.toLocaleString("ko-KR")}장.` : ""}
       </p>
     </section>
   );

@@ -332,7 +332,7 @@ export default function AlertRuleBuilderPanel({
 
       <p className="mt-3 text-[10px] leading-relaxed text-slate-600">
         {dataNote ??
-          "정산 입금일은 데모 원장에서 마켓 정산 주기(D+n 영업일)로 시뮬레이션한 값입니다. 쿠폰 부담률은 선착순 드롭 콘솔에서 사용된 쿠폰 원장과 주문번호로 맞춘 값만 계산합니다."}
+          "정산 입금일은 마켓 정산 주기(D+n 영업일) 기준입니다. 쿠폰 부담률은 선착순 드롭 콘솔에서 사용된 쿠폰 원장과 주문번호로 맞춘 값만 계산합니다."}
       </p>
     </section>
   );

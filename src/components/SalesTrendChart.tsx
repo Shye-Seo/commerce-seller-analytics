@@ -315,7 +315,7 @@ export default function SalesTrendChart({ daily, monthly }: SalesTrendChartProps
       </div>
 
       <p className="mt-4 text-[11px] text-slate-500">
-        평균 객단가 {formatWon(summary.averageOrderValue)} · 모든 수치는 데모 데이터입니다.
+        평균 객단가 {formatWon(summary.averageOrderValue)}
       </p>
     </div>
   );

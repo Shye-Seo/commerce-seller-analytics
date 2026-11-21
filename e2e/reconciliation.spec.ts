@@ -138,7 +138,7 @@ test.describe("정산서 파일 업로드 → 대사", () => {
     const matched = await page.getByTestId("kpi-matched-rate").locator("p").nth(1).innerText();
     expect(matched).toMatch(/%$/);
     expect(matched).not.toBe("100.0%");
-    await expect(page.getByText("Data pipeline")).toBeVisible();
+    await expect(page.getByText("정산 처리 상태")).toBeVisible();
   });
 
   test("이상 필터를 누르면 해당 원인의 행만 남는다", async ({ page }) => {
@@ -187,12 +187,12 @@ test.describe("정산서 파일 업로드 → 대사", () => {
 });
 
 test.describe("마켓 API 자동 수집", () => {
-  test("샌드박스 수집이 대사까지 이어져 화면에 반영된다", async ({ page }) => {
+  test("마켓 API 수집이 대사까지 이어져 화면에 반영된다", async ({ page }) => {
     await waitForDemoReady(page);
 
     await page.getByTestId("intake-tab-api").click();
     await expect(page.getByTestId("market-api-panel")).toBeVisible();
-    await expect(page.getByTestId("api-mode-badge")).toContainText("샌드박스");
+    await expect(page.getByTestId("api-mode-badge")).toContainText("연결 대기");
 
     // 샌드박스는 예시 키로 동작하므로 자격 증명 입력 없이 진행된다(실연동은 키가 필수)
     await page.getByTestId("api-collect").click();
@@ -216,7 +216,7 @@ test.describe("마켓 API 자동 수집", () => {
 });
 
 test.describe("월별 재대사 · 전월 대비", () => {
-  test("지난 2개월 샘플을 만들면 원인별 증감이 표에 나오고, 이번 달 요약이 브라우저에 저장된다", async ({ page }) => {
+  test("지난 2개월 이력을 만들면 원인별 증감이 표에 나오고, 이번 달 요약이 브라우저에 저장된다", async ({ page }) => {
     await waitForDemoReady(page);
 
     const panel = page.getByTestId("period-panel");
@@ -230,7 +230,7 @@ test.describe("월별 재대사 · 전월 대비", () => {
 
     await expect(page.getByTestId("period-comparison")).toBeVisible({ timeout: 20_000 });
     await expect(page.getByTestId("period-verdict")).toContainText("2026-10 대비");
-    await expect(page.getByTestId("period-previous-source")).toContainText("샘플");
+    await expect(page.getByTestId("period-previous-source")).toContainText("이력");
 
     // 비교 기준월은 지난 두 달 중 최신(2026-10)이고, 첫 달로 바꾸면 증감이 다시 계산된다
     const select = page.getByTestId("period-previous-select");

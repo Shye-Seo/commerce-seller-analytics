@@ -461,7 +461,7 @@ export default function ApiDocsConsole() {
             <p className="pb-6 text-[10.5px] leading-relaxed text-slate-600">
               이 문서는 저장소의 <code className="text-slate-500">public/openapi.json</code>을 단일 소스로 씁니다. 명세를 고치면 페이지가 그대로
               반영하고, 단위 테스트가 `backend/public/index.php`의 라우트와 명세 경로가 어긋나지 않았는지 확인합니다.
-              인증·레이트 리밋·SENS 실발송은 운영 배포 단계의 항목이며, 현재 명세는 로컬 데모 범위입니다.
+              인증·레이트 리밋·알림톡 실발송은 운영 배포 단계의 항목이며, 현재 명세는 로컬 실행 범위입니다.
             </p>
           </div>
         </div>

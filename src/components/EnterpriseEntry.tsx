@@ -12,7 +12,7 @@ import { formatPercent, formatWon } from "@/lib/format";
 const snapshot = reconcileSettlement(generateSettlementRows({ count: 2_000, seed: 20261111 }));
 
 const STATS = [
-  { label: "대사 행 수", value: `${snapshot.summary.totalRows.toLocaleString("ko-KR")}건`, hint: `${SETTLEMENT_SNAPSHOT_DATE} 기준 데모 원장` },
+  { label: "대사 행 수", value: `${snapshot.summary.totalRows.toLocaleString("ko-KR")}건`, hint: `${SETTLEMENT_SNAPSHOT_DATE} 기준 원장` },
   { label: "정상 대사율", value: formatPercent(snapshot.summary.matchedRate, 1), hint: `이상 ${snapshot.summary.flaggedRows.toLocaleString("ko-KR")}건 탐지` },
   { label: "누수 추정 손실액", value: formatWon(snapshot.summary.totalLeak), hint: "계약 조건 대비 부족분" },
   { label: "역마진 노출", value: formatWon(snapshot.summary.marginRiskExposure), hint: `${snapshot.summary.negativeMarginRows}건` },
