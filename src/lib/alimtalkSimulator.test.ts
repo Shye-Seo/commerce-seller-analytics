@@ -29,7 +29,7 @@ function baseLog(overrides: Partial<AlimtalkLogEntry> = {}): AlimtalkLogEntry {
     id: "alt-00001",
     dedupeKey: dedupeKeyForAnomaly(1, "SS2026100001", "FEE_OVERCHARGE"),
     tenantId: 1,
-    tenantName: "셀러스코프 데모",
+    tenantName: "셀러스코프",
     batchId: "batch-test",
     templateCode: "SS_ANOMALY_CRITICAL",
     plusFriendId: "@sellerscope",
@@ -37,7 +37,7 @@ function baseLog(overrides: Partial<AlimtalkLogEntry> = {}): AlimtalkLogEntry {
     recipientMasked: PHONE.masked,
     orderNo: "SS2026100001",
     anomalyCode: "FEE_OVERCHARGE",
-    content: "[셀러스코프 데모] 정산 이상 감지 - 수수료 초과 청구",
+    content: "[셀러스코프] 정산 이상 감지 - 수수료 초과 청구",
     status: "queued",
     attempts: 0,
     createdAt: 1,
@@ -68,7 +68,7 @@ describe("normalizeRecipientPhone", () => {
 describe("템플릿 본문 합성", () => {
   it("이상 알림 본문은 PHP composer와 같은 형식이다", () => {
     const content = composeAnomalyContent({
-      tenantName: "셀러스코프 데모",
+      tenantName: "셀러스코프",
       orderNo: "SS2026100001",
       productName: "데일리 코튼 셔츠",
       anomalyCode: "FEE_OVERCHARGE",
@@ -81,7 +81,7 @@ describe("템플릿 본문 합성", () => {
 
     expect(content).toBe(
       [
-        "[셀러스코프 데모] 정산 이상 감지 - 수수료 초과 청구",
+        "[셀러스코프] 정산 이상 감지 - 수수료 초과 청구",
         "주문 SS2026100001 · 데일리 코튼 셔츠",
         "기대 3,229원 / 정산 3,900원",
         "추정 손실 671원",
@@ -98,7 +98,7 @@ describe("템플릿 본문 합성", () => {
 
   it("요약 본문은 최대 원인이 없으면 '없음'으로 적는다", () => {
     const content = composeSummaryContent({
-      tenantName: "셀러스코프 데모",
+      tenantName: "셀러스코프",
       batchLabel: "데모 원장",
       totalRows: 1_200,
       flaggedRows: 0,
@@ -176,7 +176,7 @@ describe("SensSimulator", () => {
 describe("dispatchAnomalyAlerts", () => {
   const alerts = [
     {
-      tenantName: "셀러스코프 데모",
+      tenantName: "셀러스코프",
       orderNo: "SS2026100001",
       productName: "데일리 코튼 셔츠",
       anomalyCode: "FEE_OVERCHARGE" as const,

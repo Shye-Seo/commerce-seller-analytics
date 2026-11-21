@@ -373,7 +373,7 @@ export function evaluateAlertRules(input: AlertEvaluationInput): AlertEvaluation
     }
 
     if (config.id === "settlement-delay" && !receipts) {
-      skippedReason = "정산 입금일이 없어 이 룰은 평가하지 않았습니다(데모 원장에서만 제공).";
+      skippedReason = "정산 입금일이 없어 이 룰은 평가하지 않았습니다(입금일이 있는 정산서에서만 평가).";
     }
 
     for (const item of rows) {
@@ -499,7 +499,7 @@ const PREVIEW_CODE: Record<AlertRuleId, AnomalyCode> = {
   "coupon-burden": "NEGATIVE_MARGIN",
 };
 
-export function composeRuleAlertPreview(hit: AlertHit, tenantName = "셀러스코프 데모"): string {
+export function composeRuleAlertPreview(hit: AlertHit, tenantName = "셀러스코프"): string {
   return composeAnomalyContent({
     tenantName,
     orderNo: hit.orderNo,

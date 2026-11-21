@@ -363,7 +363,7 @@ export function collectCriticalAlerts(rows: readonly ReconciledRow[]): AnomalyAl
       perOrder.set(row.row.orderNo, used + 1);
 
       alerts.push({
-        tenantName: "셀러스코프 데모",
+        tenantName: "셀러스코프",
         orderNo: row.row.orderNo,
         productName: row.row.productName,
         anomalyCode: anomaly.code,
@@ -480,7 +480,7 @@ export function dispatchBatchSummary(params: {
   }
 
   const content = composeSummaryContent({
-    tenantName: "셀러스코프 데모",
+    tenantName: "셀러스코프",
     batchLabel: params.batchLabel,
     totalRows: params.summary.totalRows,
     flaggedRows: params.summary.flaggedRows,
@@ -493,7 +493,7 @@ export function dispatchBatchSummary(params: {
     id: nextId(logs),
     dedupeKey,
     tenantId: params.config.tenantId,
-    tenantName: "셀러스코프 데모",
+    tenantName: "셀러스코프",
     batchId: params.batchId,
     templateCode: "SS_BATCH_SUMMARY",
     plusFriendId: params.config.plusFriendId,
