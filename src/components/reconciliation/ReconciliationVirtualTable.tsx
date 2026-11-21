@@ -361,9 +361,7 @@ export default function ReconciliationVirtualTable({
         </span>
         <span className="flex flex-wrap items-center gap-x-3 gap-y-1 tabular-nums">
           <span data-testid="vtable-total">총 {rows.length.toLocaleString("ko-KR")}행</span>
-          <span>렌더 행 {window_.renderedCount}개</span>
-          <span>DOM 셀 {dom.virtual.toLocaleString("ko-KR")}개 (전체 {dom.full.toLocaleString("ko-KR")}개 대비 {dom.ratio.toLocaleString("ko-KR")}배 절감)</span>
-          <span className="text-slate-600">rAF {renderMs < 1 ? "<1" : renderMs.toFixed(1)}ms</span>
+          <span>{window_.renderedCount}행 렌더</span>
         </span>
       </div>
     </section>

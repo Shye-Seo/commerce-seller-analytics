@@ -305,7 +305,7 @@ export default function AlertRuleBuilderPanel({
 
         <div className="rounded-xl border border-white/[0.06] bg-white/[0.015] p-3">
           <div className="flex items-center justify-between">
-            <p className="text-[11.5px] font-semibold text-slate-200">SENS 알림톡 미리보기</p>
+            <p className="text-[11.5px] font-semibold text-slate-200">알림톡 미리보기</p>
             <span className="rounded border border-white/[0.08] px-1.5 py-0.5 text-[9px] text-slate-500">
               SS_ANOMALY_CRITICAL
             </span>

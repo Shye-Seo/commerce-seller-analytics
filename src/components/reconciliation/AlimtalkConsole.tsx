@@ -297,7 +297,7 @@ export default function AlimtalkConsole({ rows, summary, batchId, datasetLabel }
           </div>
           <div className="mt-2 rounded-lg border border-white/[0.05] bg-white/[0.015] px-2.5 py-2 text-[10px] leading-relaxed text-slate-500">
             본문은 카카오에 검수된 템플릿과 같은 형식이며, 변수에는 개행을 넣지 않습니다. 상한은 1,000자입니다.
-            서명(x-ncp-apigw-signature-v2)은 서버에서 HMAC-SHA256으로 만들고, 이 화면은 그 값을 흉내 내지 않습니다.
+            발송 요청은 서버에서 서명해 전달하고, 화면은 발송 결과만 보여 줍니다.
           </div>
         </div>
 
@@ -360,9 +360,9 @@ export default function AlimtalkConsole({ rows, summary, batchId, datasetLabel }
           </div>
 
           <p className="mt-2 text-[10px] leading-relaxed text-slate-600">
-            상태 전이는 DB 스키마와 같습니다: queued → accepted(202) → delivered(0000) / failed. 3005(수신 결과 불확실)는 성공으로
-            세지 않고 sent로 남깁니다. 재시도는 {MAX_SEND_ATTEMPTS}회까지이며, 템플릿·서명 오류는 재시도해도 성공하지 않습니다.
-            이력은 브라우저에만 저장되고 서버로 전송되지 않습니다.
+            발송 상태는 발송 대기 → 수락 → 도달/실패 순서로 남고, 수신 결과가 불확실한 건은 성공으로 세지 않습니다.
+            재시도는 {MAX_SEND_ATTEMPTS}회까지이며, 템플릿·서명 오류는 재시도해도 성공하지 않습니다.
+            이 이력은 이 브라우저에 보관됩니다.
           </p>
         </div>
       </div>
