@@ -87,7 +87,7 @@ export default function CampaignPerformanceCard() {
               </div>
             </div>
             <p className="border-t border-white/[0.06] px-4 py-2 text-[10px] leading-relaxed text-slate-600">
-              이 카드는 브라우저 원장(localStorage)만 읽습니다. 정산서와 대조한 확정 순마진·ROAS는 정산 대사 콘솔에서 확인하세요.
+              이 카드는 이 브라우저에 저장된 쿠폰 원장을 읽습니다. 정산서와 대조한 확정 순마진·ROAS는 정산 대사 콘솔에서 확인하세요.
             </p>
           </>
         ) : (

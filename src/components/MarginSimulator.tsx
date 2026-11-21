@@ -237,7 +237,7 @@ export default function MarginSimulator({
               값을 바꾸면 오른쪽 지표가 즉시 다시 계산됩니다.
             </p>
           </div>
-          <span className="chip">화면 내 계산 · 서버 요청 없음</span>
+          <span className="chip">입력 즉시 재계산</span>
         </div>
 
         <div className="mt-5">

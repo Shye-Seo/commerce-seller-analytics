@@ -81,7 +81,7 @@ export default function CampaignAttributionPanel({ performance, issuedCoupons, s
             에서 부하를 한 번 발생시키면 발급 원장과 주문 연결이 이 화면으로 넘어옵니다.
           </p>
           <p className="mt-1.5 text-[10.5px] text-slate-600">
-            원장은 브라우저 localStorage에만 저장되며 서버로 전송되지 않습니다.
+            원장은 이 브라우저에 보관됩니다.
           </p>
         </div>
       ) : (

@@ -45,8 +45,8 @@ export default function EnterpriseEntry() {
 
         <div className="flex flex-col gap-3 border-t border-white/[0.06] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
           <ul className="grid gap-1 text-[11.5px] text-slate-400 sm:grid-cols-2">
-            <li>· Web Worker 청크 파싱 + 메인 스레드 폴백</li>
-            <li>· 10만 행 가상화 테이블 (DOM 절감 3,000배)</li>
+            <li>· 10만 행 정산서 스트리밍 파싱</li>
+            <li>· 10만 행 가상화 테이블</li>
             <li>· 수수료·반품비·정산 차액 원인별 귀속</li>
             <li>· 멀티 테넌트 RBAC + 해시체인 감사 로그</li>
           </ul>

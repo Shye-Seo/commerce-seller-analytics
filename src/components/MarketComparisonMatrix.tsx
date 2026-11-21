@@ -324,7 +324,7 @@ export default function MarketComparisonMatrix({
           가정했으므로, 실제로는 채널별 노출 규모에 따라 판매량이 달라집니다. 정산 주기는 영업일
           기준입니다.
         </p>
-        <p className="shrink-0">계산: calculateMargin() × 5개 프리셋</p>
+        <p className="shrink-0">같은 원가 구조에 마켓별 수수료를 적용해 계산</p>
       </div>
     </section>
   );

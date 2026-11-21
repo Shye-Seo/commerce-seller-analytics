@@ -303,7 +303,7 @@ export default function ElasticityPanel({ input, onApply }: ElasticityPanelProps
             슬라이더를 움직이면 곡선과 표가 함께 다시 계산됩니다.
           </p>
         </div>
-        <span className="chip">화면 내 계산 · 서버 요청 없음</span>
+        <span className="chip">입력 즉시 재계산</span>
       </div>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)]">
