@@ -558,7 +558,9 @@ export default function ReconciliationConsole({ section = "overview" }: { sectio
     {
       label: "역마진 노출액",
       value: summary ? mask(summary.marginRiskExposure) : "—",
-      hint: summary ? `역마진 ${summary.negativeMarginRows.toLocaleString("ko-KR")}건 · 최저 ${formatPercent(summary.worstMarginRate, 1)}` : "대기 중",
+      hint: summary
+        ? `역마진 ${summary.negativeMarginRows.toLocaleString("ko-KR")}건 · 정산액이 원가·수수료에 못 미치는 주문`
+        : "대기 중",
       tone: "warn",
     },
   ];
