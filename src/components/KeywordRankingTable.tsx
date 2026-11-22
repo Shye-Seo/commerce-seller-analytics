@@ -135,7 +135,7 @@ export default function KeywordRankingTable({ rows }: KeywordRankingTableProps) 
                 type="button"
                 aria-pressed={market === option.value}
                 onClick={() => setMarket(option.value)}
-                className={`rounded-md px-2.5 py-1.5 text-[11px] font-medium transition ${
+                className={`rounded-md px-2.5 py-2 text-[11px] font-medium transition ${
                   market === option.value
                     ? "bg-white/10 text-white"
                     : "text-slate-400 hover:text-slate-200"
@@ -164,7 +164,7 @@ export default function KeywordRankingTable({ rows }: KeywordRankingTableProps) 
         <table className="w-full min-w-[560px] border-collapse text-left">
           <thead>
             <tr className="border-b border-white/[0.06] text-[11px] uppercase tracking-wide text-slate-500">
-              <th scope="col" className="px-5 py-2.5 font-medium sm:px-6">
+              <th scope="col" className="px-5 py-2 font-medium sm:px-6">
                 키워드
               </th>
               {COLUMNS.map((column) => {
@@ -173,7 +173,7 @@ export default function KeywordRankingTable({ rows }: KeywordRankingTableProps) 
                   <th
                     key={column.key}
                     scope="col"
-                    className={`px-3 py-2.5 font-medium ${column.hideBelow ?? ""} ${
+                    className={`px-3 py-2 font-medium ${column.hideBelow ?? ""} ${
                       column.align === "right" ? "text-right" : "text-left"
                     }`}
                   >
@@ -193,7 +193,7 @@ export default function KeywordRankingTable({ rows }: KeywordRankingTableProps) 
                   </th>
                 );
               })}
-              <th scope="col" className="hidden px-3 py-2.5 text-right font-medium lg:table-cell">
+              <th scope="col" className="hidden px-3 py-2 text-right font-medium lg:table-cell">
                 평균가
               </th>
             </tr>

@@ -59,7 +59,7 @@ function RuleCard({
   const meta = ALERT_RULE_LIST.find((rule) => rule.id === id)!;
   return (
     <div
-      className={`rounded-xl border px-3.5 py-3 transition ${
+      className={`rounded-xl border px-4 py-3 transition ${
         config.enabled ? TONE[meta.severity] : "border-white/[0.05] bg-white/[0.012]"
       }`}
     >
@@ -89,7 +89,7 @@ function RuleCard({
         </button>
       </div>
 
-      <div className="mt-2.5 flex items-end justify-between gap-3">
+      <div className="mt-2 flex items-end justify-between gap-3">
         <label className="flex items-center gap-1.5 text-[10.5px] text-slate-400">
           임계값
           <input
@@ -175,7 +175,7 @@ export default function AlertRuleBuilderPanel({
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">
+          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">
             Alert rules
           </p>
           <h2 className="mt-1 text-[15px] font-semibold tracking-tight text-white">
@@ -188,13 +188,13 @@ export default function AlertRuleBuilderPanel({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-right">
-          <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] px-2.5 py-1.5">
+          <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] px-2.5 py-2">
             <p className="text-[9.5px] text-slate-500">활성 룰</p>
             <p className="text-[12.5px] font-semibold tabular-nums text-white">
               {evaluation.enabledCount}/{rules.length}
             </p>
           </div>
-          <div className="rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-2.5 py-1.5">
+          <div className="rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-2.5 py-2">
             <p className="text-[9.5px] text-slate-500">위반 행</p>
             <p
               className="text-[12.5px] font-semibold tabular-nums text-amber-200"
@@ -203,7 +203,7 @@ export default function AlertRuleBuilderPanel({
               {evaluation.hits.length.toLocaleString("ko-KR")}
             </p>
           </div>
-          <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] px-2.5 py-1.5">
+          <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] px-2.5 py-2">
             <p className="text-[9.5px] text-slate-500">노출 금액</p>
             <p className="text-[12.5px] font-semibold tabular-nums text-white">
               {formatWon(evaluation.totalAmountAtRisk)}
@@ -212,7 +212,7 @@ export default function AlertRuleBuilderPanel({
         </div>
       </div>
 
-      <div className="mt-3.5 grid gap-2 md:grid-cols-3">
+      <div className="mt-3 grid gap-2 md:grid-cols-3">
         {ALERT_RULE_LIST.map((meta) => {
           const config = rules.find((rule) => rule.id === meta.id) ?? {
             id: meta.id,
@@ -242,7 +242,7 @@ export default function AlertRuleBuilderPanel({
         })}
       </div>
 
-      <div className="mt-3.5 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,340px)]">
+      <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,340px)]">
         <div className="rounded-xl border border-white/[0.06]">
           <div className="flex items-center justify-between border-b border-white/[0.06] px-3 py-2">
             <p className="text-[11.5px] font-semibold text-slate-200">위반 상위 건</p>
@@ -312,7 +312,7 @@ export default function AlertRuleBuilderPanel({
           </div>
           {preview ? (
             <>
-              <div className="mt-2 rounded-xl rounded-tl-sm border border-white/[0.08] bg-[#1b1d21] px-3 py-2.5">
+              <div className="mt-2 rounded-xl rounded-tl-sm border border-white/[0.08] bg-[#1b1d21] px-3 py-2">
                 <p className="whitespace-pre-line text-[11px] leading-relaxed text-slate-200" data-testid="alert-preview">
                   {preview}
                 </p>

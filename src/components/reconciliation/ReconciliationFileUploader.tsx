@@ -181,7 +181,7 @@ export default function ReconciliationFileUploader({ disabled = false, onParsed,
     <section className="card p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">File intake</p>
+          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">File intake</p>
           <p className="mt-1 text-[12.5px] text-slate-300">마켓 정산서 파일을 그대로 올리면 ①검증 ②파싱 ③대사까지 이어집니다.</p>
         </div>
         <span className="rounded-md border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-[10px] text-slate-400">
@@ -301,7 +301,7 @@ export default function ReconciliationFileUploader({ disabled = false, onParsed,
 
 function Stat({ label, value, hint, tone = "normal" }: { label: string; value: string; hint?: string; tone?: "normal" | "warn" }) {
   return (
-    <div className="rounded-lg border border-white/[0.05] bg-white/[0.015] px-2.5 py-1.5">
+    <div className="rounded-lg border border-white/[0.05] bg-white/[0.015] px-2.5 py-2">
       <p className="text-[9.5px] text-slate-500">{label}</p>
       <p className={`mt-0.5 text-[12px] font-semibold tabular-nums ${tone === "warn" ? "text-amber-300" : "text-slate-200"}`}>{value}</p>
       {hint && <p className="mt-0.5 truncate text-[9.5px] text-slate-600">{hint}</p>}

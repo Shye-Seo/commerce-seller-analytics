@@ -212,13 +212,13 @@ export default function ApiDocsConsole() {
         </section>
 
         {error && (
-          <div className="mb-4 rounded-xl border border-rose-400/25 bg-rose-400/[0.07] px-3.5 py-2.5 text-[12px] text-rose-200">
+          <div className="mb-4 rounded-xl border border-rose-400/25 bg-rose-400/[0.07] px-4 py-2 text-[12px] text-rose-200">
             {error} — `npm run dev` 또는 정적 배포 환경에서 `openapi.json`이 같은 경로에 있는지 확인해 주세요.
           </div>
         )}
 
         {inspection && !inspection.ok && (
-          <div className="mb-4 rounded-xl border border-amber-400/25 bg-amber-400/[0.07] px-3.5 py-2.5 text-[11.5px] text-amber-200">
+          <div className="mb-4 rounded-xl border border-amber-400/25 bg-amber-400/[0.07] px-4 py-2 text-[11.5px] text-amber-200">
             명세 자체 점검에서 문제가 발견되었습니다: {inspection.problems.join(" / ")}
           </div>
         )}
@@ -239,7 +239,7 @@ export default function ApiDocsConsole() {
                             <button
                               type="button"
                               onClick={() => setSelectedId(entry.operationId)}
-                              className={`flex w-full items-center gap-1.5 rounded-lg px-1.5 py-1.5 text-left transition ${
+                              className={`flex w-full items-center gap-1.5 rounded-lg px-1.5 py-2 text-left transition ${
                                 active ? "bg-emerald-400/[0.08] text-emerald-100" : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
                               }`}
                             >
@@ -260,7 +260,7 @@ export default function ApiDocsConsole() {
 
             <div className="card mt-3 p-3 text-[10.5px] leading-relaxed text-slate-500">
               <p className="font-medium text-slate-300">로컬 백엔드 실행</p>
-              <pre className="mt-1.5 overflow-x-auto rounded bg-[#070B16] px-2 py-1.5 text-[10px] text-slate-300">php -S 127.0.0.1:8080 -t backend/public</pre>
+              <pre className="mt-1.5 overflow-x-auto rounded bg-[#070B16] px-2 py-2 text-[10px] text-slate-300">php -S 127.0.0.1:8080 -t backend/public</pre>
               <p className="mt-2">MySQL이 필요하면 `docker compose up -d` 후 `php backend/bin/migrate.php`를 먼저 실행합니다.</p>
             </div>
           </aside>
@@ -330,7 +330,7 @@ export default function ApiDocsConsole() {
                     <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Responses</p>
                     <div className="mt-1 space-y-1.5">
                       {Object.entries(selected.operation.responses ?? {}).map(([code, response]) => (
-                        <details key={code} className="rounded-lg border border-white/[0.05] bg-white/[0.015] px-2.5 py-1.5">
+                        <details key={code} className="rounded-lg border border-white/[0.05] bg-white/[0.015] px-2.5 py-2">
                           <summary className="cursor-pointer text-[11px] text-slate-300">
                             <span className={`mr-1.5 rounded px-1 text-[10px] ${code.startsWith("2") ? "bg-emerald-400/10 text-emerald-300" : "bg-rose-400/10 text-rose-300"}`}>{code}</span>
                             {response.description}
@@ -347,7 +347,7 @@ export default function ApiDocsConsole() {
                 <section className="card p-4" data-testid="api-try-panel">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">Try it out</p>
+                      <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">Try it out</p>
                       <p className="mt-1 text-[11px] text-slate-500">
                         요청 값을 바꾸고 검증해 보세요. 서버 호출 없이 명세 기준 검증과 예시 응답을 보여 줍니다.
                       </p>
@@ -355,7 +355,7 @@ export default function ApiDocsConsole() {
                     <button
                       type="button"
                       onClick={() => primeInputs(selected)}
-                      className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-slate-400 transition hover:border-white/20 hover:text-white"
+                      className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 text-[11px] text-slate-400 transition hover:border-white/20 hover:text-white"
                     >
                       예시로 되돌리기
                     </button>
@@ -376,7 +376,7 @@ export default function ApiDocsConsole() {
                               value={query[parameter.name ?? ""] ?? ""}
                               onChange={(event) => setQuery((previous) => ({ ...previous, [parameter.name ?? ""]: event.target.value }))}
                               placeholder={parameter.schema?.example !== undefined ? String(parameter.schema.example) : ""}
-                              className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[11.5px] text-slate-200 outline-none focus:border-emerald-400/50"
+                              className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 text-[11.5px] text-slate-200 outline-none focus:border-emerald-400/50"
                               aria-label={`${parameter.name} 값`}
                             />
                           </label>
@@ -404,7 +404,7 @@ export default function ApiDocsConsole() {
                       type="button"
                       onClick={() => runSimulation(selected)}
                       data-testid="api-try-submit"
-                      className="rounded-lg bg-emerald-500 px-3.5 py-2 text-[12px] font-semibold text-ink-950 transition hover:bg-emerald-400"
+                      className="rounded-lg bg-emerald-500 px-4 py-2 text-[12px] font-semibold text-ink-950 transition hover:bg-emerald-400"
                     >
                       요청 검증 · 예시 응답
                     </button>
@@ -441,9 +441,9 @@ export default function ApiDocsConsole() {
 
                       <JsonBlock value={result.body} />
 
-                      <details className="rounded-lg border border-white/[0.05] bg-white/[0.015] px-2.5 py-1.5">
+                      <details className="rounded-lg border border-white/[0.05] bg-white/[0.015] px-2.5 py-2">
                         <summary className="cursor-pointer text-[10.5px] text-slate-400">curl로 실제 호출하기</summary>
-                        <pre className="mt-1.5 overflow-x-auto rounded bg-[#070B16] px-2 py-1.5 text-[10px] leading-relaxed text-slate-300">{result.curl}</pre>
+                        <pre className="mt-1.5 overflow-x-auto rounded bg-[#070B16] px-2 py-2 text-[10px] leading-relaxed text-slate-300">{result.curl}</pre>
                         <button
                           type="button"
                           onClick={() => void copyCurl(result.curl)}

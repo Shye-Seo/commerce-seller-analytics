@@ -4,14 +4,18 @@ import { join } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 
 /**
- * 정산 대사 콘솔 E2E
- * ------------------
+ * 정산 대사 E2E
+ * -------------
  * 단위 테스트는 엔진(금액 계산)을 고정한다. 이 스펙은 **브라우저에서만 드러나는 것**을 검증한다.
  *
- *   1. 파일 업로드 → Web Worker 파싱 → 대사 → 가상화 테이블 렌더링이 실제로 이어지는가
+ *   1. 파일 업로드 → 파싱 → 대사 → 가상화 테이블 렌더링이 실제로 이어지는가
  *   2. 필터가 화면의 행 집합을 바꾸고, 그 행들이 정말 그 원인인가
  *   3. 소명 리포트 다운로드가 브라우저 다운로드로 도달하는가(파일명·본문 헤더)
  *   4. 마켓 API 탭의 샌드박스 수집이 같은 대사 파이프라인으로 결과를 내는가
+ *
+ * 화면이 세그먼트 탭으로 나뉘었으므로, 각 단계는 자기가 쓰는 탭을 직접 연다. 탭 이름은
+ * `recon-tab-*`이고 한 줄이 전부다(하위 탭 없음). 업로드 입력은 '데이터 유입', 표는 '이상 내역',
+ * 소명 리포트는 '반출·알림', 월별 비교는 '월별 추이'에 있다.
  *
  * 픽스처는 앱 코드로 만들지 않고 여기서 직접 CSV를 쓴다. 앱의 직렬화기를 그대로 쓰면
  * "쓰는 쪽과 읽는 쪽이 같은 버그"를 못 잡는다. 외부에서 온 정산서를 흉내 내는 것이 목적이다.
@@ -107,16 +111,36 @@ test.beforeAll(() => {
   writeFileSync(fixturePath, buildSettlementCsv().csv, "utf8");
 });
 
+type ReconTab = "overview" | "rows" | "intake" | "export" | "trend" | "watch";
+
+/** 정산 화면을 열고, 원하는 세그먼트 탭까지 이동한다. KPI 스트립은 어느 탭에서나 보인다. */
+async function openSettlement(page: Page, tab: ReconTab = "overview"): Promise<void> {
+  await page.goto("/reconciliation");
+  await expect(page.getByTestId("kpi-matched-rate")).toContainText("%", { timeout: 60_000 });
+  if (tab !== "overview") {
+    await page.getByTestId(`recon-tab-${tab}`).click();
+    await expect(page.getByTestId(`recon-tab-${tab}`)).toHaveAttribute("aria-selected", "true");
+  }
+}
+
 /** 초기 데모 원장(2만 건)이 대사를 마칠 때까지 기다린다. 그 전에는 업로더가 비활성이다. */
 async function waitForDemoReady(page: Page): Promise<void> {
-  await page.goto("/reconciliation");
-  await expect(page.getByTestId("kpi-matched-rate")).toContainText("%", { timeout: 45_000 });
-  await expect(page.getByTestId("settlement-file-input")).toBeEnabled({ timeout: 45_000 });
+  await openSettlement(page, "intake");
+  await expect(page.getByTestId("settlement-file-input")).toBeEnabled({ timeout: 60_000 });
 }
 
 async function rowCount(page: Page): Promise<number> {
   const attribute = await page.getByTestId("vtable-scroll").getAttribute("data-row-count");
   return Number(attribute ?? "-1");
+}
+
+/** 파일을 올리고 '이상 내역' 탭에서 행 집합이 바뀔 때까지 기다린다. */
+async function uploadAndOpenRows(page: Page, expected: number): Promise<void> {
+  await waitForDemoReady(page);
+  await page.getByTestId("settlement-file-input").setInputFiles(fixturePath);
+  await expect(page.getByText(`${ROW_COUNT}행 파싱 완료`)).toBeVisible({ timeout: 45_000 });
+  await page.getByTestId("recon-tab-rows").click();
+  await expect.poll(() => rowCount(page), { timeout: 45_000 }).toBe(expected);
 }
 
 test.describe("정산서 파일 업로드 → 대사", () => {
@@ -130,21 +154,20 @@ test.describe("정산서 파일 업로드 → 대사", () => {
     await expect(page.getByTestId("dataset-label")).toContainText("settlement-fixture.csv");
     await expect(page.getByTestId("dataset-label")).toBeVisible();
 
-    await expect.poll(() => rowCount(page), { timeout: 30_000 }).toBe(ROW_COUNT);
+    await page.getByTestId("recon-tab-rows").click();
+    await expect.poll(() => rowCount(page), { timeout: 45_000 }).toBe(ROW_COUNT);
     await expect(page.getByTestId("vtable-total")).toContainText(`${ROW_COUNT}행`);
     await expect(page.getByTestId("kpi-matched-rate")).toContainText("%");
 
     // 정상 대사율이 100%일 수는 없다 — 이상을 심었으므로.
-    const matched = await page.getByTestId("kpi-matched-rate").locator("p").nth(1).innerText();
+    const matched = await page.getByTestId("kpi-matched-rate").innerText();
     expect(matched).toMatch(/%$/);
     expect(matched).not.toBe("100.0%");
     await expect(page.getByText("정산 처리 상태")).toBeVisible();
   });
 
   test("이상 필터를 누르면 해당 원인의 행만 남는다", async ({ page }) => {
-    await waitForDemoReady(page);
-    await page.getByTestId("settlement-file-input").setInputFiles(fixturePath);
-    await expect.poll(() => rowCount(page), { timeout: 45_000 }).toBe(ROW_COUNT);
+    await uploadAndOpenRows(page, ROW_COUNT);
 
     const feeButton = page.getByTestId("vtable-filter-fee");
     await expect(feeButton).toHaveAttribute("aria-pressed", "false");
@@ -166,9 +189,8 @@ test.describe("정산서 파일 업로드 → 대사", () => {
   });
 
   test("소명 리포트 CSV를 내려받으면 마켓 접수 양식 헤더가 들어 있다", async ({ page }) => {
-    await waitForDemoReady(page);
-    await page.getByTestId("settlement-file-input").setInputFiles(fixturePath);
-    await expect.poll(() => rowCount(page), { timeout: 45_000 }).toBe(ROW_COUNT);
+    await uploadAndOpenRows(page, ROW_COUNT);
+    await page.getByTestId("recon-tab-export").click();
 
     const downloadPromise = page.waitForEvent("download");
     await page.getByTestId("claim-csv").click();
@@ -202,6 +224,7 @@ test.describe("마켓 API 자동 수집", () => {
     await expect(page.getByTestId("api-status")).toContainText("대사 완료");
 
     await expect(page.getByTestId("dataset-label")).toContainText("API");
+    await page.getByTestId("recon-tab-rows").click();
     await expect.poll(() => rowCount(page), { timeout: 30_000 }).toBe(1_200);
     await expect(page.getByTestId("vtable-total")).toContainText("1,200행");
     await expect(page.getByTestId("api-error")).toHaveCount(0);
@@ -217,10 +240,9 @@ test.describe("마켓 API 자동 수집", () => {
 
 test.describe("월별 재대사 · 전월 대비", () => {
   test("지난 2개월 이력을 만들면 원인별 증감이 표에 나오고, 이번 달 요약이 브라우저에 저장된다", async ({ page }) => {
-    await waitForDemoReady(page);
+    await openSettlement(page, "trend");
 
     const panel = page.getByTestId("period-panel");
-    await panel.scrollIntoViewIfNeeded();
     await expect(panel).toBeVisible();
     // 이력이 없는 첫 방문자는 빈 상태에서 시작한다(지어낸 과거를 먼저 보여 주지 않는다)
     await expect(page.getByTestId("period-empty")).toBeVisible();
@@ -254,7 +276,7 @@ test.describe("월별 재대사 · 전월 대비", () => {
     // 새로고침해도 저장된 이력으로 같은 비교가 다시 뜬다(localStorage 왕복)
     await page.reload();
     await expect(page.getByTestId("kpi-matched-rate")).toContainText("%", { timeout: 45_000 });
-    await page.getByTestId("period-panel").scrollIntoViewIfNeeded();
+    await page.getByTestId("recon-tab-trend").click();
     await expect(page.getByTestId("period-verdict")).toContainText("2026-10 대비", { timeout: 20_000 });
   });
 });

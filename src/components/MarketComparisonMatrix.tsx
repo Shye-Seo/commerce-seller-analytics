@@ -67,10 +67,10 @@ export default function MarketComparisonMatrix({
     <section id="markets" className="scroll-mt-24" aria-labelledby="markets-title">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">
+          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">
             Market matrix
           </p>
-          <h2 id="markets-title" className="mt-1 text-lg font-semibold tracking-tight text-white">
+          <h2 id="markets-title" className="mt-1 text-[13.5px] font-semibold text-slate-100">
             같은 상품, 5개 마켓 마진 비교
           </h2>
           <p className="mt-1 max-w-2xl text-[12px] leading-relaxed text-slate-500">

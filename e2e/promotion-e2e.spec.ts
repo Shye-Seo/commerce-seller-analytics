@@ -15,7 +15,6 @@ import { expect, test, type Page } from "@playwright/test";
 
 async function waitForReconciliationReady(page: Page): Promise<void> {
   await expect(page.getByTestId("kpi-matched-rate")).toContainText("%", { timeout: 60_000 });
-  await expect(page.getByTestId("settlement-file-input")).toBeEnabled({ timeout: 60_000 });
 }
 
 test.describe("쿠폰 발급 → 정산 대사 매칭", () => {
@@ -31,7 +30,7 @@ test.describe("쿠폰 발급 → 정산 대사 매칭", () => {
 
     // 메인 대시보드도 같은 원장을 읽는다
     await page.goto("/");
-    await expect(page.getByTestId("home-campaign-card")).toBeVisible();
+    await expect(page.getByTestId("home-campaign-card")).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId("home-campaign-card")).toContainText("쿠폰 할인 총액");
     await expect(page.getByTestId("home-campaign-card")).toContainText("정산 매칭 보기");
 
@@ -40,7 +39,7 @@ test.describe("쿠폰 발급 → 정산 대사 매칭", () => {
     await waitForReconciliationReady(page);
 
     const panel = page.getByTestId("campaign-panel");
-    await panel.scrollIntoViewIfNeeded();
+    await expect(panel).toBeVisible({ timeout: 30_000 });
     await expect(panel).toContainText("쿠폰 비용 매칭");
     await expect(page.getByTestId("campaign-roas")).toContainText("배");
 
@@ -56,8 +55,9 @@ test.describe("알림톡 시뮬레이터", () => {
     await page.goto("/reconciliation");
     await waitForReconciliationReady(page);
 
+    await page.getByTestId("recon-tab-export").click();
     const panel = page.getByTestId("alimtalk-panel");
-    await panel.scrollIntoViewIfNeeded();
+    await expect(panel).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId("alimtalk-simulation-badge")).toContainText("테스트 발송");
 
     await page.getByTestId("alimtalk-send").click();
@@ -80,7 +80,8 @@ test.describe("알림톡 시뮬레이터", () => {
     await page.goto("/reconciliation");
     await waitForReconciliationReady(page);
 
-    await page.getByTestId("alimtalk-panel").scrollIntoViewIfNeeded();
+    await page.getByTestId("recon-tab-export").click();
+    await expect(page.getByTestId("alimtalk-panel")).toBeVisible({ timeout: 30_000 });
     await page.getByLabel("발송 응답 시나리오").selectOption("rate-limit");
     await page.getByTestId("alimtalk-send").click();
 

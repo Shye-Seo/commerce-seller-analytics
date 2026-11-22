@@ -145,7 +145,7 @@ function ActionCard({ action, index }: { action: DiagnosticAction; index: number
   const priority = PRIORITY_STYLE[action.priority];
 
   return (
-    <article className="flex h-full flex-col rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4 transition hover:border-white/[0.14]">
+    <article className="flex h-full flex-col rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 transition hover:border-white/[0.14]">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] text-[10px] font-semibold text-slate-400 tabular-nums">
@@ -160,7 +160,7 @@ function ActionCard({ action, index }: { action: DiagnosticAction; index: number
         </span>
       </div>
 
-      <h4 className="mt-2.5 text-[13px] font-semibold leading-snug text-white">{action.title}</h4>
+      <h4 className="mt-2 text-[13px] font-semibold leading-snug text-white">{action.title}</h4>
       <p className="mt-1.5 text-[11.5px] leading-relaxed text-slate-400">{action.detail}</p>
 
       <div className="mt-auto flex items-baseline justify-between gap-2 border-t border-white/[0.06] pt-2.5">
@@ -185,40 +185,9 @@ export default function SmartInsightBox({ input, result }: SmartInsightBoxProps)
   const style = GRADE_STYLE[diagnosis.grade];
 
   return (
-    <section
-      className="card relative overflow-hidden p-5 sm:p-6"
-      aria-labelledby="diagnosis-title"
-    >
-      <div
-        className="pointer-events-none absolute -right-24 -top-28 h-64 w-64 rounded-full bg-emerald-500/10 blur-[90px]"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -left-20 bottom-0 h-52 w-52 rounded-full bg-indigo-500/10 blur-[90px]"
-        aria-hidden
-      />
-
-      <div className="relative flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">
-            Smart diagnosis
-          </p>
-          <h2 id="diagnosis-title" className="mt-1 text-lg font-semibold tracking-tight text-white">
-            AI 마진 진단 처방전
-          </h2>
-          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-slate-500">
-            입력한 판매 조건을 네 축(마진율·광고 효율·반품 안정성·고정비 회수)으로 점수화하고,
-            지금 바로 실행할 순서를 금액과 함께 제시합니다.
-          </p>
-        </div>
-        <span className="chip">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />
-          규칙 기반 진단 엔진 · 입력 즉시 재계산
-        </span>
-      </div>
-
-      <div className="relative mt-5 grid gap-5 lg:grid-cols-[268px_minmax(0,1fr)]">
-        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
+    <div className="relative">
+      <div className="grid gap-5 lg:grid-cols-[264px_minmax(0,1fr)]">
+        <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4">
           <div className="flex items-center gap-4">
             <ScoreRing score={diagnosis.score} grade={diagnosis.grade} />
             <div className="min-w-0">
@@ -231,7 +200,7 @@ export default function SmartInsightBox({ input, result }: SmartInsightBoxProps)
             </div>
           </div>
 
-          <ul className="mt-4 space-y-2.5 border-t border-white/[0.06] pt-3.5">
+          <ul className="mt-4 space-y-2 border-t border-white/[0.06] pt-3.5">
             {diagnosis.scoreBreakdown.map((item) => (
               <li key={item.key}>
                 <div className="flex items-baseline justify-between gap-2">
@@ -271,7 +240,7 @@ export default function SmartInsightBox({ input, result }: SmartInsightBoxProps)
         </div>
       </div>
 
-      <div className="relative mt-6 border-t border-white/[0.06] pt-5">
+      <div className="mt-5 border-t border-white/[0.06] pt-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h3 className="text-sm font-semibold text-white">실전 액션 플랜</h3>
           <p className="text-[11px] text-slate-500">
@@ -292,6 +261,6 @@ export default function SmartInsightBox({ input, result }: SmartInsightBoxProps)
             : ""}
         </p>
       </div>
-    </section>
+    </div>
   );
 }

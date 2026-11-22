@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
-import Header from "@/components/Header";
-import NetPayoutConsole from "@/components/payout/NetPayoutConsole";
+import MarginWorkspace from "@/components/margin/MarginWorkspace";
+import PageShell from "@/components/ui/PageShell";
 
+/**
+ * 이전 주소 유지용 화면
+ *
+ * `/payout`을 북마크하거나 문서에서 링크한 경우가 있어 지우지 않고, 수익 화면의 실수령 순수익
+ * 탭을 바로 연 상태로 보여 준다. 내비게이션에는 노출하지 않는다(주소만 남긴다).
+ */
 export const metadata: Metadata = {
   title: "실수령 순수익 계산기",
   description:
@@ -11,9 +17,8 @@ export const metadata: Metadata = {
 
 export default function PayoutPage() {
   return (
-    <div className="min-h-screen bg-ink-950">
-      <Header />
-      <NetPayoutConsole />
-    </div>
+    <PageShell>
+      <MarginWorkspace initialTab="payout" />
+    </PageShell>
   );
 }

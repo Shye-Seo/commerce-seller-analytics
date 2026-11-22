@@ -123,7 +123,7 @@ function RangeField({
         step={step}
         value={value}
         onChange={(event) => onChange(Number(event.target.value))}
-        className="range mt-2.5"
+        className="range mt-2"
         style={{
           background: `linear-gradient(to right, #34D399 ${filled}%, rgba(255,255,255,0.10) ${filled}%)`,
         }}
@@ -152,7 +152,7 @@ function CostBreakdown({ result }: { result: MarginBreakdown }) {
   const basis = Math.max(result.totalDeduction + profit, 1);
 
   return (
-    <div className="card p-5">
+    <div className="card p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-white">판매가 구성</h3>
         <span className="text-[11px] text-slate-500">판매가 {formatWon(result.sellingPrice)}</span>
@@ -229,7 +229,7 @@ export default function MarginSimulator({
 
   return (
     <div className="grid gap-5 lg:grid-cols-5">
-      <div className="card p-5 sm:p-6 lg:col-span-3">
+      <div className="card p-4 lg:col-span-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 className="text-sm font-semibold text-white">판매 조건 입력</h3>
@@ -388,7 +388,7 @@ export default function MarginSimulator({
 
           {isLoss || isThin ? (
             <div
-              className={`mt-4 flex items-start gap-2 rounded-xl border px-3 py-2.5 text-[12px] leading-relaxed ${
+              className={`mt-4 flex items-start gap-2 rounded-xl border px-3 py-2 text-[12px] leading-relaxed ${
                 isLoss
                   ? "border-rose-400/30 bg-rose-400/10 text-rose-200"
                   : "border-amber-400/30 bg-amber-400/10 text-amber-200"
@@ -428,7 +428,7 @@ export default function MarginSimulator({
               hint: `월 매출 ${formatWon(result.monthlyRevenue)} 기준`,
             },
           ].map((item) => (
-            <div key={item.label} className="flex items-center justify-between gap-3 px-5 py-3.5">
+            <div key={item.label} className="flex items-center justify-between gap-3 px-5 py-3">
               <div>
                 <p className="text-[12px] font-medium text-slate-300">{item.label}</p>
                 <p className="mt-0.5 text-[11px] text-slate-500">{item.hint}</p>

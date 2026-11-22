@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
-import Header from "@/components/Header";
-import SettlementWatchConsole from "@/components/settlement-watch/SettlementWatchConsole";
+import SettlementWorkspace from "@/components/settlement/SettlementWorkspace";
+import PageShell from "@/components/ui/PageShell";
 
+/**
+ * 이전 주소 유지용 화면 — 정산 화면의 '누락·지연' 탭을 연 상태로 보여 준다.
+ */
 export const metadata: Metadata = {
   title: "정산 누락·지연 감지기",
   description:
@@ -11,9 +14,8 @@ export const metadata: Metadata = {
 
 export default function SettlementWatchPage() {
   return (
-    <div className="min-h-screen bg-ink-950">
-      <Header />
-      <SettlementWatchConsole />
-    </div>
+    <PageShell>
+      <SettlementWorkspace initialTab="watch" />
+    </PageShell>
   );
 }

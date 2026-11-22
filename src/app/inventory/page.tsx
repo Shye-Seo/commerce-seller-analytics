@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Header from "@/components/Header";
 import InventoryConsole from "@/components/inventory/InventoryConsole";
+import PageHeader from "@/components/ui/PageHeader";
+import PageShell from "@/components/ui/PageShell";
 
 export const metadata: Metadata = {
   title: "품절 임박 · 발주량 계산기",
@@ -11,9 +12,15 @@ export const metadata: Metadata = {
 
 export default function InventoryPage() {
   return (
-    <div className="min-h-screen bg-ink-950">
-      <Header />
-      <InventoryConsole />
-    </div>
+    <PageShell>
+      <PageHeader
+        meta="Inventory"
+        title="재고가 몇 개 남았는지보다, 언제 끊기고 오늘 얼마를 발주할지"
+        description="최근 7일 판매 속도로 품절일과 발주 마감일을 계산하고, 리드타임·안전재고·MOQ를 반영한 발주량을 제시합니다. 수요 가정을 바꾸면 발주량이 바로 다시 계산됩니다."
+      />
+      <div className="mt-4">
+        <InventoryConsole />
+      </div>
+    </PageShell>
   );
 }

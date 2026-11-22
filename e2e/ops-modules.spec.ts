@@ -172,11 +172,11 @@ test.describe("품절 임박 · 발주량 계산기", () => {
 });
 
 test.describe("홈 운영 모듈 진입", () => {
-  test("세 콘솔 카드가 실제 화면으로 연결된다", async ({ page }) => {
+  test("운영 모듈 목록의 각 행이 실제 화면으로 연결된다", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: /매달 반복되는 세 가지 계산/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "운영 모듈" })).toBeVisible();
 
-    await expect(page.getByTestId("ops-card-payout")).toContainText("월 통장 순수익");
+    await expect(page.getByTestId("ops-card-payout")).toContainText("월 순수익");
     await expect(page.getByTestId("ops-card-settlement-watch")).toContainText("미수 금액");
     await expect(page.getByTestId("ops-card-inventory")).toContainText("위험 SKU");
 

@@ -353,7 +353,7 @@ export default function ReconciliationVirtualTable({
         )}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] px-4 py-2.5 text-[10.5px] text-slate-500">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] px-4 py-2 text-[10.5px] text-slate-500">
         <span className="tabular-nums">
           {rows.length === 0
             ? "0행"

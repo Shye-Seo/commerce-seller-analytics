@@ -83,25 +83,20 @@ export default function SettlementWatchConsole() {
   const maxChannel = Math.max(1, ...result.byChannel.map((row) => row.amountAtRisk));
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-      <section className="mb-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">
-          Settlement watch
-        </p>
-        <h1 className="mt-1.5 text-[24px] font-semibold tracking-tight text-white sm:text-[28px]">
+    <div>
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="text-[13px] font-semibold text-slate-100">
           구매확정일과 정산 기한만으로, 아직 안 들어온 돈을 찾습니다
-        </h1>
-        <p className="mt-2 max-w-3xl text-[12.5px] leading-relaxed text-slate-500">
-          마켓 정산서에 아예 등장하지 않는 주문은 대사로도 잡히지 않습니다. 구매확정일 + 마켓별 정산
-          기한(영업일)을 지난 주문을 정산 예정·완료 내역과 대조해, 누락 의심·지연·부분 정산만 위험과
-          경고로 올립니다.
+        </h2>
+        <p className="text-[10.5px] text-slate-600">
+          정산서에 등장하지 않는 주문은 대사로도 잡히지 않습니다 · 구매확정일 + 마켓 정산 기한 비교
         </p>
-      </section>
+      </div>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="card border-rose-400/20 p-4">
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="card border-rose-400/20 px-4 py-3">
           <p className="text-[10.5px] text-slate-500">위험 · 정산 누락 의심</p>
-          <p className="mt-1 text-[24px] font-semibold tabular-nums text-rose-300" data-testid="watch-risk-count">
+          <p className="mt-1 text-[20px] font-semibold leading-tight tabular-nums text-rose-300" data-testid="watch-risk-count">
             {result.counts.risk}건
           </p>
           <p className="mt-1 text-[10.5px] tabular-nums text-slate-500" data-testid="watch-risk-amount">
@@ -109,17 +104,17 @@ export default function SettlementWatchConsole() {
           </p>
         </div>
 
-        <div className="card border-amber-400/20 p-4">
+        <div className="card border-amber-400/20 px-4 py-3">
           <p className="text-[10.5px] text-slate-500">경고 · 지연·부분 정산</p>
-          <p className="mt-1 text-[24px] font-semibold tabular-nums text-amber-200" data-testid="watch-warning-count">
+          <p className="mt-1 text-[20px] font-semibold leading-tight tabular-nums text-amber-200" data-testid="watch-warning-count">
             {result.counts.warning}건
           </p>
           <p className="mt-1 text-[10.5px] tabular-nums text-slate-500">{formatWon(result.amounts.delayed)}</p>
         </div>
 
-        <div className="card p-4">
+        <div className="card px-4 py-3">
           <p className="text-[10.5px] text-slate-500">감시 대상 구매확정</p>
-          <p className="mt-1 text-[24px] font-semibold tabular-nums text-white" data-testid="watch-total-count">
+          <p className="mt-1 text-[20px] font-semibold leading-tight tabular-nums text-white" data-testid="watch-total-count">
             {result.counts.total}건
           </p>
           <p className="mt-1 text-[10.5px] text-slate-500">
@@ -127,9 +122,9 @@ export default function SettlementWatchConsole() {
           </p>
         </div>
 
-        <div className="card p-4">
+        <div className="card px-4 py-3">
           <p className="text-[10.5px] text-slate-500">최장 경과</p>
-          <p className="mt-1 text-[24px] font-semibold tabular-nums text-white">
+          <p className="mt-1 text-[20px] font-semibold leading-tight tabular-nums text-white">
             {result.longestOverdueDays}일
           </p>
           <p className="mt-1 text-[10.5px] text-slate-500">
@@ -138,7 +133,7 @@ export default function SettlementWatchConsole() {
         </div>
       </section>
 
-      <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
+      <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
         <section className="card overflow-hidden" aria-label="정산 감시 목록">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.06] px-4 py-3">
             <div className="flex flex-wrap items-center gap-1.5">
@@ -187,7 +182,7 @@ export default function SettlementWatchConsole() {
 
           <div className="max-h-[620px] overflow-auto thin-scrollbar">
             <table className="w-full border-collapse text-[11.5px]">
-              <thead className="sticky top-0 z-10 bg-[#0A0F1C]">
+              <thead className="sticky top-0 z-10 bg-ink-950">
                 <tr className="text-[10px] text-slate-500">
                   <th className="px-3 py-2 text-left font-semibold">상태</th>
                   <th className="px-2 py-2 text-left font-semibold">주문 · 상품</th>
@@ -206,10 +201,10 @@ export default function SettlementWatchConsole() {
                     data-testid="watch-row"
                     className={item.status === "risk" ? "bg-rose-400/[0.03]" : undefined}
                   >
-                    <td className="px-3 py-1.5">
+                    <td className="px-3 py-2">
                       <StatusBadge status={item.status} />
                     </td>
-                    <td className="max-w-[260px] px-2 py-1.5">
+                    <td className="max-w-[260px] px-2 py-2">
                       <p className="truncate text-slate-200">
                         {item.productName}
                         {item.optionName ? <span className="text-slate-500"> · {item.optionName}</span> : null}
@@ -217,18 +212,18 @@ export default function SettlementWatchConsole() {
                       <p className="font-mono text-[9.5px] text-slate-500">{item.orderNo}</p>
                       <p className="text-[9.5px] leading-snug text-slate-600">{item.reason}</p>
                     </td>
-                    <td className="px-2 py-1.5 text-slate-400">{item.channelLabel}</td>
-                    <td className="px-2 py-1.5 text-right tabular-nums text-slate-400">{item.confirmedAt.slice(5).replace("-", "/")}</td>
-                    <td className="px-2 py-1.5 text-right tabular-nums text-slate-300">{item.dueDate.slice(5).replace("-", "/")}</td>
+                    <td className="px-2 py-2 text-slate-400">{item.channelLabel}</td>
+                    <td className="px-2 py-2 text-right tabular-nums text-slate-400">{item.confirmedAt.slice(5).replace("-", "/")}</td>
+                    <td className="px-2 py-2 text-right tabular-nums text-slate-300">{item.dueDate.slice(5).replace("-", "/")}</td>
                     <td
-                      className={`px-2 py-1.5 text-right tabular-nums ${
+                      className={`px-2 py-2 text-right tabular-nums ${
                         item.overdueDays >= 3 ? "text-rose-300" : item.overdueDays > 0 ? "text-amber-300" : "text-slate-500"
                       }`}
                     >
                       {item.overdueDays > 0 ? `+${item.overdueDays}일` : "—"}
                     </td>
-                    <td className="px-3 py-1.5 text-right tabular-nums text-slate-100">{formatWon(item.expectedAmount)}</td>
-                    <td className={`px-3 py-1.5 text-right tabular-nums ${item.shortfall > 0 ? "text-rose-300" : "text-slate-600"}`}>
+                    <td className="px-3 py-2 text-right tabular-nums text-slate-100">{formatWon(item.expectedAmount)}</td>
+                    <td className={`px-3 py-2 text-right tabular-nums ${item.shortfall > 0 ? "text-rose-300" : "text-slate-600"}`}>
                       {item.shortfall > 0 ? formatWon(item.shortfall) : "—"}
                     </td>
                   </tr>
@@ -244,7 +239,7 @@ export default function SettlementWatchConsole() {
             </table>
           </div>
 
-          <p className="border-t border-white/[0.06] px-4 py-2.5 text-[10px] leading-relaxed text-slate-600">
+          <p className="border-t border-white/[0.06] px-4 py-2 text-[10px] leading-relaxed text-slate-600">
             {result.assumptions.join(" ")}
           </p>
         </section>
@@ -257,7 +252,7 @@ export default function SettlementWatchConsole() {
                 정산 점검
               </span>
             </div>
-            <div className="mt-2 rounded-xl rounded-tl-sm border border-white/[0.08] bg-[#1b1d21] px-3 py-2.5">
+            <div className="mt-2 rounded-xl rounded-tl-sm border border-white/[0.08] bg-[#1b1d21] px-3 py-2">
               <p className="whitespace-pre-line text-[11px] leading-relaxed text-slate-200" data-testid="watch-alert-preview">
                 {digest}
               </p>
@@ -270,7 +265,7 @@ export default function SettlementWatchConsole() {
           <section className="card p-4" aria-label="채널별 노출">
             <h2 className="text-[13px] font-semibold text-white">채널별 노출 금액</h2>
             <p className="mt-0.5 text-[10.5px] text-slate-500">위험·경고에 묶인 금액입니다.</p>
-            <ul className="mt-3 space-y-2.5">
+            <ul className="mt-3 space-y-2">
               {result.byChannel.map((row) => (
                 <li key={row.channel}>
                   <div className="flex items-center justify-between text-[11px]">
@@ -304,6 +299,6 @@ export default function SettlementWatchConsole() {
           </section>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

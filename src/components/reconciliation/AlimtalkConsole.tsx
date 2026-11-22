@@ -183,7 +183,7 @@ export default function AlimtalkConsole({ rows, summary, batchId, datasetLabel }
     <section className="card p-4" id="alimtalk" data-testid="alimtalk-panel">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">카카오 알림톡</p>
+          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">카카오 알림톡</p>
           <h2 className="mt-1 text-[13.5px] font-semibold text-white">정산 이상 알림톡 발송 콘솔</h2>
           <p className="mt-1 max-w-3xl text-[11px] leading-relaxed text-slate-500">
             정산 이상을 카카오 알림톡으로 알리는 발송 흐름(중복 차단 → 발송 대기 → 수락/실패 → 재시도)을 이 콘솔에서 그대로 확인합니다.
@@ -202,7 +202,7 @@ export default function AlimtalkConsole({ rows, summary, batchId, datasetLabel }
             value={phone}
             onChange={(event) => setPhone(event.target.value)}
             inputMode="tel"
-            className="w-40 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[12px] tabular-nums text-slate-200 outline-none focus:border-emerald-400/50"
+            className="w-40 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 text-[12px] tabular-nums text-slate-200 outline-none focus:border-emerald-400/50"
             aria-label="알림톡 수신 번호"
           />
         </label>
@@ -212,7 +212,7 @@ export default function AlimtalkConsole({ rows, summary, batchId, datasetLabel }
           <select
             value={scenario}
             onChange={(event) => setScenario(event.target.value as SendScenario)}
-            className="w-56 rounded-lg border border-white/[0.08] bg-[#0A0F1C] px-2.5 py-1.5 text-[12px] text-slate-200 outline-none focus:border-emerald-400/50"
+            className="w-56 rounded-lg border border-white/[0.08] bg-ink-950 px-2.5 py-2 text-[12px] text-slate-200 outline-none focus:border-emerald-400/50"
             aria-label="발송 응답 시나리오"
           >
             {SEND_SCENARIOS.map((item) => (
@@ -274,7 +274,7 @@ export default function AlimtalkConsole({ rows, summary, batchId, datasetLabel }
       <div className="mt-3 grid gap-3 lg:grid-cols-[320px_minmax(0,1fr)]">
         <div>
           <p className="mb-1.5 text-[10.5px] text-slate-500">카카오톡 말풍선 미리보기</p>
-          <div className="rounded-2xl bg-[#B2C7D9] p-2.5" data-testid="alimtalk-bubble">
+          <div className="rounded-xl bg-[#B2C7D9] p-2.5" data-testid="alimtalk-bubble">
             <div className="flex items-center gap-1.5 px-1 pb-2">
               <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#FEE500] text-[9px] font-bold text-[#3C1E1E]">S</span>
               <span className="text-[10.5px] font-semibold text-[#1F2C3D]">{PLUS_FRIEND_ID}</span>
@@ -282,7 +282,7 @@ export default function AlimtalkConsole({ rows, summary, batchId, datasetLabel }
             </div>
             {preview ? (
               <>
-                <div className="rounded-xl rounded-tl-sm bg-white px-3 py-2.5">
+                <div className="rounded-xl rounded-tl-sm bg-white px-3 py-2">
                   <p className="whitespace-pre-wrap text-[11px] leading-[1.5] text-[#191919]">{preview.content}</p>
                 </div>
                 <p className="mt-1 px-0.5 text-[9px] text-[#1F2C3D]/70">{timeFormatter.format(preview.createdAt)}</p>

@@ -253,18 +253,7 @@ export default function FlashCouponConsole() {
   }, [report]);
 
   return (
-    <section className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">Flash Drop</p>
-        <h1 className="text-xl font-semibold tracking-tight text-white">
-          실시간 선착순 응모 · 쿠폰 발급 콘솔
-        </h1>
-        <p className="max-w-2xl text-[12.5px] leading-relaxed text-slate-500">
-          재고 100장에 1,000명이 동시에 눌러도 101장이 나가지 않아야 합니다. 이 콘솔은 엔진에 동시 요청을 넣고,
-          <span className="text-slate-300">발급/품절/중복/오버이슈</span>를 그대로 집계합니다.
-        </p>
-      </header>
-
+    <section className="space-y-3">
       <div className="grid gap-3 sm:grid-cols-3">
         {PRESETS.map((item) => (
           <button
@@ -292,7 +281,7 @@ export default function FlashCouponConsole() {
           type="button"
           onClick={run}
           disabled={running}
-          className="rounded-lg bg-emerald-500 px-4 py-2 text-[13px] font-semibold text-ink-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+          className="btn-primary px-4 py-2 text-[12.5px]"
         >
           {running ? "트래픽 발생 중…" : "부하 발생"}
         </button>
@@ -305,9 +294,9 @@ export default function FlashCouponConsole() {
 
       {report ? (
         <>
-          <div className="grid gap-px overflow-hidden rounded-xl bg-white/[0.06] sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-px overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.06] sm:grid-cols-2 lg:grid-cols-4">
             {kpis.map((kpi) => (
-              <div key={kpi.label} className="bg-[#0A0F1C] px-4 py-4">
+              <div key={kpi.label} className="bg-ink-950 px-4 py-3">
                 <p className="text-[10.5px] text-slate-500">{kpi.label}</p>
                 <p
                   className={`mt-1 text-[20px] font-semibold tabular-nums ${
@@ -413,7 +402,7 @@ export default function FlashCouponConsole() {
           <div className="card px-4 py-3" data-testid="flash-handoff">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">Settlement handoff</p>
+                <p className="text-[12px] font-semibold text-slate-100">정산 연결</p>
                 <p className="mt-1 text-[12px] text-slate-300">
                   발급 원장 <span className="font-semibold text-white">{numberFormat.format(storedSnapshot.ledger.length)}</span>건 중{" "}
                   <span className="font-semibold text-white">{numberFormat.format(linkedOrders.length)}</span>건을 주문에 연결했습니다. 이 주문들은
@@ -426,7 +415,7 @@ export default function FlashCouponConsole() {
               </div>
               <Link
                 href="/reconciliation#campaign-attribution"
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-emerald-400 px-3.5 py-2 text-[12px] font-semibold text-ink-950 transition hover:bg-emerald-300"
+                className="btn-primary shrink-0"
               >
                 정산 대사로 확인
                 <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2.2} aria-hidden>

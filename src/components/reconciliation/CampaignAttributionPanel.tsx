@@ -27,7 +27,7 @@ interface Props {
 function Metric({ label, value, hint, tone = "default", testId }: { label: string; value: string; hint: string; tone?: "default" | "good" | "warn" | "danger"; testId?: string }) {
   const toneClass = tone === "good" ? "text-emerald-300" : tone === "warn" ? "text-amber-300" : tone === "danger" ? "text-rose-300" : "text-white";
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5" data-testid={testId}>
+    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2" data-testid={testId}>
       <p className="text-[10.5px] text-slate-500">{label}</p>
       <p className={`mt-1 text-[18px] font-semibold leading-tight tabular-nums ${toneClass}`}>{value}</p>
       <p className="mt-0.5 text-[10px] leading-snug text-slate-600">{hint}</p>
@@ -45,7 +45,7 @@ export default function CampaignAttributionPanel({ performance, issuedCoupons, s
     <section className="card p-4" data-testid="campaign-panel">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">Coupon attribution</p>
+          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">Coupon attribution</p>
           <h2 className="mt-1 text-[13.5px] font-semibold text-white">쿠폰 비용 매칭 · 캠페인별 ROAS</h2>
           <p className="mt-1 max-w-3xl text-[11px] leading-relaxed text-slate-500">
             선착순 콘솔에서 발급한 쿠폰 중 실제 주문으로 이어진 건을 <strong className="font-medium text-slate-300">주문번호</strong>로 정산 행과
@@ -57,14 +57,14 @@ export default function CampaignAttributionPanel({ performance, issuedCoupons, s
           <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-[10px] text-slate-400">
             발급 {formatCount(issuedCoupons)} · 사용 {formatCount(match.ordersLinked)}
           </span>
-          <Link href="/flash" className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-slate-300 transition hover:border-white/20 hover:text-white">
+          <Link href="/flash" className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 text-[11px] text-slate-300 transition hover:border-white/20 hover:text-white">
             쿠폰 콘솔
           </Link>
           <button
             type="button"
             onClick={onReset}
             disabled={!hasLedger}
-            className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-[11px] text-slate-500 transition enabled:hover:border-rose-400/40 enabled:hover:text-rose-300 disabled:opacity-40"
+            className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-2 text-[11px] text-slate-500 transition enabled:hover:border-rose-400/40 enabled:hover:text-rose-300 disabled:opacity-40"
           >
             원장 비우기
           </button>
@@ -133,14 +133,14 @@ export default function CampaignAttributionPanel({ performance, issuedCoupons, s
             <table className="w-full min-w-[760px] text-left text-[11.5px]">
               <thead className="text-[10px] uppercase tracking-wide text-slate-500">
                 <tr>
-                  <th className="px-2 py-1.5 font-medium">캠페인</th>
-                  <th className="px-2 py-1.5 font-medium text-right">사용 주문</th>
-                  <th className="px-2 py-1.5 font-medium text-right">귀속 매출</th>
-                  <th className="px-2 py-1.5 font-medium text-right">쿠폰 할인</th>
-                  <th className="px-2 py-1.5 font-medium text-right">집행 광고비</th>
-                  <th className="px-2 py-1.5 font-medium text-right">순마진</th>
-                  <th className="px-2 py-1.5 font-medium text-right">ROAS</th>
-                  <th className="px-2 py-1.5 font-medium text-right">예산 소진</th>
+                  <th className="px-2 py-2 font-medium">캠페인</th>
+                  <th className="px-2 py-2 font-medium text-right">사용 주문</th>
+                  <th className="px-2 py-2 font-medium text-right">귀속 매출</th>
+                  <th className="px-2 py-2 font-medium text-right">쿠폰 할인</th>
+                  <th className="px-2 py-2 font-medium text-right">집행 광고비</th>
+                  <th className="px-2 py-2 font-medium text-right">순마진</th>
+                  <th className="px-2 py-2 font-medium text-right">ROAS</th>
+                  <th className="px-2 py-2 font-medium text-right">예산 소진</th>
                 </tr>
               </thead>
               <tbody>

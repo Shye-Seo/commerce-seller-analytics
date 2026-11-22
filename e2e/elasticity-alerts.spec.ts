@@ -5,16 +5,21 @@ import { expect, test, type Page } from "@playwright/test";
  *
  * 단위 테스트는 계산(곡선·손익분기·룰 평가)을 고정한다. 이 스펙은 화면에서만 드러나는 것을 본다.
  *
- *   1. 메인 화면의 슬라이더를 움직이면 5개 마켓 곡선과 표가 같은 값으로 다시 그려지는가
+ *   1. 수익 화면의 '가격 탄력성' 탭에서 슬라이더를 움직이면 5개 마켓 곡선과 표가 같은 값으로 다시 그려지는가
  *   2. 정산 대사 콘솔에서 룰을 끄면 표의 하이라이트와 건수가 함께 사라지는가(한 상태를 두 곳이 읽는가)
  *   3. 임계값을 올리면 같은 데이터에서 위반이 줄어드는가
  *   4. 위반 건을 누르면 상세 드로어가 열리고, 알림톡 미리보기가 검수 템플릿 형식인가
  */
 
+/**
+ * 정산 화면의 '이상 내역' 탭을 연다. 경보 룰 빌더와 표가 같은 탭에 있으므로,
+ * 룰을 끄면 표 하이라이트가 사라지는지를 한 화면에서 검증할 수 있다.
+ */
 async function waitForReconciliationReady(page: Page): Promise<void> {
   await page.goto("/reconciliation");
   await expect(page.getByTestId("kpi-matched-rate")).toContainText("%", { timeout: 60_000 });
-  await expect(page.getByTestId("settlement-file-input")).toBeEnabled({ timeout: 60_000 });
+  await page.getByTestId("recon-tab-rows").click();
+  await expect(page.getByTestId("recon-tab-rows")).toHaveAttribute("aria-selected", "true");
 }
 
 function hitCount(text: string | null): number {
@@ -25,7 +30,8 @@ function hitCount(text: string | null): number {
 
 test.describe("가격·마진 탄력성 시뮬레이터", () => {
   test("슬라이더를 움직이면 곡선과 마켓 표가 다시 계산된다", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/margin");
+    await page.getByTestId("margin-tab-elasticity").click();
 
     const chart = page.getByTestId("elasticity-chart");
     await expect(chart).toBeVisible();
@@ -56,7 +62,8 @@ test.describe("가격·마진 탄력성 시뮬레이터", () => {
   });
 
   test("ROAS를 낮추면 손익분기 판매가가 올라가고 마진 최고 마켓 표시가 바뀐다", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/margin");
+    await page.getByTestId("margin-tab-elasticity").click();
     const chart = page.getByTestId("elasticity-chart");
     await expect(chart).toBeVisible();
 

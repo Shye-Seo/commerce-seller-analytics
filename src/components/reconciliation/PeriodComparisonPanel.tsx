@@ -214,7 +214,7 @@ export default function PeriodComparisonPanel({
     <section className="card p-4" data-testid="period-panel">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">Month over month</p>
+          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">Month over month</p>
           <h2 className="mt-1 text-[13.5px] font-semibold text-white">월별 재대사 · 전월 대비 차액</h2>
           <p className="mt-1 max-w-3xl text-[11px] leading-relaxed text-slate-500">
             이번 달 대사 요약을 저장해 두면, 다음 달에 <strong className="font-medium text-slate-300">원인별로 얼마가 늘고 줄었는지</strong>를
@@ -234,7 +234,7 @@ export default function PeriodComparisonPanel({
             onClick={handleSave}
             disabled={!summary || !permissive}
             data-testid="period-save"
-            className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1.5 text-[11px] font-medium text-emerald-200 transition enabled:hover:border-emerald-400/60 enabled:hover:text-white disabled:opacity-40"
+            className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-2 text-[11px] font-medium text-emerald-200 transition enabled:hover:border-emerald-400/60 enabled:hover:text-white disabled:opacity-40"
           >
             이번 달 요약 저장
           </button>
@@ -243,7 +243,7 @@ export default function PeriodComparisonPanel({
             onClick={handleSeedDemo}
             disabled={!permissive}
             data-testid="period-seed-demo"
-            className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-slate-300 transition enabled:hover:border-white/20 enabled:hover:text-white disabled:opacity-40"
+            className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 text-[11px] text-slate-300 transition enabled:hover:border-white/20 enabled:hover:text-white disabled:opacity-40"
           >
             지난 2개월 이력
           </button>
@@ -309,12 +309,12 @@ export default function PeriodComparisonPanel({
             </div>
           ) : (
             <div data-testid="period-comparison">
-              <p className="mt-2.5 text-[12px] leading-relaxed text-slate-300" data-testid="period-verdict">
+              <p className="mt-2 text-[12px] leading-relaxed text-slate-300" data-testid="period-verdict">
                 {describeComparison(comparison)}
               </p>
 
-              <div className="mt-2.5 grid gap-2 sm:grid-cols-3">
-                <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5">
+              <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
                   <p className="text-[10.5px] text-slate-500">누수 추정 손실액</p>
                   <p
                     className={`mt-1 text-[17px] font-semibold leading-tight tabular-nums ${toneClass(
@@ -329,7 +329,7 @@ export default function PeriodComparisonPanel({
                     {comparison.leak.deltaPct === null ? " · 비교 불가" : ` · ${comparison.leak.deltaPct > 0 ? "+" : ""}${comparison.leak.deltaPct.toFixed(1)}%`}
                   </p>
                 </div>
-                <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5">
+                <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
                   <p className="text-[10.5px] text-slate-500">정상 대사율</p>
                   <p
                     className={`mt-1 text-[17px] font-semibold leading-tight tabular-nums ${toneClass(
@@ -343,7 +343,7 @@ export default function PeriodComparisonPanel({
                     {formatPercent(comparison.matchedRate.previous, 1)} → {formatPercent(comparison.matchedRate.current, 1)}
                   </p>
                 </div>
-                <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5">
+                <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
                   <p className="text-[10.5px] text-slate-500">이상 행 수</p>
                   <p
                     className={`mt-1 text-[17px] font-semibold leading-tight tabular-nums ${toneClass(
@@ -363,11 +363,11 @@ export default function PeriodComparisonPanel({
                 <table className="w-full text-left text-[11px]">
                   <thead className="bg-white/[0.02] text-[10px] uppercase tracking-[0.12em] text-slate-500">
                     <tr>
-                      <th className="px-3 py-1.5 font-medium">원인</th>
-                      <th className="px-3 py-1.5 text-right font-medium">지난달</th>
-                      <th className="px-3 py-1.5 text-right font-medium">이번 달</th>
-                      <th className="px-3 py-1.5 text-right font-medium">증감</th>
-                      <th className="w-[28%] px-3 py-1.5 font-medium">변화 폭</th>
+                      <th className="px-3 py-2 font-medium">원인</th>
+                      <th className="px-3 py-2 text-right font-medium">지난달</th>
+                      <th className="px-3 py-2 text-right font-medium">이번 달</th>
+                      <th className="px-3 py-2 text-right font-medium">증감</th>
+                      <th className="w-[28%] px-3 py-2 font-medium">변화 폭</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.04]">
@@ -375,22 +375,22 @@ export default function PeriodComparisonPanel({
                       const share = maxDelta === 0 ? 0 : Math.round((Math.abs(cause.deltaLoss) / maxDelta) * 100);
                       return (
                         <tr key={cause.code} data-testid={`period-cause-${cause.code}`}>
-                          <td className="px-3 py-1.5">
+                          <td className="px-3 py-2">
                             <span className="flex flex-wrap items-center gap-1.5">
                               <span className="text-slate-200">{cause.label}</span>
                               <StatusChip status={cause.status} />
                             </span>
                           </td>
-                          <td className="px-3 py-1.5 text-right tabular-nums text-slate-500">{mask(cause.previousLoss)}</td>
-                          <td className="px-3 py-1.5 text-right tabular-nums text-slate-300">{mask(cause.currentLoss)}</td>
+                          <td className="px-3 py-2 text-right tabular-nums text-slate-500">{mask(cause.previousLoss)}</td>
+                          <td className="px-3 py-2 text-right tabular-nums text-slate-300">{mask(cause.currentLoss)}</td>
                           <td
-                            className={`px-3 py-1.5 text-right tabular-nums ${
+                            className={`px-3 py-2 text-right tabular-nums ${
                               cause.deltaLoss > 0 ? "text-rose-300" : cause.deltaLoss < 0 ? "text-emerald-300" : "text-slate-500"
                             }`}
                           >
                             {maskSigned(cause.deltaLoss)}
                           </td>
-                          <td className="px-3 py-1.5">
+                          <td className="px-3 py-2">
                             <span className="block h-1 w-full overflow-hidden rounded-full bg-white/[0.05]">
                               <span
                                 className={`block h-full ${

@@ -67,7 +67,7 @@ export default function SettlementDetailDrawer({
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-emerald-400/80">Settlement detail</p>
+            <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">Settlement detail</p>
             <h2 className="mt-1 font-mono text-[15px] font-semibold text-white">{row.orderNo}</h2>
             <p className="mt-1 text-[11.5px] text-slate-400">
               {row.productName} · {row.sku} · {row.quantity}개

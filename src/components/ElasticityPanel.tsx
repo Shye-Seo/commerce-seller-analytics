@@ -58,7 +58,7 @@ function Slider({ id, label, value, min, max, step, display, hint, onChange }: S
         step={step}
         value={value}
         onChange={(event) => onChange(Number(event.target.value))}
-        className="range mt-2.5"
+        className="range mt-2"
         style={{
           background: `linear-gradient(to right, #34D399 ${filled}%, rgba(255,255,255,0.10) ${filled}%)`,
         }}
@@ -289,13 +289,13 @@ export default function ElasticityPanel({ input, onApply }: ElasticityPanelProps
   };
 
   return (
-    <div className="card p-5 sm:p-6">
+    <div className="card p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">
+          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">
             Elasticity
           </p>
-          <h2 className="mt-1 text-lg font-semibold tracking-tight text-white">
+          <h2 className="mt-1 text-[13.5px] font-semibold text-slate-100">
             정가·할인·ROAS를 바꾸면 어느 마켓에서 적자가 되는가
           </h2>
           <p className="mt-1 max-w-2xl text-[12px] leading-relaxed text-slate-500">
@@ -346,7 +346,7 @@ export default function ElasticityPanel({ input, onApply }: ElasticityPanelProps
             onChange={setRoas}
           />
 
-          <dl className="space-y-2 rounded-xl border border-white/[0.06] bg-white/[0.015] px-3.5 py-3 text-[12px]">
+          <dl className="space-y-2 rounded-xl border border-white/[0.06] bg-white/[0.015] px-4 py-3 text-[12px]">
             <div className="flex items-center justify-between gap-2">
               <dt className="text-slate-400">고정비성 원가</dt>
               <dd className="tabular-nums text-slate-200">{formatWon(result.config.fixedCostPerUnit)}</dd>
@@ -408,13 +408,13 @@ export default function ElasticityPanel({ input, onApply }: ElasticityPanelProps
           </div>
 
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-            <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5">
+            <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
               <p className="text-[10.5px] text-slate-500">현재 판매가</p>
               <p className="mt-0.5 text-[15px] font-semibold tabular-nums text-white">
                 {formatWon(result.config.paidPrice)}
               </p>
             </div>
-            <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/[0.05] px-3 py-2.5">
+            <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/[0.05] px-3 py-2">
               <p className="text-[10.5px] text-slate-500">마진 최고 마켓</p>
               <p className="mt-0.5 text-[15px] font-semibold text-emerald-300">
                 {result.best ? result.best.shortLabel : "—"}
@@ -425,7 +425,7 @@ export default function ElasticityPanel({ input, onApply }: ElasticityPanelProps
                 ) : null}
               </p>
             </div>
-            <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5">
+            <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
               <p className="text-[10.5px] text-slate-500">손익분기 낮은 마켓</p>
               <p className="mt-0.5 text-[15px] font-semibold tabular-nums text-white">
                 {result.lowestBreakEven

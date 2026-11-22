@@ -103,7 +103,7 @@ export default function SalesTrendChart({ daily, monthly }: SalesTrendChartProps
     hovered === null ? 0 : Math.min(88, Math.max(12, (geometry.xOf(hovered) / CHART.width) * 100));
 
   return (
-    <div className="card p-5 sm:p-6">
+    <div className="card p-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h3 className="text-sm font-semibold text-white">매출 · 마진 추이</h3>
@@ -123,7 +123,7 @@ export default function SalesTrendChart({ daily, monthly }: SalesTrendChartProps
                   setRange(option.value);
                   setHovered(null);
                 }}
-                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                className={`rounded-lg px-3 py-2 text-xs font-medium transition ${
                   active ? "bg-white/10 text-white" : "text-slate-400 hover:text-slate-200"
                 }`}
               >
@@ -142,7 +142,7 @@ export default function SalesTrendChart({ daily, monthly }: SalesTrendChartProps
           { label: "평균 마진율", value: formatPercent(summary.averageMargin) },
           { label: "최고 매출", value: `${formatCompactNumber(summary.peak.revenue)}원` },
         ].map((item) => (
-          <div key={item.label} className="rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-2.5">
+          <div key={item.label} className="rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-2">
             <dt className="text-[11px] text-slate-500">{item.label}</dt>
             <dd className="mt-1 text-sm font-semibold text-slate-100 tabular-nums">{item.value}</dd>
           </div>

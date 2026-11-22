@@ -70,7 +70,7 @@ function Slider({
         aria-label={label}
         data-testid={id}
         onChange={(event) => onChange(Number(event.target.value))}
-        className="range mt-2.5"
+        className="range mt-2"
         style={{
           background: `linear-gradient(to right, #34D399 ${filled}%, rgba(255,255,255,0.10) ${filled}%)`,
         }}
@@ -100,7 +100,7 @@ function NumberField({
   return (
     <label className="block">
       <span className="field-label">{label}</span>
-      <span className="mt-1 flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 focus-within:border-emerald-400/50">
+      <span className="mt-1 flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 focus-within:border-emerald-400/50">
         <input
           id={id}
           type="number"
@@ -173,26 +173,21 @@ export default function NetPayoutConsole() {
   }, [curve]);
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-      <section className="mb-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">
-          Net payout
-        </p>
-        <h1 className="mt-1.5 text-[24px] font-semibold tracking-tight text-white sm:text-[28px]">
+    <div>
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="text-[13px] font-semibold text-slate-100">
           매출도 정산금도 아닌, 통장에 실제로 남는 순수익
-        </h1>
-        <p className="mt-2 max-w-3xl text-[12.5px] leading-relaxed text-slate-500">
-          카테고리별 판매 수수료, 결제 수수료, 광고비(ROAS), 반품 회수·교환 재발송 배송비, 원가,
-          고정비를 순서대로 차감합니다. 정산서에 찍힌 금액을 입력하면 예상 정산금과의 차액까지
-          같이 보여 주고, 지금 광고비로 흑자인지 손익분기 ROAS는 얼마인지 계산합니다.
+        </h2>
+        <p className="text-[10.5px] text-slate-600">
+          카테고리 요율·광고비(ROAS)·반품 배송비·원가·고정비를 순서대로 차감
         </p>
-      </section>
+      </div>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className={`card p-4 ${isProfitable ? "" : "border-rose-400/25"}`}>
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className={`card px-4 py-3 ${isProfitable ? "" : "border-rose-400/25"}`}>
           <p className="text-[10.5px] text-slate-500">월 통장 순수익</p>
           <p
-            className={`mt-1 text-[24px] font-semibold tabular-nums ${isProfitable ? "text-emerald-300" : "text-rose-300"}`}
+            className={`mt-1 text-[20px] font-semibold leading-tight tabular-nums ${isProfitable ? "text-emerald-300" : "text-rose-300"}`}
             data-testid="payout-net-cash"
           >
             {formatWon(result.netCash)}
@@ -202,9 +197,9 @@ export default function NetPayoutConsole() {
           </p>
         </div>
 
-        <div className="card p-4">
+        <div className="card px-4 py-3">
           <p className="text-[10.5px] text-slate-500">매출 대비 순수익률</p>
-          <p className="mt-1 text-[24px] font-semibold tabular-nums text-white" data-testid="payout-net-margin">
+          <p className="mt-1 text-[20px] font-semibold leading-tight tabular-nums text-white" data-testid="payout-net-margin">
             {formatPercent(result.netMarginRate, 1)}
           </p>
           <p className="mt-1 text-[10.5px] text-slate-500">
@@ -212,9 +207,9 @@ export default function NetPayoutConsole() {
           </p>
         </div>
 
-        <div className="card p-4">
+        <div className="card px-4 py-3">
           <p className="text-[10.5px] text-slate-500">손익분기 ROAS</p>
-          <p className="mt-1 text-[24px] font-semibold tabular-nums text-amber-200" data-testid="payout-breakeven-roas">
+          <p className="mt-1 text-[20px] font-semibold leading-tight tabular-nums text-amber-200" data-testid="payout-breakeven-roas">
             {Number.isFinite(result.breakEvenRoas) ? `${result.breakEvenRoas.toFixed(2)}배` : "도달 불가"}
           </p>
           <p className="mt-1 text-[10.5px] text-slate-500">
@@ -224,9 +219,9 @@ export default function NetPayoutConsole() {
           </p>
         </div>
 
-        <div className="card p-4">
+        <div className="card px-4 py-3">
           <p className="text-[10.5px] text-slate-500">월 광고비</p>
-          <p className="mt-1 text-[24px] font-semibold tabular-nums text-white" data-testid="payout-ad-spend">
+          <p className="mt-1 text-[20px] font-semibold leading-tight tabular-nums text-white" data-testid="payout-ad-spend">
             {formatWon(result.adSpend)}
           </p>
           <p className="mt-1 text-[10.5px] text-slate-500">
@@ -242,7 +237,7 @@ export default function NetPayoutConsole() {
             <span className="chip">입력 즉시 재계산</span>
           </div>
 
-          <div className="mt-3.5">
+          <div className="mt-3">
             <p className="field-label">판매 마켓</p>
             <div className="mt-1.5 grid grid-cols-2 gap-1.5">
               {MARKET_LIST.map((market) => {
@@ -254,7 +249,7 @@ export default function NetPayoutConsole() {
                     aria-pressed={active}
                     data-testid={`payout-market-${market.id}`}
                     onClick={() => selectMarket(market.id)}
-                    className={`rounded-lg border px-2 py-1.5 text-left text-[11px] font-medium transition ${
+                    className={`rounded-lg border px-2 py-2 text-left text-[11px] font-medium transition ${
                       active
                         ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
                         : "border-white/[0.07] bg-white/[0.02] text-slate-400 hover:border-white/20"
@@ -273,7 +268,7 @@ export default function NetPayoutConsole() {
             </div>
           </div>
 
-          <label className="mt-3.5 block">
+          <label className="mt-3 block">
             <span className="field-label">카테고리</span>
             <select
               value={input.categoryId}
@@ -291,7 +286,7 @@ export default function NetPayoutConsole() {
             <span className="mt-1 block text-[10.5px] leading-relaxed text-slate-600">{category.note}</span>
           </label>
 
-          <div className="mt-3 grid grid-cols-2 gap-2.5">
+          <div className="mt-3 grid grid-cols-2 gap-2">
             <NumberField
               id="payout-revenue"
               label="월 매출"
@@ -311,7 +306,7 @@ export default function NetPayoutConsole() {
             />
           </div>
 
-          <div className="mt-3.5 space-y-4">
+          <div className="mt-3 space-y-4">
             <Slider
               id="payout-roas"
               label="광고 ROAS"
@@ -351,7 +346,7 @@ export default function NetPayoutConsole() {
             />
           </div>
 
-          <div className="mt-3.5 grid grid-cols-2 gap-2.5">
+          <div className="mt-3 grid grid-cols-2 gap-2">
             <NumberField
               id="payout-cogs-rate"
               label="원가율"
@@ -403,7 +398,7 @@ export default function NetPayoutConsole() {
               </div>
               {result.settlementGap !== null ? (
                 <span
-                  className={`rounded-lg border px-2.5 py-1.5 text-[10.5px] font-medium ${
+                  className={`rounded-lg border px-2.5 py-2 text-[10.5px] font-medium ${
                     result.settlementGap < 0
                       ? "border-rose-400/30 bg-rose-400/10 text-rose-200"
                       : "border-emerald-400/30 bg-emerald-400/10 text-emerald-200"
@@ -436,7 +431,7 @@ export default function NetPayoutConsole() {
                 </dt>
                 <dd className="tabular-nums text-slate-300">— 판매 수수료 {formatWon(result.commission)}</dd>
               </div>
-              <div className="flex items-center justify-between gap-3 px-3 py-1.5">
+              <div className="flex items-center justify-between gap-3 px-3 py-2">
                 <dt className="text-slate-400">예상 정산금</dt>
                 <dd className="tabular-nums text-white" data-testid="payout-expected-settlement">
                   {formatWon(result.expectedSettlement)}
@@ -640,7 +635,7 @@ export default function NetPayoutConsole() {
               })}
             </tbody>
           </table>
-          <p className="px-4 py-2.5 text-[10px] leading-relaxed text-slate-600">
+          <p className="px-4 py-2 text-[10px] leading-relaxed text-slate-600">
             자사몰은 중개 수수료가 없지만 결제 수수료(3.3%)와 광고비 비중이 커집니다. 배송·반품 조건이
             같다는 가정이므로, 실제로는 마켓별 배송 정책까지 함께 봐야 합니다.
           </p>
@@ -651,6 +646,6 @@ export default function NetPayoutConsole() {
         {result.assumptions.join(" ")} 카테고리 요율은 각 마켓이 공개한 구간을 기준으로 한 값이며, 실제
         정산 금액과 다를 수 있습니다.
       </p>
-    </main>
+    </div>
   );
 }

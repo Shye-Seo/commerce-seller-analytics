@@ -48,6 +48,9 @@ import {
 } from "@/lib/multiTenantRbac";
 import { formatPercent, formatWon } from "@/lib/format";
 import { monthOf } from "@/lib/periodComparison";
+import Drawer from "@/components/ui/Drawer";
+import KpiStrip, { type KpiItem } from "@/components/ui/KpiStrip";
+import { Panel } from "@/components/ui/KpiStrip";
 
 /**
  * 정산 대사 콘솔 (클라이언트 셸)
@@ -125,37 +128,9 @@ function downloadText(filename: string, text: string): void {
   URL.revokeObjectURL(url);
 }
 
-function KpiCard({
-  label,
-  value,
-  hint,
-  tone = "default",
-  testId,
-}: {
-  label: string;
-  value: string;
-  hint: string;
-  tone?: "default" | "danger" | "warn" | "good";
-  testId?: string;
-}) {
-  const toneClass =
-    tone === "danger"
-      ? "text-rose-300"
-      : tone === "warn"
-        ? "text-amber-300"
-        : tone === "good"
-          ? "text-emerald-300"
-          : "text-white";
-  return (
-    <div className="card px-3.5 py-3" data-testid={testId}>
-      <p className="text-[10.5px] font-medium text-slate-500">{label}</p>
-      <p className={`mt-1 text-[19px] font-semibold leading-tight tabular-nums ${toneClass}`}>{value}</p>
-      <p className="mt-1 text-[10px] leading-snug text-slate-600">{hint}</p>
-    </div>
-  );
-}
+export type ReconSection = "overview" | "rows" | "intake" | "export" | "trend";
 
-export default function ReconciliationConsole() {
+export default function ReconciliationConsole({ section = "overview" }: { section?: ReconSection } = {}) {
   const [role, setRole] = useState<RoleId>("MASTER_ADMIN");
   const [tenantId, setTenantId] = useState<string>(DEMO_TENANTS[0]?.id ?? "tn-hq");
   const [rows, setRows] = useState<ReconciledRow[]>([]);
@@ -170,6 +145,7 @@ export default function ReconciliationConsole() {
   // 경보 룰은 화면 상태다. 룰을 바꾸면 아래 useMemo가 같은 행 집합을 다시 평가한다.
   const [alertRules, setAlertRules] = useState<AlertRuleConfig[]>(defaultAlertRules);
   const [chainValid, setChainValid] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const auditRef = useRef(new AuditTrail());
   const startedRef = useRef(false);
@@ -563,246 +539,186 @@ export default function ReconciliationConsole() {
     [rows, alertRules, receipts, couponCosts],
   );
 
-  return (
-    <div className="min-h-screen">
-      <main className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
-        <section className="mb-6">
-          <span className="chip">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />
-            B2B 정산 대사 · 이상 탐지 콘솔
-          </span>
-          <h1 className="mt-4 max-w-3xl text-[26px] font-semibold leading-[1.32] tracking-tight text-white sm:text-[32px]">
-            정산서와 판매 원장이 어긋나는 순간을,
-            <br className="hidden sm:block" /> <span className="text-emerald-300">계약 조건으로 다시 계산해</span> 찾아냅니다.
-          </h1>
-          <p className="mt-3 max-w-3xl text-[13.5px] leading-relaxed text-slate-400">
-            10만 행 정산서를 Web Worker로 파싱하고, 계약 수수료율·배송비·반품비 기준의 기대 정산액과 실제 입금액을
-            대사합니다. 차액은 수수료 초과·반품비 중복·정산 부족으로 <strong className="font-semibold text-slate-200">원인별 귀속</strong>되며,
-            같은 돈을 두 번 세지 않습니다.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-1.5">
-            {["Web Worker 스트리밍 파서", "마켓 API 자동 수집", "10만 행 가상화", "멀티 테넌트 RBAC", "해시체인 감사 로그", "배치 대사 엔진"].map((badge) => (
-              <span key={badge} className="rounded-md border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-[10.5px] font-medium text-slate-400">
-                {badge}
-              </span>
-            ))}
-          </div>
-        </section>
+  const kpis: KpiItem[] = [
+    {
+      label: "총 정산액",
+      value: summary ? mask(summary.totalSettledAmount) : "—",
+      hint: summary ? `결제 ${mask(summary.totalPaidAmount)} · ${activeTenant?.name.split(" ")[0] ?? "본사"}` : "대기 중",
+    },
+    {
+      label: "정상 대사율",
+      testId: "kpi-matched-rate",
+      value: summary ? formatPercent(summary.matchedRate, 1) : "—",
+      hint: summary
+        ? `이상 ${summary.flaggedRows.toLocaleString("ko-KR")}건 / ${summary.totalRows.toLocaleString("ko-KR")}건`
+        : "대기 중",
+      tone: summary ? (summary.matchedRate >= 80 ? "good" : summary.matchedRate >= 60 ? "warn" : "bad") : "default",
+      status: summary ? (summary.matchedRate >= 80 ? "정상" : summary.matchedRate >= 60 ? "주의" : "위험") : undefined,
+    },
+    {
+      label: "누수 추정 손실액",
+      value: summary ? mask(summary.totalLeak) : "—",
+      hint: biggest ? `최대 원인 · ${ANOMALY_META[biggest.code].label}` : "이상 없음",
+      tone: "bad",
+      status: summary && summary.totalLeak > 0 ? "회수 대상" : undefined,
+    },
+    {
+      label: "역마진 노출액",
+      value: summary ? mask(summary.marginRiskExposure) : "—",
+      hint: summary ? `역마진 ${summary.negativeMarginRows.toLocaleString("ko-KR")}건 · 최저 ${formatPercent(summary.worstMarginRate, 1)}` : "대기 중",
+      tone: "warn",
+    },
+  ];
 
-        {notice && (
-          <div
-            className={`mb-4 flex items-start justify-between gap-3 rounded-xl border px-3.5 py-2.5 text-[12px] leading-relaxed ${
-              notice.tone === "error"
-                ? "border-rose-400/25 bg-rose-400/[0.07] text-rose-200"
-                : notice.tone === "warn"
-                  ? "border-amber-400/25 bg-amber-400/[0.07] text-amber-200"
-                  : notice.tone === "success"
-                    ? "border-emerald-400/25 bg-emerald-400/[0.07] text-emerald-200"
-                    : "border-white/[0.08] bg-white/[0.03] text-slate-300"
-            }`}
-            role="status"
-          >
-            <span>{notice.text}</span>
-            <button type="button" onClick={() => setNotice(null)} className="shrink-0 text-[11px] opacity-70 transition hover:opacity-100">
-              닫기
+  return (
+    <div>
+      {/* 법인·역할 바: 지금 어떤 법인의 어떤 권한으로 보고 있는지 항상 한 줄로 보인다 */}
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/[0.07] bg-white/[0.015] px-3 py-2">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-500">
+          <span>
+            법인 <strong className="font-semibold text-slate-200">{activeTenant?.name ?? "본사"}</strong>
+          </span>
+          <span>
+            역할 <strong className="font-semibold text-slate-200">{roleDefinition.label}</strong>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className={`h-1.5 w-1.5 rounded-full ${chainValid ? "bg-emerald-400" : "bg-rose-400"}`} aria-hidden />
+            감사 로그 {chainValid ? "정상" : "점검 필요"}
+          </span>
+          <span className="hidden tabular-nums text-slate-600 sm:inline">기록 {auditRef.current.size}건</span>
+        </div>
+        <button type="button" onClick={() => setDrawerOpen(true)} className="btn" data-testid="open-tenant-drawer">
+          법인·권한·감사
+        </button>
+      </div>
+
+      {notice && (
+        <div
+          className={`mt-2 flex items-start justify-between gap-3 rounded-lg border px-3 py-2 text-[11.5px] leading-relaxed ${
+            notice.tone === "error"
+              ? "border-rose-400/25 bg-rose-400/[0.07] text-rose-200"
+              : notice.tone === "warn"
+                ? "border-amber-400/25 bg-amber-400/[0.07] text-amber-200"
+                : notice.tone === "success"
+                  ? "border-emerald-400/25 bg-emerald-400/[0.07] text-emerald-200"
+                  : "border-white/[0.08] bg-white/[0.03] text-slate-300"
+          }`}
+          role="status"
+        >
+          <span>{notice.text}</span>
+          <button type="button" onClick={() => setNotice(null)} className="shrink-0 text-[10.5px] opacity-70 transition hover:opacity-100">
+            닫기
+          </button>
+        </div>
+      )}
+
+      <KpiStrip items={kpis} className="mt-3" />
+
+      {/* 정산 처리 상태: 어느 탭에서 보든 남아 있는 한 줄 상태 띠 */}
+      <div className="mt-3 rounded-xl border border-white/[0.07] bg-white/[0.015] px-4 py-2">
+        <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">정산 처리 상태</p>
+            <p className="truncate text-[12px] font-medium text-slate-200" data-testid="dataset-label">
+              {dataset ? dataset.label : "정산 원장을 준비하고 있습니다."}
+            </p>
+            <p className="mt-0.5 truncate text-[10px] text-slate-600">
+              {dataset
+                ? `원장 ${dataset.rowCount.toLocaleString("ko-KR")}건 · ${dataset.parseErrorCount}건 격리 · ${
+                    Number.isFinite(dataset.rowsPerSecond) && dataset.rowsPerSecond > 0 ? formatThroughput(dataset.rowsPerSecond) : "—"
+                  } · ${(dataset.elapsedMs / 1000).toFixed(2)}초`
+                : "법인별 정산 원장을 불러오면 계약 조건으로 기대 정산액을 다시 계산합니다."}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button type="button" onClick={() => void loadGenerated(DEMO_ROW_COUNT, tenantId)} disabled={busy} className="btn">
+              원장 2만 건
+            </button>
+            <button type="button" onClick={() => void loadGenerated(STRESS_ROW_COUNT, tenantId)} disabled={busy} className="btn">
+              10만 건 검증
+            </button>
+            <button type="button" onClick={handleExport} disabled={!summary || busy} className="btn">
+              이상 내역 CSV
+            </button>
+            <button type="button" onClick={downloadSample} className="btn">
+              정산서 양식
             </button>
           </div>
-        )}
+        </div>
 
-        <div className="grid gap-5 lg:grid-cols-[286px_minmax(0,1fr)]">
-          <div className="order-2 lg:order-1">
-            <TenantSwitchConsole
-              tenants={DEMO_TENANTS}
-              activeTenantId={tenantId}
-              role={role}
-              onTenantChange={handleTenantChange}
-              onRoleChange={handleRoleChange}
-              auditEvents={[...auditRef.current.list()].reverse().slice(0, 6)}
-              chainValid={chainValid}
-              onExportAudit={handleExportAudit}
+        <div className="mt-2 flex items-center gap-2">
+          <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+            <div
+              className={`h-full rounded-full transition-[width] duration-300 ${
+                progress.phase === "error" ? "bg-rose-400" : busy ? "bg-emerald-400/80" : "bg-emerald-400"
+              }`}
+              style={{ width: `${Math.max(2, progress.percent)}%` }}
+              role="progressbar"
+              aria-valuenow={progress.percent}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="대사 진행률"
             />
           </div>
+          <span className="shrink-0 tabular-nums text-[10px] text-slate-500" data-testid="recon-progress-label">
+            {progress.label} · {progress.percent}%
+          </span>
+        </div>
+      </div>
 
-          <div className="order-1 space-y-4 lg:order-2">
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-5">
-              <KpiCard
-                label="총 정산액"
-                value={summary ? mask(summary.totalSettledAmount) : "—"}
-                hint={`${activeTenant?.name.split(" ")[0] ?? "본사"} · 결제 ${summary ? mask(summary.totalPaidAmount) : "—"}`}
-              />
-              <KpiCard
-                label="정상 대사율"
-                testId="kpi-matched-rate"
-                value={summary ? formatPercent(summary.matchedRate, 1) : "—"}
-                hint={summary ? `이상 ${summary.flaggedRows.toLocaleString("ko-KR")}건 / ${summary.totalRows.toLocaleString("ko-KR")}건` : "대기 중"}
-                tone={summary ? (summary.matchedRate >= 80 ? "good" : summary.matchedRate >= 60 ? "warn" : "danger") : "default"}
-              />
-              <KpiCard
-                label="누수 추정 손실액"
-                value={summary ? mask(summary.totalLeak) : "—"}
-                hint={biggest ? `최대 원인 · ${ANOMALY_META[biggest.code].label}` : "이상 없음"}
-                tone="danger"
-              />
-              <KpiCard
-                label="역마진 노출액"
-                value={summary ? mask(summary.marginRiskExposure) : "—"}
-                hint={summary ? `역마진 ${summary.negativeMarginRows.toLocaleString("ko-KR")}건 · 최저 ${formatPercent(summary.worstMarginRate, 1)}` : "대기 중"}
-                tone="warn"
-              />
-              <KpiCard
-                label="처리 성능"
-                value={dataset ? formatThroughput(dataset.rowsPerSecond) : "—"}
-                hint={dataset ? `${(dataset.elapsedMs / 1000).toFixed(2)}초 · 오류 ${dataset.parseErrorCount}건` : "대기 중"}
-                tone="good"
-              />
+      <div className="mt-4">
+        {section === "overview" ? (
+          <div className="space-y-3">
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+              <Panel title="손실 원인" hint="귀속 금액 상위">
+                {lossBreakdown.length === 0 ? (
+                  <p className="py-6 text-center text-[11.5px] text-slate-600">아직 대사 결과가 없습니다.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {lossBreakdown.map((entry) => (
+                      <li key={entry.code}>
+                        <div className="flex items-baseline justify-between gap-2 text-[11px]">
+                          <span className="truncate text-slate-300">{entry.meta.label}</span>
+                          <span className="shrink-0 tabular-nums text-slate-400">{mask(entry.amount)}</span>
+                        </div>
+                        <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-white/[0.05]">
+                          <div
+                            className={`h-full rounded-full ${entry.meta.severity === "critical" ? "bg-rose-400/70" : "bg-amber-400/70"}`}
+                            style={{ width: `${Math.max(3, Math.min(100, entry.share))}%` }}
+                          />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Panel>
+
+              <Panel title="채널별 정산" hint={summary ? `${summary.totalRows.toLocaleString("ko-KR")}건 기준` : undefined}>
+                {summary ? (
+                  <ul className="divide-y divide-white/[0.05]">
+                    {summary.byChannel.map((channel) => (
+                      <li key={channel.channel} className="flex items-center justify-between gap-2 py-2 first:pt-0 last:pb-0">
+                        <div className="min-w-0">
+                          <p className="text-[12px] font-medium text-slate-200">{CHANNEL_LABEL[channel.channel]}</p>
+                          <p className="text-[10px] tabular-nums text-slate-600">
+                            {channel.rows.toLocaleString("ko-KR")}건 · 이상 {channel.flaggedRows.toLocaleString("ko-KR")}건
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[12.5px] font-semibold tabular-nums text-white">{mask(channel.settledAmount)}</p>
+                          <p className={`text-[10px] tabular-nums ${channel.leak > 0 ? "text-rose-300" : "text-slate-600"}`}>
+                            누수 {mask(channel.leak)}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="py-6 text-center text-[11.5px] text-slate-600">대사 중입니다.</p>
+                )}
+              </Panel>
             </div>
-
-            {/* 데이터 입구를 두 탭으로 분리한다. 파일은 파싱, API는 수집이 앞단이고 이후 대사는 공통이다 */}
-            <div className="flex items-center gap-1.5" role="tablist" aria-label="정산 데이터 입구">
-              {(
-                [
-                  { id: "file", label: "정산서 파일 업로드", hint: "CSV · TSV · XLSX" },
-                  { id: "api", label: "API 자동 수집", hint: "스마트스토어 · 쿠팡" },
-                ] as { id: IntakeMode; label: string; hint: string }[]
-              ).map((tab) => {
-                const active = intakeMode === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={active}
-                    onClick={() => setIntakeMode(tab.id)}
-                    data-testid={`intake-tab-${tab.id}`}
-                    className={`rounded-lg border px-3 py-2 text-left transition ${
-                      active
-                        ? "border-emerald-400/40 bg-emerald-400/[0.08] text-emerald-100"
-                        : "border-white/[0.07] bg-white/[0.02] text-slate-400 hover:border-white/20 hover:text-slate-200"
-                    }`}
-                  >
-                    <span className="block text-[11.5px] font-medium">{tab.label}</span>
-                    <span className="block text-[9.5px] opacity-60">{tab.hint}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {intakeMode === "file" ? (
-              /* 파일 입구: 검증 → 워커 파싱 → 진행률/통계까지 이 카드가 소유한다 */
-              <ReconciliationFileUploader
-                disabled={busy}
-                onParsed={handleParsed}
-                onBusyChange={setUploading}
-                onNotice={(next) => setNotice(next)}
-              />
-            ) : (
-              <MarketApiSyncConsole
-                role={role}
-                tenantId={tenantId}
-                disabled={busy}
-                onCollected={handleApiCollected}
-                onBusyChange={setUploading}
-                onNotice={(next) => setNotice(next)}
-                onAudit={(target, detail, outcome) => log("RECONCILE_RUN", target, detail, outcome)}
-              />
-            )}
-
-            <section className="card p-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">정산 처리 상태</p>
-                  <p className="mt-1 text-[12.5px] text-slate-300" data-testid="dataset-label">
-                    {dataset ? dataset.label : "정산 원장을 준비하고 있습니다."}
-                  </p>
-                  <p className="mt-0.5 text-[10.5px] text-slate-500">
-                    {dataset
-                      ? `파싱 엔진 ${
-                          dataset.engine === "generated"
-                            ? "배치 엔진"
-                            : dataset.engine === "worker"
-                              ? "Web Worker"
-                              : dataset.engine === "api"
-                                ? "마켓 API"
-                                : "기본 파서"
-                        }${dataset.fallbackReason ? ` (${dataset.fallbackReason})` : ""} · ${BATCH_SIZE.toLocaleString("ko-KR")}건 배치 단위`
-                      : "계약 프리셋 · 스마트스토어 3.63% / 쿠팡 10.8% / 11번가 9% / G마켓 8.5%"}
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => void loadGenerated(DEMO_ROW_COUNT, tenantId)}
-                    disabled={busy}
-                    className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[11px] font-medium text-slate-300 transition enabled:hover:border-white/20 enabled:hover:text-white disabled:opacity-40"
-                  >
-                    원장 2만 건
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void loadGenerated(STRESS_ROW_COUNT, tenantId)}
-                    disabled={busy}
-                    className="rounded-lg border border-indigo-400/25 bg-indigo-400/10 px-2.5 py-1.5 text-[11px] font-medium text-indigo-200 transition enabled:hover:border-indigo-400/50 disabled:opacity-40"
-                  >
-                    10만 건 대량 검증
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleExport}
-                    disabled={!summary || busy}
-                    className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[11px] font-medium text-slate-300 transition enabled:hover:border-white/20 enabled:hover:text-white disabled:opacity-40"
-                  >
-                    이상 내역 CSV
-                  </button>
-                  <button
-                    type="button"
-                    onClick={downloadSample}
-                    className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-[11px] text-slate-400 transition hover:border-white/15 hover:text-slate-200"
-                  >
-                    정산서 양식
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-3">
-                <div className="flex items-center justify-between text-[10.5px] text-slate-500">
-                  <span className="tabular-nums">{progress.label}</span>
-                  <span className="tabular-nums">{progress.percent}%</span>
-                </div>
-                <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-white/[0.06]">
-                  <div
-                    className={`h-full rounded-full transition-[width] duration-300 ${
-                      progress.phase === "error" ? "bg-rose-400" : busy ? "bg-emerald-400/80" : "bg-emerald-400"
-                    }`}
-                    style={{ width: `${Math.max(2, progress.percent)}%` }}
-                    role="progressbar"
-                    aria-valuenow={progress.percent}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-label="대사 진행률"
-                  />
-                </div>
-              </div>
-
-              {lossBreakdown.length > 0 && (
-                <div className="mt-3 grid gap-1.5 sm:grid-cols-2">
-                  {lossBreakdown.map((entry) => (
-                    <div key={entry.code} className="rounded-lg border border-white/[0.05] bg-white/[0.015] px-2.5 py-1.5">
-                      <div className="flex items-center justify-between text-[10.5px]">
-                        <span className="text-slate-300">{entry.meta.label}</span>
-                        <span className="tabular-nums text-slate-400">{mask(entry.amount)}</span>
-                      </div>
-                      <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-white/[0.05]">
-                        <div
-                          className={`h-full rounded-full ${entry.meta.severity === "critical" ? "bg-rose-400/70" : "bg-amber-400/70"}`}
-                          style={{ width: `${Math.max(3, Math.min(100, entry.share))}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
 
             {/* 쿠폰 원장 → 정산 매칭 → 순마진·ROAS. 대사가 끝난 행과 주문번호로 이어진다 */}
             <div id="campaign-attribution" className="scroll-mt-24">
@@ -819,7 +735,11 @@ export default function ReconciliationConsole() {
                 onReload={() => void loadGenerated(DEMO_ROW_COUNT, tenantId)}
               />
             </div>
+          </div>
+        ) : null}
 
+        {section === "rows" ? (
+          <div className="space-y-3">
             {/* 룰 빌더의 결과가 바로 아래 표의 행 하이라이트로 이어진다 */}
             <AlertRuleBuilderPanel
               rules={alertRules}
@@ -852,6 +772,88 @@ export default function ReconciliationConsole() {
               alertRowIndex={alertEvaluation.rowIndex}
             />
 
+            <Panel title="이상 유형" hint={can(role, "settlement.amount") ? "정산액 열람 가능" : "정산액 부분 마스킹"}>
+              <div className="grid gap-1.5 sm:grid-cols-2 xl:grid-cols-3">
+                {(Object.keys(ANOMALY_META) as AnomalyCode[]).map((code) => {
+                  const meta = ANOMALY_META[code];
+                  const count = summary?.anomalyCounts[code] ?? 0;
+                  const loss = summary?.anomalyLoss[code] ?? 0;
+                  const active = code === biggest?.code;
+                  return (
+                    <div
+                      key={code}
+                      title={meta.description}
+                      className={`flex items-center justify-between gap-2 rounded-lg border px-2 py-2 ${
+                        active ? "border-rose-400/30 bg-rose-400/[0.06]" : "border-white/[0.05] bg-white/[0.015]"
+                      }`}
+                    >
+                      <span className="truncate text-[11px] text-slate-300">{meta.label}</span>
+                      <span className="shrink-0 text-[10px] tabular-nums text-slate-500">
+                        {count.toLocaleString("ko-KR")}건{loss > 0 ? ` · ${mask(loss)}` : ""}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </Panel>
+          </div>
+        ) : null}
+
+        {section === "intake" ? (
+          <div className="space-y-3">
+            {/* 데이터 입구를 두 탭으로 분리한다. 파일은 파싱, API는 수집이 앞단이고 이후 대사는 공통이다 */}
+            <div className="flex items-center gap-1.5" role="tablist" aria-label="정산 데이터 입구">
+              {(
+                [
+                  { id: "file", label: "정산서 파일", hint: "CSV · TSV · XLSX" },
+                  { id: "api", label: "API 자동 수집", hint: "스마트스토어 · 쿠팡" },
+                ] as { id: IntakeMode; label: string; hint: string }[]
+              ).map((tab) => {
+                const active = intakeMode === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setIntakeMode(tab.id)}
+                    data-testid={`intake-tab-${tab.id}`}
+                    className={`rounded-lg border px-3 py-2 text-left transition ${
+                      active
+                        ? "border-emerald-400/40 bg-emerald-400/[0.08] text-emerald-100"
+                        : "border-white/[0.07] bg-white/[0.02] text-slate-400 hover:border-white/20 hover:text-slate-200"
+                    }`}
+                  >
+                    <span className="block text-[11.5px] font-medium">{tab.label}</span>
+                    <span className="block text-[9.5px] opacity-60">{tab.hint}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {intakeMode === "file" ? (
+              <ReconciliationFileUploader
+                disabled={busy}
+                onParsed={handleParsed}
+                onBusyChange={setUploading}
+                onNotice={(next) => setNotice(next)}
+              />
+            ) : (
+              <MarketApiSyncConsole
+                role={role}
+                tenantId={tenantId}
+                disabled={busy}
+                onCollected={handleApiCollected}
+                onBusyChange={setUploading}
+                onNotice={(next) => setNotice(next)}
+                onAudit={(target, detail, outcome) => log("RECONCILE_RUN", target, detail, outcome)}
+              />
+            )}
+          </div>
+        ) : null}
+
+        {section === "export" ? (
+          <div className="space-y-3">
             {/* 대사 결과 → 마켓 접수 문서(CSV·PDF). 반출 권한·감사 기록은 콘솔이 관리한다 */}
             <ReconciliationClaimPanel
               rows={rows}
@@ -865,6 +867,13 @@ export default function ReconciliationConsole() {
               onNotice={(next) => setNotice(next)}
             />
 
+            {/* 이상 탐지 → 알림톡 발송. 실제 SENS 호출은 자격 증명이 없어 시뮬레이션으로만 동작한다 */}
+            <AlimtalkConsole rows={rows} summary={summary} batchId={batchId} datasetLabel={dataset?.label ?? "정산 원장"} />
+          </div>
+        ) : null}
+
+        {section === "trend" ? (
+          <div className="space-y-3">
             {/* 이번 달 대사 요약 ↔ 저장된 지난 달. 장기 추세와 원인별 증감은 이 패널이 담당한다 */}
             <PeriodComparisonPanel
               tenantId={tenantId}
@@ -876,88 +885,36 @@ export default function ReconciliationConsole() {
               onAudit={(target, detail, outcome) => log("RECONCILE_RUN", target, detail, outcome)}
               onNotice={(next) => setNotice(next)}
             />
-
-            {summary && (
-              <section className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
-                {summary.byChannel.map((channel) => (
-                  <div key={channel.channel} className="card px-3.5 py-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[12px] font-semibold text-slate-200">{CHANNEL_LABEL[channel.channel]}</span>
-                      <span className="text-[10px] tabular-nums text-slate-500">{channel.rows.toLocaleString("ko-KR")}건</span>
-                    </div>
-                    <p className="mt-1 text-[15px] font-semibold tabular-nums text-white">{mask(channel.settledAmount)}</p>
-                    <p className="mt-0.5 text-[10.5px] tabular-nums text-slate-500">
-                      이상 {channel.flaggedRows.toLocaleString("ko-KR")}건 · 누수{" "}
-                      <span className={channel.leak > 0 ? "text-rose-300" : "text-slate-500"}>{mask(channel.leak)}</span>
-                    </p>
-                  </div>
-                ))}
-              </section>
-            )}
-
-            <section className="card p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">Anomaly rules</p>
-                <p className="text-[10px] text-slate-500">
-                  {can(role, "settlement.amount") ? "정산액 열람 가능" : "정산액 부분 마스킹"} · {can(role, "cost.read") ? "원가 열람 가능" : "원가 차단"}
-                </p>
-              </div>
-              <div className="mt-2 grid gap-1.5 sm:grid-cols-2 xl:grid-cols-3">
-                {(Object.keys(ANOMALY_META) as AnomalyCode[]).map((code) => {
-                  const meta = ANOMALY_META[code];
-                  const count = summary?.anomalyCounts[code] ?? 0;
-                  const loss = summary?.anomalyLoss[code] ?? 0;
-                  const active = code === biggest?.code;
-                  return (
-                    <div
-                      key={code}
-                      className={`rounded-lg border px-2.5 py-2 ${
-                        active ? "border-rose-400/30 bg-rose-400/[0.06]" : "border-white/[0.05] bg-white/[0.015]"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="truncate text-[11px] font-medium text-slate-200">{meta.label}</span>
-                        <span className="shrink-0 tabular-nums text-[10px] text-slate-500">{count.toLocaleString("ko-KR")}건</span>
-                      </div>
-                      <p className="mt-0.5 line-clamp-2 text-[10px] leading-snug text-slate-500">{meta.description}</p>
-                      {loss > 0 && (
-                        <p className="mt-1 text-[10px] tabular-nums text-rose-300/90">귀속 {mask(loss)}</p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-
-            {/* 이상 탐지 → 알림톡 발송. 실제 SENS 호출은 자격 증명이 없어 시뮬레이션으로만 동작한다 */}
-            <AlimtalkConsole
-              rows={rows}
-              summary={summary}
-              batchId={batchId}
-              datasetLabel={dataset?.label ?? "정산 원장"}
-            />
-
-            <p className="pb-6 text-[10.5px] leading-relaxed text-slate-600">
-              계약 프리셋은 공개된 수수료 정책을 참고한 기준값이며, 실제 계약서 값과 다를 수 있습니다. 같은 조건이면 같은 결과가 나오도록
-              계산 기준일을 고정해 두었습니다. 마스킹은 화면 표시에만 적용되고 원본 데이터는 변경되지 않습니다.
+            <p className="text-[10px] leading-relaxed text-slate-600">
+              계약 프리셋은 공개된 수수료 정책을 참고한 기준값이며, 실제 계약서 값과 다를 수 있습니다. 같은 조건이면 같은 결과가
+              나오도록 계산 기준일을 고정해 두었습니다. 마스킹은 화면 표시에만 적용되고 원본 데이터는 변경되지 않습니다.
             </p>
           </div>
-        </div>
-      </main>
+        ) : null}
+      </div>
+
+      <Drawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        title="법인 · 권한 · 감사"
+        description="지금 보고 있는 법인과 역할에 따라 금액 마스킹과 반출 권한이 달라집니다."
+        testId="tenant-drawer"
+      >
+        <TenantSwitchConsole
+          tenants={DEMO_TENANTS}
+          activeTenantId={tenantId}
+          role={role}
+          onTenantChange={(next) => {
+            handleTenantChange(next);
+          }}
+          onRoleChange={handleRoleChange}
+          auditEvents={[...auditRef.current.list()].reverse().slice(0, 10)}
+          chainValid={chainValid}
+          onExportAudit={handleExportAudit}
+        />
+      </Drawer>
 
       <SettlementDetailDrawer item={selected} role={role} onClose={() => setSelected(null)} />
-
-      <footer className="border-t border-white/[0.06] bg-ink-900/40">
-        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-2 px-4 py-6 text-[11px] text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-          <span> 서승혜 · Commerce SaaS Engineer · 정산 대사 &amp; 이상 탐지 플랫폼</span>
-          <span className="flex flex-wrap gap-3">
-            <a href="/" className="transition hover:text-slate-200">마진 분석 대시보드</a>
-            <a href="https://github.com/Shye-Seo/commerce-seller-analytics" target="_blank" rel="noreferrer noopener" className="transition hover:text-slate-200">
-              GitHub
-            </a>
-          </span>
-        </div>
-      </footer>
     </div>
   );
 }
