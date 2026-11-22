@@ -95,8 +95,8 @@ export default function CampaignPerformanceCard() {
           <div>
             <p className="text-[14px] text-slate-300">아직 발급된 쿠폰 원장이 없습니다.</p>
             <p className="mt-1 text-[13px] leading-relaxed text-slate-300">
-              쿠폰 콘솔에서 부하를 한 번 발생시키면 발급·사용 원장과 쿠폰 사용 주문이 이 카드와 정산
-              대사 콘솔에 함께 나타납니다.
+              쿠폰 콘솔의 [고급] 동시 접속 경합 테스트를 한 번 실행하면 발급·사용 원장과 쿠폰 사용 주문이 이
+              카드와 정산 대사 콘솔에 함께 나타납니다.
             </p>
           </div>
           <Link href="/flash" className="btn-primary self-start">

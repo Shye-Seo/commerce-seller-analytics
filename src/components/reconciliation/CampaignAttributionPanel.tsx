@@ -78,7 +78,7 @@ export default function CampaignAttributionPanel({ performance, issuedCoupons, s
             <Link href="/flash" className="text-emerald-300 underline decoration-emerald-400/40 underline-offset-2">
               선착순 드롭 콘솔
             </Link>
-            에서 부하를 한 번 발생시키면 발급 원장과 주문 연결이 이 화면으로 넘어옵니다.
+            의 [고급] 동시 접속 경합 테스트를 한 번 실행하면 발급 원장과 주문 연결이 이 화면으로 넘어옵니다.
           </p>
           <p className="mt-1.5 text-[13px] text-slate-400">
             원장은 이 브라우저에 보관됩니다.
