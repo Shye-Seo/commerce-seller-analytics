@@ -54,7 +54,7 @@ const MODULES = [
     ],
   },
   {
-    href: "/reconciliation",
+    href: "/settlement",
     testId: "ops-card-reconciliation",
     title: "정산서 대사",
     description: "계약 조건과 어긋난 차액을 수수료·반품·정산 부족으로 원인별 귀속",

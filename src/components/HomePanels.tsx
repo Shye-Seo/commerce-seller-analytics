@@ -35,7 +35,7 @@ export default function HomePanels() {
         <Segmented items={TABS} value={tab} onChange={setTab} label="개요 분석" testIdPrefix="home-tab" />
       </div>
 
-      <div className="p-4">
+      <div className="p-4" role="tabpanel" aria-label={TABS.find((item) => item.id === tab)?.label ?? "분석"}>
         {tab === "diagnosis" ? <SmartInsightBox input={DEFAULT_MARGIN_INPUT} result={result} /> : null}
         {tab === "trend" ? <SalesTrendChart daily={DAILY_SALES} monthly={MONTHLY_SALES} /> : null}
         {tab === "keywords" ? <KeywordRankingTable rows={SCORED_KEYWORDS} /> : null}

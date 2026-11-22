@@ -49,7 +49,7 @@ export default function SettlementWorkspace({ initialTab = "overview" }: { initi
         <Segmented items={TABS} value={tab} onChange={setTab} label="정산 화면 보기" testIdPrefix="recon-tab" />
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4" role="tabpanel" aria-label={TABS.find((item) => item.id === tab)?.label ?? "정산"}>
         <div hidden={tab === "watch"}>
           <ReconciliationConsole section={tab === "watch" ? "overview" : tab} />
         </div>

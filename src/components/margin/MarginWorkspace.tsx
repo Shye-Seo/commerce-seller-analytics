@@ -101,7 +101,7 @@ export default function MarginWorkspace({ initialTab = "calculator" }: { initial
         <Segmented items={TABS} value={tab} onChange={setTab} label="수익 분석 보기" testIdPrefix="margin-tab" />
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4" role="tabpanel" aria-label={TABS.find((item) => item.id === tab)?.label ?? "수익 분석"}>
         {tab === "calculator" ? (
           <MarginSimulator input={input} result={result} onChange={handleChange} onSelectMarket={handleSelectMarket} />
         ) : null}
