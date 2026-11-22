@@ -141,20 +141,20 @@ export default function ReconciliationClaimPanel({
     <section className="card p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">Claim report</p>
-          <p className="mt-1 text-[12.5px] text-slate-200">정산 불일치 소명 리포트</p>
-          <p className="mt-0.5 text-[10.5px] leading-relaxed text-slate-500">
+          <p className="text-[12.5px] font-medium uppercase tracking-[0.14em] text-slate-300">Claim report</p>
+          <p className="mt-1 text-[14px] text-slate-200">정산 불일치 소명 리포트</p>
+          <p className="mt-0.5 text-[13px] leading-relaxed text-slate-300">
             계약 위반으로 청구할 수 있는 건만 골라 마켓 고객센터 규격 CSV와 인쇄용 요청서(PDF)로 만듭니다.
           </p>
         </div>
         <div className="text-right">
-          <p className="text-[10px] text-slate-500">청구 가능</p>
-          <p className="text-[18px] font-semibold tabular-nums text-emerald-300">{formatWon(report.totalAmount)}</p>
-          <p className="text-[10px] tabular-nums text-slate-500">{report.lines.length.toLocaleString("ko-KR")}건</p>
+          <p className="text-[12.5px] text-slate-300">청구 가능</p>
+          <p className="text-[20px] font-bold tabular-nums text-emerald-300">{formatWon(report.totalAmount)}</p>
+          <p className="text-[12.5px] tabular-nums text-slate-300">{report.lines.length.toLocaleString("ko-KR")}건</p>
         </div>
       </div>
 
-      <p className="mt-2 rounded-lg border border-white/[0.05] bg-white/[0.015] px-2.5 py-2 text-[10.5px] tabular-nums text-slate-400">
+      <p className="mt-2 rounded-lg border border-white/[0.05] bg-white/[0.015] px-2.5 py-2 text-[13px] tabular-nums text-slate-400">
         {describeClaimReport(report)}
       </p>
 
@@ -169,27 +169,27 @@ export default function ReconciliationClaimPanel({
               type="button"
               onClick={() => setPlatform(key)}
               aria-pressed={active}
-              className={`rounded-lg border px-2.5 py-2 text-[11px] font-medium transition ${
+              className={`rounded-lg border px-2.5 py-2 text-[13px] font-medium transition ${
                 active
                   ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-200"
                   : "border-white/[0.08] bg-white/[0.03] text-slate-400 hover:border-white/20 hover:text-slate-200"
               }`}
             >
               {meta.label}
-              <span className="ml-1 tabular-nums text-[10px] opacity-70">{count}</span>
+              <span className="ml-1 tabular-nums text-[12.5px] opacity-70">{count}</span>
             </button>
           );
         })}
       </div>
-      <p className="mt-1 text-[10px] text-slate-600">{CLAIM_PLATFORM_META[platform].desk}</p>
+      <p className="mt-1 text-[12.5px] text-slate-400">{CLAIM_PLATFORM_META[platform].desk}</p>
 
       <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto_auto]">
         <label className="block">
-          <span className="text-[10px] text-slate-500">최소 청구 금액</span>
+          <span className="text-[12.5px] text-slate-300">최소 청구 금액</span>
           <select
             value={minAmount}
             onChange={(event) => setMinAmount(Number(event.target.value))}
-            className="mt-0.5 w-full rounded-lg border border-white/[0.08] bg-ink-900 px-2 py-2 text-[11px] text-slate-200 outline-none focus:border-emerald-400/50"
+            className="mt-0.5 w-full rounded-lg border border-white/[0.08] bg-ink-900 px-2 py-2 text-[13px] text-slate-200 outline-none focus:border-emerald-400/50"
           >
             {MIN_AMOUNT_OPTIONS.map((value) => (
               <option key={value} value={value}>
@@ -199,11 +199,11 @@ export default function ReconciliationClaimPanel({
           </select>
         </label>
         <label className="block">
-          <span className="text-[10px] text-slate-500">최대 접수 건수</span>
+          <span className="text-[12.5px] text-slate-300">최대 접수 건수</span>
           <select
             value={maxLines}
             onChange={(event) => setMaxLines(Number(event.target.value))}
-            className="mt-0.5 w-full rounded-lg border border-white/[0.08] bg-ink-900 px-2 py-2 text-[11px] text-slate-200 outline-none focus:border-emerald-400/50"
+            className="mt-0.5 w-full rounded-lg border border-white/[0.08] bg-ink-900 px-2 py-2 text-[13px] text-slate-200 outline-none focus:border-emerald-400/50"
           >
             {MAX_LINE_OPTIONS.map((value) => (
               <option key={value} value={value}>
@@ -217,7 +217,7 @@ export default function ReconciliationClaimPanel({
           onClick={handleCsv}
           disabled={disabled}
           data-testid="claim-csv"
-          className="mt-auto rounded-lg bg-emerald-400 px-3 py-2 text-[11px] font-semibold text-ink-950 transition enabled:hover:bg-emerald-300 disabled:opacity-40"
+          className="mt-auto rounded-lg bg-emerald-400 px-3 py-2 text-[13px] font-semibold text-ink-950 transition enabled:hover:bg-emerald-300 disabled:opacity-40"
         >
           접수용 CSV
         </button>
@@ -226,14 +226,14 @@ export default function ReconciliationClaimPanel({
           onClick={handlePrint}
           disabled={disabled}
           data-testid="claim-pdf"
-          className="mt-auto rounded-lg border border-white/[0.12] bg-white/[0.04] px-3 py-2 text-[11px] font-medium text-slate-200 transition enabled:hover:border-white/25 enabled:hover:text-white disabled:opacity-40"
+          className="mt-auto rounded-lg border border-white/[0.12] bg-white/[0.04] px-3 py-2 text-[13px] font-medium text-slate-200 transition enabled:hover:border-white/25 enabled:hover:text-white disabled:opacity-40"
         >
           인쇄용 PDF
         </button>
       </div>
 
       {!allowed && (
-        <p className="mt-2 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-2.5 py-2 text-[10.5px] text-amber-200">
+        <p className="mt-2 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-2.5 py-2 text-[13px] text-amber-200">
           현재 역할({role})은 반출 권한이 없습니다. 리포트는 볼 수 있지만 내려받기는 대표·정산 담당자만 가능합니다.
         </p>
       )}
@@ -242,7 +242,7 @@ export default function ReconciliationClaimPanel({
         <div className="mt-3 overflow-hidden rounded-lg border border-white/[0.05]">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-white/[0.03] text-[9.5px] uppercase tracking-wide text-slate-500">
+              <tr className="bg-white/[0.03] text-[12px] uppercase tracking-wide text-slate-300">
                 <th className="px-2 py-1 font-medium">주문번호</th>
                 <th className="px-2 py-1 font-medium">사유</th>
                 <th className="px-2 py-1 text-right font-medium">청구액</th>
@@ -250,18 +250,18 @@ export default function ReconciliationClaimPanel({
             </thead>
             <tbody>
               {platformLines.slice(0, 5).map((line) => (
-                <tr key={line.id} className="border-t border-white/[0.04] text-[10.5px]">
+                <tr key={line.id} className="border-t border-white/[0.04] text-[13px]">
                   <td className="px-2 py-1 tabular-nums text-slate-300">{line.orderNo}</td>
-                  <td className="px-2 py-1 text-slate-500">
+                  <td className="px-2 py-1 text-slate-300">
                     {line.reasons.map((reason) => reason.label).join(" / ")}
-                    {line.reasons.length > 1 && <span className="ml-1 text-[9px] text-slate-600">외 {line.reasons.length - 1}</span>}
+                    {line.reasons.length > 1 && <span className="ml-1 text-[12px] text-slate-400">외 {line.reasons.length - 1}</span>}
                   </td>
                   <td className="px-2 py-1 text-right tabular-nums text-rose-300">{formatWon(line.claimAmount)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <p className="border-t border-white/[0.04] bg-white/[0.01] px-2 py-1 text-[9.5px] text-slate-600">
+          <p className="border-t border-white/[0.04] bg-white/[0.01] px-2 py-1 text-[12px] text-slate-400">
             {platformLines.length > 5
               ? `상위 5건 미리보기 · 나머지 ${platformLines.length - 5}건은 파일에 포함됩니다`
               : `${platformLines.length}건 전부 포함됩니다`}
@@ -269,19 +269,19 @@ export default function ReconciliationClaimPanel({
           </p>
         </div>
       ) : (
-        <p className="mt-3 rounded-lg border border-white/[0.05] bg-white/[0.015] px-2.5 py-2 text-[10.5px] text-slate-500">
+        <p className="mt-3 rounded-lg border border-white/[0.05] bg-white/[0.015] px-2.5 py-2 text-[13px] text-slate-300">
           이 창구로 접수할 건이 없습니다. 금액 하한을 낮추면 소액 건까지 확인할 수 있습니다.
         </p>
       )}
 
       {report.excluded.length > 0 && (
         <details className="mt-2 rounded-lg border border-white/[0.05] bg-white/[0.015] px-2.5 py-2">
-          <summary className="cursor-pointer text-[10.5px] text-slate-400">
+          <summary className="cursor-pointer text-[13px] text-slate-400">
             청구에서 제외한 항목 {report.excluded.length}종 (손해는 있지만 계약 위반이 아닙니다)
           </summary>
           <ul className="mt-1 space-y-0.5">
             {report.excluded.slice(0, 4).map((entry) => (
-              <li key={entry.code} className="text-[10px] leading-relaxed text-slate-500">
+              <li key={entry.code} className="text-[12.5px] leading-relaxed text-slate-300">
                 <span className="text-slate-400">{entry.label}</span> {entry.count}건 · {formatWon(entry.amount)} —{" "}
                 {NON_CLAIMABLE_REASONS[entry.code] ?? "청구 대상이 아닙니다."}
               </li>

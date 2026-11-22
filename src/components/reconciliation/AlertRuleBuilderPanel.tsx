@@ -65,8 +65,8 @@ function RuleCard({
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-[12px] font-semibold text-slate-100">{meta.label}</p>
-          <p className="mt-0.5 text-[10.5px] leading-snug text-slate-500">{meta.description}</p>
+          <p className="text-[14px] font-semibold text-slate-100">{meta.label}</p>
+          <p className="mt-0.5 text-[13px] leading-snug text-slate-300">{meta.description}</p>
         </div>
         <button
           type="button"
@@ -90,7 +90,7 @@ function RuleCard({
       </div>
 
       <div className="mt-2 flex items-end justify-between gap-3">
-        <label className="flex items-center gap-1.5 text-[10.5px] text-slate-400">
+        <label className="flex items-center gap-1.5 text-[13px] text-slate-400">
           임계값
           <input
             type="number"
@@ -102,21 +102,21 @@ function RuleCard({
             aria-label={`${meta.label} 임계값`}
             data-testid={`alert-rule-threshold-${id}`}
             onChange={(event) => onChange({ ...config, threshold: Number(event.target.value) })}
-            className="w-16 rounded-md border border-white/[0.1] bg-white/[0.04] px-1.5 py-0.5 text-right text-[11px] tabular-nums text-white outline-none focus:border-emerald-400/50"
+            className="w-16 rounded-md border border-white/[0.1] bg-white/[0.04] px-1.5 py-0.5 text-right text-[13px] tabular-nums text-white outline-none focus:border-emerald-400/50"
           />
           {meta.unit}
         </label>
 
         <div className="text-right">
           <p
-            className={`text-[13px] font-semibold tabular-nums ${
+            className={`text-[14.5px] font-semibold tabular-nums ${
               config.enabled && result.rowsAffected > 0 ? "text-amber-200" : "text-slate-400"
             }`}
             data-testid={`alert-hits-${id}`}
           >
             {config.enabled ? `${result.rowsAffected.toLocaleString("ko-KR")}건` : "꺼짐"}
           </p>
-          <p className="text-[10px] tabular-nums text-slate-500">
+          <p className="text-[12.5px] tabular-nums text-slate-300">
             {config.enabled
               ? result.amountAtRisk > 0
                 ? `노출 ${formatWon(result.amountAtRisk)}`
@@ -127,7 +127,7 @@ function RuleCard({
       </div>
 
       {result.skippedReason ? (
-        <p className="mt-2 rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-1 text-[10px] leading-snug text-slate-500">
+        <p className="mt-2 rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-1 text-[12.5px] leading-snug text-slate-300">
           {result.skippedReason}
         </p>
       ) : null}
@@ -175,13 +175,13 @@ export default function AlertRuleBuilderPanel({
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">
+          <p className="text-[12.5px] font-medium uppercase tracking-[0.14em] text-slate-300">
             Alert rules
           </p>
           <h2 className="mt-1 text-[15px] font-semibold tracking-tight text-white">
             내 기준으로 거른 뒤, 위반 행만 바로 확인
           </h2>
-          <p className="mt-1 max-w-2xl text-[11.5px] leading-relaxed text-slate-500">
+          <p className="mt-1 max-w-2xl text-[13.5px] leading-relaxed text-slate-300">
             룰을 켜고 임계값을 바꾸면 같은 정산 데이터를 다시 평가합니다. 위반 행은 아래 표에서 왼쪽
             색선으로 표시되고, 클릭하면 상세 드로어가 열립니다. 알림은 알림톡 콘솔의 검수 템플릿으로
             합성해 미리 봅니다.
@@ -189,23 +189,23 @@ export default function AlertRuleBuilderPanel({
         </div>
         <div className="flex flex-wrap items-center gap-2 text-right">
           <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] px-2.5 py-2">
-            <p className="text-[9.5px] text-slate-500">활성 룰</p>
-            <p className="text-[12.5px] font-semibold tabular-nums text-white">
+            <p className="text-[12px] text-slate-300">활성 룰</p>
+            <p className="text-[14px] font-semibold tabular-nums text-white">
               {evaluation.enabledCount}/{rules.length}
             </p>
           </div>
           <div className="rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-2.5 py-2">
-            <p className="text-[9.5px] text-slate-500">위반 행</p>
+            <p className="text-[12px] text-slate-300">위반 행</p>
             <p
-              className="text-[12.5px] font-semibold tabular-nums text-amber-200"
+              className="text-[14px] font-semibold tabular-nums text-amber-200"
               data-testid="alert-total-hits"
             >
               {evaluation.hits.length.toLocaleString("ko-KR")}
             </p>
           </div>
           <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] px-2.5 py-2">
-            <p className="text-[9.5px] text-slate-500">노출 금액</p>
-            <p className="text-[12.5px] font-semibold tabular-nums text-white">
+            <p className="text-[12px] text-slate-300">노출 금액</p>
+            <p className="text-[14px] font-semibold tabular-nums text-white">
               {formatWon(evaluation.totalAmountAtRisk)}
             </p>
           </div>
@@ -245,11 +245,11 @@ export default function AlertRuleBuilderPanel({
       <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,340px)]">
         <div className="rounded-xl border border-white/[0.06]">
           <div className="flex items-center justify-between border-b border-white/[0.06] px-3 py-2">
-            <p className="text-[11.5px] font-semibold text-slate-200">위반 상위 건</p>
-            <p className="text-[10px] text-slate-500">노출 금액 순 · 클릭하면 표에서 선택</p>
+            <p className="text-[13.5px] font-semibold text-slate-200">위반 상위 건</p>
+            <p className="text-[12.5px] text-slate-300">노출 금액 순 · 클릭하면 표에서 선택</p>
           </div>
           {topHits.length === 0 ? (
-            <p className="px-3 py-6 text-center text-[11.5px] text-slate-500">
+            <p className="px-3 py-6 text-center text-[13.5px] text-slate-300">
               현재 켜 둔 룰에서 위반이 없습니다. 임계값을 낮추거나 룰을 켜면 바로 다시 계산됩니다.
             </p>
           ) : (
@@ -269,7 +269,7 @@ export default function AlertRuleBuilderPanel({
                       <span className="min-w-0">
                         <span className="flex flex-wrap items-center gap-1.5">
                           <span
-                            className={`rounded border px-1 py-0.5 text-[9.5px] font-medium ${
+                            className={`rounded border px-1 py-0.5 text-[12px] font-medium ${
                               hit.severity === "critical"
                                 ? "border-rose-400/30 bg-rose-400/10 text-rose-300"
                                 : "border-amber-400/30 bg-amber-400/10 text-amber-300"
@@ -277,21 +277,21 @@ export default function AlertRuleBuilderPanel({
                           >
                             {hit.ruleLabel}
                           </span>
-                          <span className="font-mono text-[10px] text-slate-400">{hit.orderNo}</span>
-                          <span className="text-[10px] text-slate-600">
+                          <span className="font-mono text-[12.5px] text-slate-400">{hit.orderNo}</span>
+                          <span className="text-[12.5px] text-slate-400">
                             {CHANNEL_LABEL[hit.channel] ?? hit.channel}
                           </span>
                         </span>
-                        <span className="mt-0.5 block truncate text-[10.5px] text-slate-500">
+                        <span className="mt-0.5 block truncate text-[13px] text-slate-300">
                           {hit.detail}
                         </span>
                       </span>
                       <span className="shrink-0 text-right">
-                        <span className="block text-[11px] font-semibold tabular-nums text-slate-200">
+                        <span className="block text-[13px] font-semibold tabular-nums text-slate-200">
                           {hit.metric}
                           {hit.unit}
                         </span>
-                        <span className="block text-[9.5px] tabular-nums text-slate-500">
+                        <span className="block text-[12px] tabular-nums text-slate-300">
                           {hit.amountAtRisk > 0 ? formatWon(hit.amountAtRisk) : "금액 영향 없음"}
                         </span>
                       </span>
@@ -305,32 +305,32 @@ export default function AlertRuleBuilderPanel({
 
         <div className="rounded-xl border border-white/[0.06] bg-white/[0.015] p-3">
           <div className="flex items-center justify-between">
-            <p className="text-[11.5px] font-semibold text-slate-200">알림톡 미리보기</p>
-            <span className="rounded border border-white/[0.08] px-1.5 py-0.5 text-[9px] text-slate-500">
+            <p className="text-[13.5px] font-semibold text-slate-200">알림톡 미리보기</p>
+            <span className="rounded border border-white/[0.08] px-1.5 py-0.5 text-[12px] text-slate-300">
               SS_ANOMALY_CRITICAL
             </span>
           </div>
           {preview ? (
             <>
               <div className="mt-2 rounded-xl rounded-tl-sm border border-white/[0.08] bg-[#1b1d21] px-3 py-2">
-                <p className="whitespace-pre-line text-[11px] leading-relaxed text-slate-200" data-testid="alert-preview">
+                <p className="whitespace-pre-line text-[13px] leading-relaxed text-slate-200" data-testid="alert-preview">
                   {preview}
                 </p>
               </div>
-              <p className="mt-2 text-[10px] leading-snug text-slate-500">
+              <p className="mt-2 text-[12.5px] leading-snug text-slate-300">
                 실제 발송은 아래 알림톡 콘솔에서 합니다. 룰마다 새 템플릿을 만들면 검수를 다시 받아야
                 하므로, 검수된 템플릿의 변수에 룰 이름과 근거를 넣는 방식입니다.
               </p>
             </>
           ) : (
-            <p className="mt-2 text-[11px] leading-relaxed text-slate-500">
+            <p className="mt-2 text-[13px] leading-relaxed text-slate-300">
               위반 건이 생기면 이 자리에 알림톡 본문이 나타납니다.
             </p>
           )}
         </div>
       </div>
 
-      <p className="mt-3 text-[10px] leading-relaxed text-slate-600">
+      <p className="mt-3 text-[12.5px] leading-relaxed text-slate-400">
         {dataNote ??
           "정산 입금일은 마켓 정산 주기(D+n 영업일) 기준입니다. 쿠폰 부담률은 선착순 드롭 콘솔에서 사용된 쿠폰 원장과 주문번호로 맞춘 값만 계산합니다."}
       </p>

@@ -67,7 +67,7 @@ function Sparkline({ values }: { values: number[] }) {
 function LevelBadge({ level }: { level: StockLevel }) {
   const meta = LEVEL_META[level];
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold ${meta.className}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-[12.5px] font-semibold ${meta.className}`}>
       <span className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} aria-hidden />
       {meta.label}
     </span>
@@ -117,33 +117,33 @@ export default function InventoryConsole() {
   return (
     <div>
       <div className="mb-2 flex items-center justify-between gap-2">
-        <p className="text-[10.5px] text-slate-600">최근 7일 판매 속도 · 리드타임 · 안전재고 · MOQ 반영</p>
+        <p className="text-[13px] text-slate-400">최근 7일 판매 속도 · 리드타임 · 안전재고 · MOQ 반영</p>
       </div>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <div className="card border-rose-400/20 px-4 py-3">
-          <p className="text-[10.5px] text-slate-500">위험 SKU</p>
-          <p className="mt-1 text-[20px] font-semibold leading-tight tabular-nums text-rose-300" data-testid="inventory-critical-count">
+          <p className="text-[13px] text-slate-300">위험 SKU</p>
+          <p className="mt-1 text-[22px] font-bold leading-tight tabular-nums text-rose-300" data-testid="inventory-critical-count">
             {plan.counts.critical}개
           </p>
-          <p className="mt-1 text-[10.5px] text-slate-500">
+          <p className="mt-1 text-[13px] text-slate-300">
             리드타임 안에 품절 · 주의 {plan.counts.warning}개
           </p>
         </div>
 
         <div className="card px-4 py-3">
-          <p className="text-[10.5px] text-slate-500">권장 발주 수량</p>
-          <p className="mt-1 text-[20px] font-semibold leading-tight tabular-nums text-white" data-testid="inventory-total-qty">
+          <p className="text-[13px] text-slate-300">권장 발주 수량</p>
+          <p className="mt-1 text-[22px] font-bold leading-tight tabular-nums text-white" data-testid="inventory-total-qty">
             {plan.totalRecommendedQty.toLocaleString("ko-KR")}개
           </p>
-          <p className="mt-1 text-[10.5px] tabular-nums text-slate-500" data-testid="inventory-order-value">
+          <p className="mt-1 text-[13px] tabular-nums text-slate-300" data-testid="inventory-order-value">
             발주 금액 {formatWon(plan.totalOrderValue)}
           </p>
         </div>
 
         <div className="card px-4 py-3">
-          <p className="text-[10.5px] text-slate-500">가장 급한 발주 마감</p>
-          <p className="mt-1 text-[20px] font-semibold leading-tight tabular-nums text-amber-200">
+          <p className="text-[13px] text-slate-300">가장 급한 발주 마감</p>
+          <p className="mt-1 text-[22px] font-bold leading-tight tabular-nums text-amber-200">
             {deadlineDays === null
               ? "—"
               : deadlineDays < 0
@@ -152,17 +152,17 @@ export default function InventoryConsole() {
                   ? "오늘"
                   : `${deadlineDays}일 뒤`}
           </p>
-          <p className="mt-1 text-[10.5px] tabular-nums text-slate-500">
+          <p className="mt-1 text-[13px] tabular-nums text-slate-300">
             {plan.nextDeadline ? plan.nextDeadline.slice(5).replace("-", "/") : "발주 대상 없음"}
           </p>
         </div>
 
         <div className="card px-4 py-3">
-          <p className="text-[10.5px] text-slate-500">가장 빨리 끊기는 SKU</p>
+          <p className="text-[13px] text-slate-300">가장 빨리 끊기는 SKU</p>
           <p className="mt-1 truncate text-[15px] font-semibold text-white" data-testid="inventory-soonest">
             {plan.soonestStockout ? plan.soonestStockout.productName : "—"}
           </p>
-          <p className="mt-1 text-[10.5px] tabular-nums text-slate-500">
+          <p className="mt-1 text-[13px] tabular-nums text-slate-300">
             {plan.soonestStockout
               ? `${plan.soonestStockout.optionName} · ${plan.soonestStockout.date.slice(5).replace("-", "/")} 품절`
               : "판매 이력 없음"}
@@ -183,7 +183,7 @@ export default function InventoryConsole() {
                     aria-pressed={active}
                     data-testid={`inventory-filter-${item.id}`}
                     onClick={() => setFilter(item.id)}
-                    className={`rounded-lg border px-2.5 py-1 text-[11px] font-medium transition ${
+                    className={`rounded-lg border px-2.5 py-1 text-[13px] font-medium transition ${
                       active
                         ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
                         : "border-white/[0.07] bg-white/[0.02] text-slate-400 hover:border-white/20"
@@ -195,14 +195,14 @@ export default function InventoryConsole() {
               })}
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[10.5px] tabular-nums text-slate-500" data-testid="inventory-row-count">
+              <span className="text-[13px] tabular-nums text-slate-300" data-testid="inventory-row-count">
                 {rows.length}개 SKU
               </span>
               <button
                 type="button"
                 onClick={downloadCsv}
                 data-testid="inventory-csv"
-                className="rounded-lg border border-white/[0.1] bg-white/[0.03] px-2.5 py-1 text-[11px] font-medium text-slate-200 transition hover:border-emerald-400/40 hover:text-emerald-100"
+                className="rounded-lg border border-white/[0.1] bg-white/[0.03] px-2.5 py-1 text-[13px] font-medium text-slate-200 transition hover:border-emerald-400/40 hover:text-emerald-100"
               >
                 발주서 CSV
               </button>
@@ -210,9 +210,9 @@ export default function InventoryConsole() {
           </div>
 
           <div className="max-h-[560px] overflow-auto thin-scrollbar">
-            <table className="w-full border-collapse text-[11.5px]">
+            <table className="w-full border-collapse text-[13.5px]">
               <thead className="sticky top-0 z-10 bg-ink-950">
-                <tr className="text-[10px] text-slate-500">
+                <tr className="text-[12.5px] text-slate-300">
                   <th className="px-3 py-2 text-left font-semibold">상태</th>
                   <th className="px-2 py-2 text-left font-semibold">상품 · 옵션</th>
                   <th className="px-2 py-2 text-center font-semibold">7일 판매</th>
@@ -235,10 +235,10 @@ export default function InventoryConsole() {
                     </td>
                     <td className="max-w-[240px] px-2 py-2">
                       <p className="truncate text-slate-200">{line.productName}</p>
-                      <p className="truncate text-[9.5px] text-slate-500">
+                      <p className="truncate text-[12px] text-slate-300">
                         {line.optionName} · {line.skuCode}
                       </p>
-                      <p className="truncate text-[9.5px] leading-snug text-slate-600">{line.reason}</p>
+                      <p className="truncate text-[12px] leading-snug text-slate-400">{line.reason}</p>
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex justify-center">
@@ -248,7 +248,7 @@ export default function InventoryConsole() {
                     <td className="px-2 py-2 text-right tabular-nums text-slate-300">
                       {line.dailyAverage > 0 ? line.dailyAverage.toFixed(1) : "—"}
                       {line.trendRate !== null && Math.abs(line.trendRate) >= 5 ? (
-                        <span className={`ml-1 text-[9px] ${line.trendRate > 0 ? "text-emerald-400" : "text-amber-400"}`}>
+                        <span className={`ml-1 text-[12px] ${line.trendRate > 0 ? "text-emerald-400" : "text-amber-400"}`}>
                           {line.trendRate > 0 ? "▲" : "▼"}
                           {Math.abs(line.trendRate).toFixed(0)}%
                         </span>
@@ -262,18 +262,18 @@ export default function InventoryConsole() {
                       {line.orderByDate ? line.orderByDate.slice(5).replace("-", "/") : "—"}
                     </td>
                     <td className="px-3 py-2 text-right">
-                      <span className={`tabular-nums font-semibold ${line.recommendedQty > 0 ? "text-white" : "text-slate-600"}`}>
+                      <span className={`tabular-nums font-semibold ${line.recommendedQty > 0 ? "text-white" : "text-slate-400"}`}>
                         {line.recommendedQty > 0 ? `${line.recommendedQty}개` : "—"}
                       </span>
                       {line.recommendedQty > 0 ? (
-                        <span className="block text-[9.5px] tabular-nums text-slate-500">{formatWon(line.orderValue)}</span>
+                        <span className="block text-[12px] tabular-nums text-slate-300">{formatWon(line.orderValue)}</span>
                       ) : null}
                     </td>
                   </tr>
                 ))}
                 {rows.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-10 text-center text-[12px] text-slate-500">
+                    <td colSpan={8} className="px-4 py-10 text-center text-[14px] text-slate-300">
                       이 조건에 해당하는 SKU가 없습니다. 전체 SKU로 바꾸면 모든 품목을 볼 수 있습니다.
                     </td>
                   </tr>
@@ -282,15 +282,15 @@ export default function InventoryConsole() {
             </table>
           </div>
 
-          <p className="border-t border-white/[0.06] px-4 py-2 text-[10px] leading-relaxed text-slate-600">
+          <p className="border-t border-white/[0.06] px-4 py-2 text-[12.5px] leading-relaxed text-slate-400">
             {plan.assumptions.join(" ")}
           </p>
         </section>
 
         <div className="space-y-4">
           <section className="card p-4" aria-label="수요 가정">
-            <h2 className="text-[13px] font-semibold text-white">수요 가정</h2>
-            <p className="mt-0.5 text-[10.5px] leading-relaxed text-slate-500">
+            <h2 className="text-[16px] font-semibold text-white">수요 가정</h2>
+            <p className="mt-0.5 text-[13px] leading-relaxed text-slate-300">
               프로모션·시즌 수요를 반영해 발주량을 미리 조정합니다.
             </p>
 
@@ -299,7 +299,7 @@ export default function InventoryConsole() {
                 <label htmlFor="inventory-demand" className="field-label">
                   판매량 변화
                 </label>
-                <span className="text-[12.5px] font-semibold tabular-nums text-white" data-testid="inventory-demand-value">
+                <span className="text-[14px] font-semibold tabular-nums text-white" data-testid="inventory-demand-value">
                   {demandLift > 0 ? "+" : ""}
                   {demandLift}%
                 </span>
@@ -319,7 +319,7 @@ export default function InventoryConsole() {
                   background: `linear-gradient(to right, #34D399 ${((demandLift + 30) / 90) * 100}%, rgba(255,255,255,0.10) ${((demandLift + 30) / 90) * 100}%)`,
                 }}
               />
-              <p className="mt-1.5 text-[10.5px] text-slate-500">
+              <p className="mt-1.5 text-[13px] text-slate-300">
                 발주 수량 {plan.totalRecommendedQty.toLocaleString("ko-KR")}개 · 기준 대비{" "}
                 {plan.totalRecommendedQty - basePlan.totalRecommendedQty > 0 ? "+" : ""}
                 {(plan.totalRecommendedQty - basePlan.totalRecommendedQty).toLocaleString("ko-KR")}개
@@ -331,7 +331,7 @@ export default function InventoryConsole() {
                 <label htmlFor="inventory-safety" className="field-label">
                   안전재고일 배수
                 </label>
-                <span className="text-[12.5px] font-semibold tabular-nums text-white" data-testid="inventory-safety-value">
+                <span className="text-[14px] font-semibold tabular-nums text-white" data-testid="inventory-safety-value">
                   {safetyMultiplier.toFixed(1)}배
                 </span>
               </div>
@@ -350,28 +350,28 @@ export default function InventoryConsole() {
                   background: `linear-gradient(to right, #34D399 ${(safetyMultiplier / 2) * 100}%, rgba(255,255,255,0.10) ${(safetyMultiplier / 2) * 100}%)`,
                 }}
               />
-              <p className="mt-1.5 text-[10.5px] text-slate-500">
+              <p className="mt-1.5 text-[13px] text-slate-300">
                 안전재고를 늘리면 발주량이 늘고 품절 위험은 줄어듭니다.
               </p>
             </div>
           </section>
 
           <section className="card p-4" aria-label="발주 알림">
-            <h2 className="text-[13px] font-semibold text-white">발주 알림</h2>
+            <h2 className="text-[16px] font-semibold text-white">발주 알림</h2>
             <div className="mt-2 rounded-xl rounded-tl-sm border border-white/[0.08] bg-[#1b1d21] px-3 py-2">
-              <p className="whitespace-pre-line text-[11px] leading-relaxed text-slate-200" data-testid="inventory-notice">
+              <p className="whitespace-pre-line text-[13px] leading-relaxed text-slate-200" data-testid="inventory-notice">
                 {notice}
               </p>
             </div>
-            <p className="mt-2 text-[10px] leading-relaxed text-slate-500">
+            <p className="mt-2 text-[12.5px] leading-relaxed text-slate-300">
               위험 SKU가 생기면 담당자에게 이 문구로 알립니다. 발주서 CSV는 발주 담당자에게 그대로
               넘길 수 있는 형식입니다.
             </p>
           </section>
 
           <section className="card p-4" aria-label="요약">
-            <h2 className="text-[13px] font-semibold text-white">오늘 처리할 일</h2>
-            <ul className="mt-2 space-y-1.5 text-[10.5px] leading-relaxed text-slate-500">
+            <h2 className="text-[16px] font-semibold text-white">오늘 처리할 일</h2>
+            <ul className="mt-2 space-y-1.5 text-[13px] leading-relaxed text-slate-300">
               <li>· 위험 {plan.counts.critical}개 SKU는 리드타임 안에 품절됩니다.</li>
               <li>
                 · 판매 정체 {plan.counts.stalled}개 SKU는 발주 대신 재고 정리를 검토하세요.

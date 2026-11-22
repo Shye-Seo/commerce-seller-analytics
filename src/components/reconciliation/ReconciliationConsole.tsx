@@ -569,7 +569,7 @@ export default function ReconciliationConsole({ section = "overview" }: { sectio
     <div>
       {/* 법인·역할 바: 지금 어떤 법인의 어떤 권한으로 보고 있는지 항상 한 줄로 보인다 */}
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/[0.07] bg-white/[0.015] px-3 py-2">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-500">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-slate-300">
           <span>
             법인 <strong className="font-semibold text-slate-200">{activeTenant?.name ?? "본사"}</strong>
           </span>
@@ -580,7 +580,7 @@ export default function ReconciliationConsole({ section = "overview" }: { sectio
             <span className={`h-1.5 w-1.5 rounded-full ${chainValid ? "bg-emerald-400" : "bg-rose-400"}`} aria-hidden />
             감사 로그 {chainValid ? "정상" : "점검 필요"}
           </span>
-          <span className="hidden tabular-nums text-slate-600 sm:inline">기록 {auditRef.current.size}건</span>
+          <span className="hidden tabular-nums text-slate-400 sm:inline">기록 {auditRef.current.size}건</span>
         </div>
         <button type="button" onClick={() => setDrawerOpen(true)} className="btn" data-testid="open-tenant-drawer">
           법인·권한·감사
@@ -589,7 +589,7 @@ export default function ReconciliationConsole({ section = "overview" }: { sectio
 
       {notice && (
         <div
-          className={`mt-2 flex items-start justify-between gap-3 rounded-lg border px-3 py-2 text-[11.5px] leading-relaxed ${
+          className={`mt-2 flex items-start justify-between gap-3 rounded-lg border px-3 py-2 text-[13.5px] leading-relaxed ${
             notice.tone === "error"
               ? "border-rose-400/25 bg-rose-400/[0.07] text-rose-200"
               : notice.tone === "warn"
@@ -601,7 +601,7 @@ export default function ReconciliationConsole({ section = "overview" }: { sectio
           role="status"
         >
           <span>{notice.text}</span>
-          <button type="button" onClick={() => setNotice(null)} className="shrink-0 text-[10.5px] opacity-70 transition hover:opacity-100">
+          <button type="button" onClick={() => setNotice(null)} className="shrink-0 text-[13px] opacity-70 transition hover:opacity-100">
             닫기
           </button>
         </div>
@@ -613,11 +613,11 @@ export default function ReconciliationConsole({ section = "overview" }: { sectio
       <div className="mt-3 rounded-xl border border-white/[0.07] bg-white/[0.015] px-4 py-2">
         <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
           <div className="min-w-0">
-            <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">정산 처리 상태</p>
-            <p className="truncate text-[12px] font-medium text-slate-200" data-testid="dataset-label">
+            <p className="text-[12.5px] uppercase tracking-[0.14em] text-slate-300">정산 처리 상태</p>
+            <p className="truncate text-[14px] font-medium text-slate-200" data-testid="dataset-label">
               {dataset ? dataset.label : "정산 원장을 준비하고 있습니다."}
             </p>
-            <p className="mt-0.5 truncate text-[10px] text-slate-600">
+            <p className="mt-0.5 truncate text-[12.5px] text-slate-400">
               {dataset
                 ? `원장 ${dataset.rowCount.toLocaleString("ko-KR")}건 · ${dataset.parseErrorCount}건 격리 · ${
                     Number.isFinite(dataset.rowsPerSecond) && dataset.rowsPerSecond > 0 ? formatThroughput(dataset.rowsPerSecond) : "—"
@@ -656,7 +656,7 @@ export default function ReconciliationConsole({ section = "overview" }: { sectio
               aria-label="대사 진행률"
             />
           </div>
-          <span className="shrink-0 tabular-nums text-[10px] text-slate-500" data-testid="recon-progress-label">
+          <span className="shrink-0 tabular-nums text-[12.5px] text-slate-300" data-testid="recon-progress-label">
             {progress.label} · {progress.percent}%
           </span>
         </div>
@@ -668,12 +668,12 @@ export default function ReconciliationConsole({ section = "overview" }: { sectio
             <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
               <Panel title="손실 원인" hint="귀속 금액 상위">
                 {lossBreakdown.length === 0 ? (
-                  <p className="py-6 text-center text-[11.5px] text-slate-600">아직 대사 결과가 없습니다.</p>
+                  <p className="py-6 text-center text-[13.5px] text-slate-400">아직 대사 결과가 없습니다.</p>
                 ) : (
                   <ul className="space-y-2">
                     {lossBreakdown.map((entry) => (
                       <li key={entry.code}>
-                        <div className="flex items-baseline justify-between gap-2 text-[11px]">
+                        <div className="flex items-baseline justify-between gap-2 text-[13px]">
                           <span className="truncate text-slate-300">{entry.meta.label}</span>
                           <span className="shrink-0 tabular-nums text-slate-400">{mask(entry.amount)}</span>
                         </div>
@@ -695,14 +695,14 @@ export default function ReconciliationConsole({ section = "overview" }: { sectio
                     {summary.byChannel.map((channel) => (
                       <li key={channel.channel} className="flex items-center justify-between gap-2 py-2 first:pt-0 last:pb-0">
                         <div className="min-w-0">
-                          <p className="text-[12px] font-medium text-slate-200">{CHANNEL_LABEL[channel.channel]}</p>
-                          <p className="text-[10px] tabular-nums text-slate-600">
+                          <p className="text-[14px] font-medium text-slate-200">{CHANNEL_LABEL[channel.channel]}</p>
+                          <p className="text-[12.5px] tabular-nums text-slate-400">
                             {channel.rows.toLocaleString("ko-KR")}건 · 이상 {channel.flaggedRows.toLocaleString("ko-KR")}건
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-[12.5px] font-semibold tabular-nums text-white">{mask(channel.settledAmount)}</p>
-                          <p className={`text-[10px] tabular-nums ${channel.leak > 0 ? "text-rose-300" : "text-slate-600"}`}>
+                          <p className="text-[14px] font-semibold tabular-nums text-white">{mask(channel.settledAmount)}</p>
+                          <p className={`text-[12.5px] tabular-nums ${channel.leak > 0 ? "text-rose-300" : "text-slate-400"}`}>
                             누수 {mask(channel.leak)}
                           </p>
                         </div>
@@ -710,7 +710,7 @@ export default function ReconciliationConsole({ section = "overview" }: { sectio
                     ))}
                   </ul>
                 ) : (
-                  <p className="py-6 text-center text-[11.5px] text-slate-600">대사 중입니다.</p>
+                  <p className="py-6 text-center text-[13.5px] text-slate-400">대사 중입니다.</p>
                 )}
               </Panel>
             </div>
@@ -782,8 +782,8 @@ export default function ReconciliationConsole({ section = "overview" }: { sectio
                         active ? "border-rose-400/30 bg-rose-400/[0.06]" : "border-white/[0.05] bg-white/[0.015]"
                       }`}
                     >
-                      <span className="truncate text-[11px] text-slate-300">{meta.label}</span>
-                      <span className="shrink-0 text-[10px] tabular-nums text-slate-500">
+                      <span className="truncate text-[13px] text-slate-300">{meta.label}</span>
+                      <span className="shrink-0 text-[12.5px] tabular-nums text-slate-300">
                         {count.toLocaleString("ko-KR")}건{loss > 0 ? ` · ${mask(loss)}` : ""}
                       </span>
                     </div>
@@ -819,8 +819,8 @@ export default function ReconciliationConsole({ section = "overview" }: { sectio
                         : "border-white/[0.07] bg-white/[0.02] text-slate-400 hover:border-white/20 hover:text-slate-200"
                     }`}
                   >
-                    <span className="block text-[11.5px] font-medium">{tab.label}</span>
-                    <span className="block text-[9.5px] opacity-60">{tab.hint}</span>
+                    <span className="block text-[13.5px] font-medium">{tab.label}</span>
+                    <span className="block text-[12px] opacity-60">{tab.hint}</span>
                   </button>
                 );
               })}
@@ -880,7 +880,7 @@ export default function ReconciliationConsole({ section = "overview" }: { sectio
               onAudit={(target, detail, outcome) => log("RECONCILE_RUN", target, detail, outcome)}
               onNotice={(next) => setNotice(next)}
             />
-            <p className="text-[10px] leading-relaxed text-slate-600">
+            <p className="text-[12.5px] leading-relaxed text-slate-400">
               계약 프리셋은 공개된 수수료 정책을 참고한 기준값이며, 실제 계약서 값과 다를 수 있습니다. 같은 조건이면 같은 결과가
               나오도록 계산 기준일을 고정해 두었습니다. 마스킹은 화면 표시에만 적용되고 원본 데이터는 변경되지 않습니다.
             </p>

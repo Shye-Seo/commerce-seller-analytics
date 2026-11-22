@@ -68,13 +68,13 @@ function NumberField({ id, label, value, onChange, suffix, hint }: NumberFieldPr
           aria-describedby={hint ? `${id}-hint` : undefined}
         />
         {suffix ? (
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-medium text-slate-500">
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-medium text-slate-300">
             {suffix}
           </span>
         ) : null}
       </div>
       {hint ? (
-        <p id={`${id}-hint`} className="mt-1 text-[11px] text-slate-500">
+        <p id={`${id}-hint`} className="mt-1 text-[13px] text-slate-300">
           {hint}
         </p>
       ) : null}
@@ -130,7 +130,7 @@ function RangeField({
         aria-describedby={hint ? `${id}-hint` : undefined}
       />
       {hint ? (
-        <p id={`${id}-hint`} className="mt-1.5 text-[11px] text-slate-500">
+        <p id={`${id}-hint`} className="mt-1.5 text-[13px] text-slate-300">
           {hint}
         </p>
       ) : null}
@@ -154,8 +154,8 @@ function CostBreakdown({ result }: { result: MarginBreakdown }) {
   return (
     <div className="card p-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white">판매가 구성</h3>
-        <span className="text-[11px] text-slate-500">판매가 {formatWon(result.sellingPrice)}</span>
+        <h3 className="text-[15px] font-semibold text-white">판매가 구성</h3>
+        <span className="text-[13px] text-slate-300">판매가 {formatWon(result.sellingPrice)}</span>
       </div>
 
       <div className="mt-4 flex h-2.5 w-full overflow-hidden rounded-full bg-white/5">
@@ -183,7 +183,7 @@ function CostBreakdown({ result }: { result: MarginBreakdown }) {
         ) : null}
       </div>
 
-      <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-[12px]">
+      <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-[14px]">
         {BREAKDOWN_SEGMENTS.map((segment) => (
           <div key={segment.key} className="flex items-center justify-between gap-2">
             <dt className="flex items-center gap-1.5 text-slate-400">
@@ -232,8 +232,8 @@ export default function MarginSimulator({
       <div className="card p-4 lg:col-span-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="text-sm font-semibold text-white">판매 조건 입력</h3>
-            <p className="mt-1 text-[11px] text-slate-500">
+            <h3 className="text-[15px] font-semibold text-white">판매 조건 입력</h3>
+            <p className="mt-1 text-[13px] text-slate-300">
               값을 바꾸면 오른쪽 지표가 즉시 다시 계산됩니다.
             </p>
           </div>
@@ -251,7 +251,7 @@ export default function MarginSimulator({
                   type="button"
                   onClick={() => onSelectMarket(market.id)}
                   aria-pressed={active}
-                  className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium transition ${
+                  className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-[13.5px] font-medium transition ${
                     active
                       ? "border-emerald-400/40 bg-emerald-400/10 text-white"
                       : "border-white/[0.08] bg-white/[0.02] text-slate-400 hover:border-white/20 hover:text-slate-200"
@@ -267,7 +267,7 @@ export default function MarginSimulator({
               );
             })}
           </div>
-          <p className="mt-2 text-[11px] text-slate-500">
+          <p className="mt-2 text-[13px] text-slate-300">
             {MARKET_LIST.find((market) => market.id === input.marketId)?.note}
           </p>
         </div>
@@ -365,7 +365,7 @@ export default function MarginSimulator({
             isLoss ? "border-rose-400/25 bg-rose-400/[0.05]" : "border-emerald-400/20 bg-emerald-400/[0.05]"
           }`}
         >
-          <p className="text-xs font-medium text-slate-400">건당 순이익</p>
+          <p className="text-[13.5px] font-medium text-slate-400">건당 순이익</p>
           <p
             className={`mt-2 text-[34px] font-semibold leading-none tracking-tight tabular-nums ${
               isLoss ? "text-rose-300" : "text-emerald-300"
@@ -373,7 +373,7 @@ export default function MarginSimulator({
           >
             {formatWon(result.netProfitPerUnit)}
           </p>
-          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-slate-400">
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px] text-slate-400">
             <span>
               마진율{" "}
               <strong className={isLoss ? "text-rose-300" : "text-white"}>
@@ -388,7 +388,7 @@ export default function MarginSimulator({
 
           {isLoss || isThin ? (
             <div
-              className={`mt-4 flex items-start gap-2 rounded-xl border px-3 py-2 text-[12px] leading-relaxed ${
+              className={`mt-4 flex items-start gap-2 rounded-xl border px-3 py-2 text-[14px] leading-relaxed ${
                 isLoss
                   ? "border-rose-400/30 bg-rose-400/10 text-rose-200"
                   : "border-amber-400/30 bg-amber-400/10 text-amber-200"
@@ -430,8 +430,8 @@ export default function MarginSimulator({
           ].map((item) => (
             <div key={item.label} className="flex items-center justify-between gap-3 px-5 py-3">
               <div>
-                <p className="text-[12px] font-medium text-slate-300">{item.label}</p>
-                <p className="mt-0.5 text-[11px] text-slate-500">{item.hint}</p>
+                <p className="text-[14px] font-medium text-slate-300">{item.label}</p>
+                <p className="mt-0.5 text-[13px] text-slate-300">{item.hint}</p>
               </div>
               <p className="shrink-0 text-sm font-semibold text-white tabular-nums">{item.value}</p>
             </div>

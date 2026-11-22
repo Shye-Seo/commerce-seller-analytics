@@ -82,13 +82,13 @@ export default function Segmented<T extends string>({
             onClick={() => onChange(item.id)}
             onKeyDown={(event) => handleKeyDown(event, index)}
             data-testid={testIdPrefix ? `${testIdPrefix}-${item.id}` : undefined}
-            className={`group relative flex shrink-0 items-baseline gap-1.5 whitespace-nowrap px-3 pb-2 pt-1.5 text-[12.5px] font-medium transition ${
-              active ? "text-white" : "text-slate-500 hover:text-slate-200"
+            className={`group relative flex shrink-0 items-baseline gap-1.5 whitespace-nowrap px-3 pb-2 pt-1.5 text-[14px] font-medium transition ${
+              active ? "text-white" : "text-slate-300 hover:text-slate-200"
             }`}
           >
             <span>{item.label}</span>
             {item.count ? (
-              <span className={`text-[10.5px] tabular-nums ${active ? "text-emerald-300" : "text-slate-600"}`}>
+              <span className={`text-[13px] tabular-nums ${active ? "text-emerald-300" : "text-slate-400"}`}>
                 {item.count}
               </span>
             ) : null}

@@ -50,13 +50,13 @@ export default function Drawer({
       >
         <div className="flex items-start justify-between gap-3 border-b border-white/[0.07] px-4 py-3">
           <div>
-            <h2 className="text-[13.5px] font-semibold text-white">{title}</h2>
-            {description ? <p className="mt-0.5 text-[11px] text-slate-500">{description}</p> : null}
+            <h2 className="text-[16px] font-semibold text-white">{title}</h2>
+            {description ? <p className="mt-0.5 text-[13px] text-slate-300">{description}</p> : null}
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-white/[0.08] px-2 py-1 text-[11px] text-slate-400 transition hover:border-white/20 hover:text-white"
+            className="rounded-md border border-white/[0.08] px-2 py-1 text-[13px] text-slate-400 transition hover:border-white/20 hover:text-white"
           >
             닫기
           </button>

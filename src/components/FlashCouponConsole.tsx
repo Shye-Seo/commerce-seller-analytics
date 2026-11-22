@@ -254,52 +254,91 @@ export default function FlashCouponConsole() {
 
   return (
     <section className="space-y-3">
-      <div className="grid gap-3 sm:grid-cols-3">
-        {PRESETS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => setPresetId(item.id)}
-            className={`card flex flex-col gap-1 px-4 py-3 text-left transition ${
-              item.id === presetId
-                ? "border-emerald-400/40 bg-emerald-400/[0.06]"
-                : "hover:border-white/15 hover:bg-white/[0.03]"
-            }`}
-          >
-            <span className="text-[13px] font-semibold text-white">{item.label}</span>
-            <span className="text-[11px] text-slate-500">{item.note}</span>
-            <span className="mt-1 text-[10.5px] tabular-nums text-slate-500">
-              재고 {numberFormat.format(item.stock)}장 · 요청 {numberFormat.format(item.requests)}건 · 동시성{" "}
-              {item.concurrency}
-            </span>
-          </button>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={run}
-          disabled={running}
-          className="btn-primary px-4 py-2 text-[12.5px]"
-        >
-          {running ? "트래픽 발생 중…" : "부하 발생"}
-        </button>
-        <span className="text-[11.5px] text-slate-500">
-          캠페인 <span className="text-slate-300">{CAMPAIGN.name}</span> · 템플릿{" "}
-          <span className="text-slate-300">{TEMPLATES[0]?.name}</span>(제휴사 부담) +{" "}
-          <span className="text-slate-300">{TEMPLATES[1]?.name}</span>(플랫폼 부담) · 15분 TTL
+      {/* 지금 보고 있는 캠페인 조건. 시뮬레이션을 돌리지 않아도 먼저 읽히는 정보만 둔다. */}
+      <div className="card flex flex-wrap items-start justify-between gap-x-6 gap-y-3 px-4 py-3">
+        <div className="min-w-0 flex-1">
+          <p className="eyebrow">진행 중 캠페인</p>
+          <p className="mt-1 text-[15px] font-semibold text-white">{CAMPAIGN.name}</p>
+          <p className="mt-1 text-[14px] leading-relaxed text-slate-300">
+            {TEMPLATES[0]?.name}(제휴사 부담) + {TEMPLATES[1]?.name}(플랫폼 부담) · 쿠폰 유효 15분 · 재고{" "}
+            {numberFormat.format(preset.stock)}장 · 요청 {numberFormat.format(preset.requests)}건
+          </p>
+        </div>
+        <span className="hidden shrink-0 items-center gap-2 rounded-lg border border-emerald-400/25 bg-emerald-400/[0.08] px-3 py-2 text-[13px] font-semibold text-emerald-200 sm:flex">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />
+          실시간 발급 중
         </span>
       </div>
+
+      {/*
+        동시 접속 경합 테스트는 일반 셀러가 매일 누를 버튼이 아니다.
+        기본 화면에서는 접어 두고, 무엇을 검증하는 도구인지 읽은 뒤에만 펼쳐 실행하게 한다.
+      */}
+      <details className="card group px-4 py-3" data-testid="flash-advanced">
+        <summary
+          data-testid="flash-advanced-toggle"
+          className="flex cursor-pointer list-none items-center justify-between gap-3 text-[14.5px] font-semibold text-slate-100 transition hover:text-white [&::-webkit-details-marker]:hidden"
+        >
+          <span>고급: 동시 접속 경합 테스트(선착순 시뮬레이션)</span>
+          <span className="shrink-0 text-[13px] font-medium text-slate-400 group-open:hidden">펼치기</span>
+          <span className="hidden shrink-0 text-[13px] font-medium text-slate-400 group-open:inline">접기</span>
+        </summary>
+
+        <div className="mt-3 space-y-3 border-t border-white/[0.06] pt-3">
+          <p className="max-w-3xl text-[14px] leading-relaxed text-slate-300">
+            선착순 오픈 시 수천 명이 동시에 몰려도 재고 초과 발급(오버이슈)이 나지 않는지 검증하는
+            시뮬레이션입니다. 유입 상황을 고르고 실행하면, 엔진이 그 요청을 실제로 처리한 결과(발급·
+            품절·중복 차단·TPS)가 아래에 쌓입니다.
+          </p>
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            {PRESETS.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setPresetId(item.id)}
+                className={`card flex flex-col gap-1 px-4 py-3 text-left transition ${
+                  item.id === presetId
+                    ? "border-emerald-400/40 bg-emerald-400/[0.06]"
+                    : "hover:border-white/15 hover:bg-white/[0.03]"
+                }`}
+              >
+                <span className="text-[14.5px] font-semibold text-white">{item.label}</span>
+                <span className="text-[13px] text-slate-300">{item.note}</span>
+                <span className="mt-1 text-[13px] tabular-nums text-slate-300">
+                  재고 {numberFormat.format(item.stock)}장 · 요청 {numberFormat.format(item.requests)}건 · 동시성{" "}
+                  {item.concurrency}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <button
+              type="button"
+              onClick={run}
+              disabled={running}
+              data-testid="flash-run"
+              className="btn-primary px-4 py-2 text-[14px]"
+            >
+              {running ? "동시 접속 처리 중…" : `동시 발급 ${numberFormat.format(preset.requests)}건 테스트`}
+            </button>
+            <span className="text-[13.5px] text-slate-300">
+              선택한 조건: 재고 {numberFormat.format(preset.stock)}장 · 요청{" "}
+              {numberFormat.format(preset.requests)}건 · 동시성 {preset.concurrency}
+            </span>
+          </div>
+        </div>
+      </details>
 
       {report ? (
         <>
           <div className="grid gap-px overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.06] sm:grid-cols-2 lg:grid-cols-4">
             {kpis.map((kpi) => (
               <div key={kpi.label} className="bg-ink-950 px-4 py-3">
-                <p className="text-[10.5px] text-slate-500">{kpi.label}</p>
+                <p className="text-[13px] text-slate-300">{kpi.label}</p>
                 <p
-                  className={`mt-1 text-[20px] font-semibold tabular-nums ${
+                  className={`mt-1 text-[22px] font-bold tabular-nums ${
                     kpi.tone === "emerald"
                       ? "text-emerald-300"
                       : kpi.tone === "amber"
@@ -311,7 +350,7 @@ export default function FlashCouponConsole() {
                 >
                   {kpi.value}
                 </p>
-                <p className="mt-0.5 text-[10.5px] text-slate-500">{kpi.hint}</p>
+                <p className="mt-0.5 text-[13px] text-slate-300">{kpi.hint}</p>
               </div>
             ))}
           </div>
@@ -319,11 +358,11 @@ export default function FlashCouponConsole() {
           <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr]">
             <div className="card px-4 py-4">
               <div className="mb-2 flex items-baseline justify-between">
-                <h2 className="text-[13px] font-semibold text-white">구간별 통과 추이</h2>
-                <span className="text-[10.5px] text-slate-500">요청을 12구간으로 나눈 상대값</span>
+                <h2 className="text-[16px] font-semibold text-white">구간별 통과 추이</h2>
+                <span className="text-[13px] text-slate-300">요청을 12구간으로 나눈 상대값</span>
               </div>
               <Sparkline series={series} />
-              <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
+              <div className="mt-3 grid grid-cols-3 gap-2 text-[13px]">
                 <Stat label="발급" value={numberFormat.format(report.issued)} />
                 <Stat label="품절 응답" value={numberFormat.format(report.soldOut)} />
                 <Stat label="중복 차단" value={numberFormat.format(report.duplicate)} />
@@ -334,7 +373,7 @@ export default function FlashCouponConsole() {
             </div>
 
             <div className="card px-4 py-4">
-              <h2 className="mb-2 text-[13px] font-semibold text-white">재고 원장</h2>
+              <h2 className="mb-2 text-[16px] font-semibold text-white">재고 원장</h2>
               <div className="space-y-2">
                 <Gauge label="소진율" value={consumptionRate} tone="emerald" />
                 <Gauge
@@ -348,7 +387,7 @@ export default function FlashCouponConsole() {
                   tone="slate"
                 />
               </div>
-              <p className="mt-3 rounded-lg bg-white/[0.03] px-3 py-2 text-[10.5px] leading-relaxed text-slate-500">
+              <p className="mt-3 rounded-lg bg-white/[0.03] px-3 py-2 text-[13px] leading-relaxed text-slate-300">
                 보존식 <span className="text-slate-300">잔여 + 예약 + 사용 = 총재고</span>가 유지되면 원장이
                 맞습니다. 깨지면 그 순간이 오버이슈 또는 이중 복원입니다.
                 {metrics ? ` · 재시도 ${metrics.contentionRetries}회` : ""}
@@ -358,11 +397,11 @@ export default function FlashCouponConsole() {
 
           <div className="card overflow-hidden">
             <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
-              <h2 className="text-[13px] font-semibold text-white">최근 발급 원장 (마스킹)</h2>
-              <span className="text-[10.5px] text-slate-500">원문 코드는 발급 응답에만 존재</span>
+              <h2 className="text-[16px] font-semibold text-white">최근 발급 원장 (마스킹)</h2>
+              <span className="text-[13px] text-slate-300">원문 코드는 발급 응답에만 존재</span>
             </div>
-            <table className="w-full text-left text-[11.5px]">
-              <thead className="bg-white/[0.02] text-[10.5px] uppercase tracking-wide text-slate-500">
+            <table className="w-full text-left text-[13.5px]">
+              <thead className="bg-white/[0.02] text-[13px] uppercase tracking-wide text-slate-300">
                 <tr>
                   <th className="px-4 py-2 font-medium">쿠폰 코드</th>
                   <th className="px-4 py-2 font-medium">상태</th>
@@ -373,23 +412,23 @@ export default function FlashCouponConsole() {
               <tbody>
                 {ledger.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
-                      부하를 발생시키면 원장이 채워집니다.
+                    <td colSpan={4} className="px-4 py-6 text-center text-slate-300">
+                      동시 접속 테스트를 실행하면 원장이 채워집니다.
                     </td>
                   </tr>
                 ) : (
                   ledger.map((entry) => (
                     <tr key={entry.id} className="border-t border-white/[0.04]">
-                      <td className="px-4 py-2 font-mono text-[11px] text-slate-300">{entry.maskedCode}</td>
+                      <td className="px-4 py-2 font-mono text-[13.5px] text-slate-300">{entry.maskedCode}</td>
                       <td className="px-4 py-2">
-                        <span className="rounded-full bg-emerald-400/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
+                        <span className="rounded-full bg-emerald-400/10 px-2 py-0.5 text-[12.5px] font-medium text-emerald-300">
                           {entry.status}
                         </span>
                       </td>
                       <td className="px-4 py-2 text-right tabular-nums text-slate-300">
                         {numberFormat.format(entry.discountAmount)}원
                       </td>
-                      <td className="px-4 py-2 text-right tabular-nums text-slate-500">
+                      <td className="px-4 py-2 text-right tabular-nums text-slate-300">
                         +{Math.round((entry.expiresAt - entry.issuedAt) / 60_000)}분
                       </td>
                     </tr>
@@ -402,13 +441,13 @@ export default function FlashCouponConsole() {
           <div className="card px-4 py-3" data-testid="flash-handoff">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <p className="text-[12px] font-semibold text-slate-100">정산 연결</p>
-                <p className="mt-1 text-[12px] text-slate-300">
+                <p className="text-[14px] font-semibold text-slate-100">정산 연결</p>
+                <p className="mt-1 text-[14px] text-slate-300">
                   발급 원장 <span className="font-semibold text-white">{numberFormat.format(storedSnapshot.ledger.length)}</span>건 중{" "}
                   <span className="font-semibold text-white">{numberFormat.format(linkedOrders.length)}</span>건을 주문에 연결했습니다. 이 주문들은
                   주문번호로 정산 행과 매칭되어 쿠폰 비용·순마진·ROAS 계산에 쓰입니다.
                 </p>
-                <p className="mt-0.5 text-[10.5px] text-slate-500">
+                <p className="mt-0.5 text-[13px] text-slate-300">
                   원장과 주문 연결은 이 브라우저에 보관되며, 주문번호로 정산 행과 매칭되어 쿠폰 비용·순마진·ROAS
                   계산에 그대로 이어집니다.
                 </p>
@@ -426,14 +465,30 @@ export default function FlashCouponConsole() {
           </div>
         </>
       ) : (
-        <div className="card px-4 py-10 text-center">
-          <p className="text-[12.5px] text-slate-400">
-            프리셋을 고르고 <span className="text-emerald-300">부하 발생</span>을 누르면, 엔진이 실제로 그
-            트래픽을 처리한 결과가 여기에 나타납니다.
+        <div className="card px-4 py-8 text-center">
+          <p className="text-[14px] font-semibold text-slate-100">아직 테스트를 실행하지 않았습니다.</p>
+          <p className="mx-auto mt-1.5 max-w-2xl text-[14px] leading-relaxed text-slate-300">
+            위의 <span className="text-slate-100">고급: 동시 접속 경합 테스트</span>에서 실행하면, 이 캠페인의
+            발급·품절·중복 차단 결과가 이 자리에 나타납니다.
           </p>
-          <p className="mt-2 text-[11px] text-slate-500">
-            재고 {numberFormat.format(preset.stock)}장 · 요청 {numberFormat.format(preset.requests)}건 · 동시성{" "}
-            {preset.concurrency} · 어뷰징 {Math.round(preset.abuseRate * 100)}%
+          <ul className="mx-auto mt-4 grid max-w-3xl gap-2 text-left sm:grid-cols-3">
+            {[
+              "발급 · 품절 · 중복 차단 건수",
+              "초당 처리량(TPS) · 락 경합 방어율",
+              "발급 원장 → 주문 · 정산 연결",
+            ].map((item) => (
+              <li
+                key={item}
+                className="rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2 text-[13.5px] text-slate-300"
+              >
+                {item}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-[13px] text-slate-400">
+            기본 조건: 오픈 러시 · 재고 {numberFormat.format(preset.stock)}장 · 요청{" "}
+            {numberFormat.format(preset.requests)}건 · 동시성 {preset.concurrency} · 어뷰징{" "}
+            {Math.round(preset.abuseRate * 100)}%
           </p>
         </div>
       )}
@@ -444,8 +499,8 @@ export default function FlashCouponConsole() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-white/[0.03] px-2.5 py-2">
-      <p className="text-[10px] text-slate-500">{label}</p>
-      <p className="text-[13px] font-semibold tabular-nums text-slate-200">{value}</p>
+      <p className="text-[12.5px] text-slate-300">{label}</p>
+      <p className="text-[14.5px] font-semibold tabular-nums text-slate-200">{value}</p>
     </div>
   );
 }
@@ -456,7 +511,7 @@ function Gauge({ label, value, tone }: { label: string; value: number; tone: "em
 
   return (
     <div>
-      <div className="mb-1 flex items-baseline justify-between text-[11px]">
+      <div className="mb-1 flex items-baseline justify-between text-[13px]">
         <span className="text-slate-400">{label}</span>
         <span className="tabular-nums text-slate-300">{value.toFixed(1)}%</span>
       </div>

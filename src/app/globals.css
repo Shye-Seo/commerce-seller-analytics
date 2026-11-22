@@ -19,8 +19,22 @@
     -webkit-text-size-adjust: 100%;
   }
 
+  /* 기본 굵기를 500으로 올린다. 어두운 배경에서 400은 획이 얇게 빠져
+   * 작은 글자가 흐려 보이므로, 본문 기준선을 한 단계 두껍게 잡고
+   * 제목·수치는 600~700으로만 차이를 만든다. */
   body {
     text-rendering: optimizeLegibility;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    /* 한글은 어절 단위로 끊는다. 글자 단위로 끊기면 "정산·조회" 같은 단어가
+     * 두 줄에 걸쳐 쪼개져 읽기 흐름이 끊긴다. */
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  /* 표 안의 숫자·텍스트가 한 단계 더 또렷하게 읽히도록 행 높이 기준선을 잡아 둔다. */
+  th {
+    font-weight: 600;
   }
 
   ::selection {
@@ -44,29 +58,29 @@
   }
 
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.02] px-2 py-0.5 text-[10.5px] font-medium text-slate-400;
+    @apply inline-flex items-center gap-1.5 rounded-md border border-white/[0.10] bg-white/[0.03] px-2 py-0.5 text-[12px] font-semibold text-slate-300;
   }
 
-  /* 섹션 라벨: 대문자 트래킹을 아주 작게 한 종류만 쓴다. */
+  /* 섹션 라벨: 대문자 트래킹을 한 종류만 쓴다. 최소 12px·600을 지킨다. */
   .eyebrow {
-    @apply text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500;
+    @apply text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-400;
   }
 
   .field-label {
-    @apply text-[11.5px] font-medium text-slate-400;
+    @apply text-[13px] font-semibold text-slate-300;
   }
 
   .input-base {
-    @apply w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 text-[12.5px] font-medium text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/25;
+    @apply w-full rounded-lg border border-white/[0.10] bg-white/[0.03] px-3 py-2 text-[14px] font-medium text-white outline-none transition placeholder:text-slate-400 focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/25;
   }
 
   /* 보조 버튼: 테두리 한 겹과 hover 명도 변화만 쓴다. */
   .btn {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/[0.09] bg-white/[0.02] px-2.5 py-2 text-[11.5px] font-medium text-slate-300 transition hover:border-white/20 hover:text-white disabled:pointer-events-none disabled:opacity-40;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/[0.12] bg-white/[0.03] px-3 py-2 text-[13.5px] font-semibold text-slate-200 transition hover:border-white/25 hover:text-white disabled:pointer-events-none disabled:opacity-40;
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-lg bg-emerald-400 px-3 py-2 text-[11.5px] font-semibold text-ink-950 transition hover:bg-emerald-300 disabled:pointer-events-none disabled:opacity-40;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg bg-emerald-400 px-3.5 py-2 text-[13.5px] font-bold text-ink-950 transition hover:bg-emerald-300 disabled:pointer-events-none disabled:opacity-40;
   }
 
   /* 커스텀 range: 트랙 채움은 인라인 그라데이션으로, 썸은 여기서 정의한다. */

@@ -19,7 +19,7 @@ function Badge({ tone, children }: { tone: "best" | "fast" | "current"; children
 
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[9.5px] font-semibold leading-none ${styles[tone]}`}
+      className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[12px] font-semibold leading-none ${styles[tone]}`}
     >
       {children}
     </span>
@@ -67,13 +67,13 @@ export default function MarketComparisonMatrix({
     <section id="markets" className="scroll-mt-24" aria-labelledby="markets-title">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">
+          <p className="text-[12.5px] font-medium uppercase tracking-[0.14em] text-slate-300">
             Market matrix
           </p>
-          <h2 id="markets-title" className="mt-1 text-[13.5px] font-semibold text-slate-100">
+          <h2 id="markets-title" className="mt-1 text-[16px] font-semibold text-slate-100">
             같은 상품, 5개 마켓 마진 비교
           </h2>
-          <p className="mt-1 max-w-2xl text-[12px] leading-relaxed text-slate-500">
+          <p className="mt-1 max-w-2xl text-[14px] leading-relaxed text-slate-300">
             판매가·원가·배송비·광고비·반품률·판매량은 그대로 두고, 플랫폼 수수료와 정산 주기만
             바꿔 계산했습니다. &ldquo;어디에 집중할지&rdquo;는 결국 건당 순이익과 현금 회수 속도로
             결정됩니다.
@@ -102,7 +102,7 @@ export default function MarketComparisonMatrix({
               마켓별 수수료율, 건당 수수료, 건당 순이익, 순마진율, 월 순이익, 정산 주기 비교
             </caption>
             <thead>
-              <tr className="border-b border-white/[0.06] bg-white/[0.02] text-[10.5px] uppercase tracking-[0.08em] text-slate-500">
+              <tr className="border-b border-white/[0.06] bg-white/[0.02] text-[13px] uppercase tracking-[0.08em] text-slate-300">
                 <th scope="col" className="px-4 py-3 font-semibold">
                   판매 채널
                 </th>
@@ -148,57 +148,57 @@ export default function MarketComparisonMatrix({
                         style={{ backgroundColor: row.color }}
                         aria-hidden
                       />
-                      <span className="text-[12.5px] font-semibold text-white">{row.shortLabel}</span>
-                      <span className="text-[10px] text-slate-500 tabular-nums">{row.rank}위</span>
+                      <span className="text-[14px] font-semibold text-white">{row.shortLabel}</span>
+                      <span className="text-[12.5px] text-slate-300 tabular-nums">{row.rank}위</span>
                     </div>
                     <MarketBadges row={row} />
                   </th>
                   <td className="px-3 py-3 text-right align-top">
-                    <p className="text-[12px] font-medium text-slate-200 tabular-nums">
+                    <p className="text-[14px] font-medium text-slate-200 tabular-nums">
                       {formatPercent(row.totalFeeRate, 2)}
                     </p>
-                    <p className="mt-0.5 text-[10px] text-slate-500 tabular-nums">
+                    <p className="mt-0.5 text-[12.5px] text-slate-300 tabular-nums">
                       {row.paymentRate > 0
                         ? `PG ${formatPercent(row.paymentRate, 2)}`
                         : `판매 ${formatPercent(row.commissionRate, 2)}`}
                     </p>
                   </td>
-                  <td className="px-3 py-3 text-right align-top text-[12px] font-medium text-slate-300 tabular-nums">
+                  <td className="px-3 py-3 text-right align-top text-[14px] font-medium text-slate-300 tabular-nums">
                     {formatWon(row.feePerUnit)}
                   </td>
                   <td className="px-3 py-3 text-right align-top">
                     <p
-                      className={`text-[12.5px] font-semibold tabular-nums ${
+                      className={`text-[14px] font-semibold tabular-nums ${
                         row.netProfitPerUnit >= 0 ? "text-emerald-300" : "text-rose-300"
                       }`}
                     >
                       {formatWon(row.netProfitPerUnit)}
                     </p>
-                    <p className="mt-0.5 text-[10px] text-slate-500 tabular-nums">
+                    <p className="mt-0.5 text-[12.5px] text-slate-300 tabular-nums">
                       {row.gapFromBest === 0 ? "1위" : `1위 대비 −${formatWon(row.gapFromBest)}`}
                     </p>
                   </td>
                   <td className="px-4 py-3 text-right align-top">
-                    <p className="text-[12px] font-semibold text-white tabular-nums">
+                    <p className="text-[14px] font-semibold text-white tabular-nums">
                       {formatPercent(row.marginRate)}
                     </p>
                     <MarginMeter value={row.marginRate} max={bestMarginRate} />
                   </td>
                   <td className="px-3 py-3 text-right align-top">
                     <p
-                      className={`text-[12px] font-medium tabular-nums ${
+                      className={`text-[14px] font-medium tabular-nums ${
                         row.monthlyNetProfit >= 0 ? "text-slate-200" : "text-rose-300"
                       }`}
                     >
                       {formatWon(row.monthlyNetProfit)}
                     </p>
-                    <p className="mt-0.5 text-[10px] text-slate-500 tabular-nums">
+                    <p className="mt-0.5 text-[12.5px] text-slate-300 tabular-nums">
                       매출 {formatWon(row.monthlyRevenue)}
                     </p>
                   </td>
                   <td className="px-3 py-3 text-right align-top">
                     <span
-                      className={`text-[12px] font-medium tabular-nums ${
+                      className={`text-[14px] font-medium tabular-nums ${
                         row.isFastestSettlement ? "text-sky-300" : "text-slate-300"
                       }`}
                     >
@@ -210,7 +210,7 @@ export default function MarketComparisonMatrix({
                       type="button"
                       onClick={() => onSelectMarket(row.id)}
                       aria-pressed={row.isSelected}
-                      className={`whitespace-nowrap rounded-lg border px-2 py-1 text-[10.5px] font-medium transition ${
+                      className={`whitespace-nowrap rounded-lg border px-2 py-1 text-[13px] font-medium transition ${
                         row.isSelected
                           ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
                           : "border-white/[0.08] bg-white/[0.02] text-slate-400 hover:border-white/25 hover:text-white"
@@ -243,8 +243,8 @@ export default function MarketComparisonMatrix({
                     style={{ backgroundColor: row.color }}
                     aria-hidden
                   />
-                  <h3 className="text-[13px] font-semibold text-white">{row.shortLabel}</h3>
-                  <span className="text-[10px] text-slate-500 tabular-nums">{row.rank}위</span>
+                  <h3 className="text-[15px] font-semibold text-white">{row.shortLabel}</h3>
+                  <span className="text-[12.5px] text-slate-300 tabular-nums">{row.rank}위</span>
                 </div>
                 <MarketBadges row={row} />
               </div>
@@ -252,7 +252,7 @@ export default function MarketComparisonMatrix({
                 type="button"
                 onClick={() => onSelectMarket(row.id)}
                 aria-pressed={row.isSelected}
-                className={`shrink-0 rounded-lg border px-2 py-1 text-[10.5px] font-medium transition ${
+                className={`shrink-0 rounded-lg border px-2 py-1 text-[13px] font-medium transition ${
                   row.isSelected
                     ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
                     : "border-white/[0.08] bg-white/[0.02] text-slate-400"
@@ -262,18 +262,18 @@ export default function MarketComparisonMatrix({
               </button>
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5 text-[11px]">
+            <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5 text-[13px]">
               <div>
-                <p className="text-slate-500">수수료율</p>
+                <p className="text-slate-300">수수료율</p>
                 <p className="mt-0.5 font-semibold text-slate-200 tabular-nums">
                   {formatPercent(row.totalFeeRate, 2)}
-                  <span className="ml-1 text-[10px] font-normal text-slate-500">
+                  <span className="ml-1 text-[12.5px] font-normal text-slate-300">
                     ({formatWon(row.feePerUnit)})
                   </span>
                 </p>
               </div>
               <div>
-                <p className="text-slate-500">건당 순이익</p>
+                <p className="text-slate-300">건당 순이익</p>
                 <p
                   className={`mt-0.5 font-semibold tabular-nums ${
                     row.netProfitPerUnit >= 0 ? "text-emerald-300" : "text-rose-300"
@@ -283,14 +283,14 @@ export default function MarketComparisonMatrix({
                 </p>
               </div>
               <div>
-                <p className="text-slate-500">순마진율</p>
+                <p className="text-slate-300">순마진율</p>
                 <p className="mt-0.5 font-semibold text-white tabular-nums">
                   {formatPercent(row.marginRate)}
                 </p>
                 <MarginMeter value={row.marginRate} max={bestMarginRate} />
               </div>
               <div>
-                <p className="text-slate-500">정산 주기</p>
+                <p className="text-slate-300">정산 주기</p>
                 <p
                   className={`mt-0.5 font-semibold tabular-nums ${
                     row.isFastestSettlement ? "text-sky-300" : "text-slate-200"
@@ -300,14 +300,14 @@ export default function MarketComparisonMatrix({
                 </p>
               </div>
               <div className="col-span-2 border-t border-white/[0.06] pt-2">
-                <p className="text-slate-500">월 순이익</p>
+                <p className="text-slate-300">월 순이익</p>
                 <p
                   className={`mt-0.5 font-semibold tabular-nums ${
                     row.monthlyNetProfit >= 0 ? "text-slate-100" : "text-rose-300"
                   }`}
                 >
                   {formatWon(row.monthlyNetProfit)}
-                  <span className="ml-1.5 text-[10px] font-normal text-slate-500">
+                  <span className="ml-1.5 text-[12.5px] font-normal text-slate-300">
                     매출 {formatWon(row.monthlyRevenue)}
                   </span>
                 </p>
@@ -317,7 +317,7 @@ export default function MarketComparisonMatrix({
         ))}
       </div>
 
-      <div className="mt-3 flex flex-wrap items-start justify-between gap-2 text-[10.5px] leading-relaxed text-slate-500">
+      <div className="mt-3 flex flex-wrap items-start justify-between gap-2 text-[13px] leading-relaxed text-slate-300">
         <p className="max-w-3xl">
           * 수수료율은 마켓 프리셋(공개 정책 참고값)을 적용했고, 배송비·광고비·반품률은 같은
           상품이면 채널이 달라도 같다고 보고 고정했습니다. 월 판매량도 모든 채널에서 동일하게

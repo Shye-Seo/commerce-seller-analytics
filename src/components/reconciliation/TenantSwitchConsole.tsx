@@ -68,8 +68,8 @@ export default function TenantSwitchConsole({
     <div className="space-y-4">
       <section className="card p-4">
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">Tenant</p>
-          <span className="text-[10px] text-slate-500">멀티 테넌트</span>
+          <p className="text-[12.5px] font-medium uppercase tracking-[0.14em] text-slate-300">Tenant</p>
+          <span className="text-[12.5px] text-slate-300">멀티 테넌트</span>
         </div>
 
         <div className="mt-3 space-y-2">
@@ -89,12 +89,12 @@ export default function TenantSwitchConsole({
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="truncate text-[12.5px] font-semibold text-slate-100">{tenant.name}</span>
-                  <span className={`shrink-0 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold ${TIER_STYLE[tenant.tier]}`}>
+                  <span className="truncate text-[14px] font-semibold text-slate-100">{tenant.name}</span>
+                  <span className={`shrink-0 rounded-md border px-1.5 py-0.5 text-[12.5px] font-semibold ${TIER_STYLE[tenant.tier]}`}>
                     {TIER_LABEL[tenant.tier]}
                   </span>
                 </div>
-                <div className="mt-1 flex items-center justify-between text-[10.5px] text-slate-500">
+                <div className="mt-1 flex items-center justify-between text-[13px] text-slate-300">
                   <span className="tabular-nums">사업자 {businessNo}</span>
                   <span>좌석 {tenant.seatCount}</span>
                 </div>
@@ -104,7 +104,7 @@ export default function TenantSwitchConsole({
         </div>
 
         {!canSwitch && (
-          <p className="mt-3 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-2.5 py-2 text-[11px] leading-relaxed text-amber-200/90">
+          <p className="mt-3 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-2.5 py-2 text-[13px] leading-relaxed text-amber-200/90">
             {activeRole.label}는 법인 전환 권한이 없습니다. 소속 법인 데이터만 열람합니다.
           </p>
         )}
@@ -112,8 +112,8 @@ export default function TenantSwitchConsole({
 
       <section className="card p-4">
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">Role</p>
-          <span className="text-[10px] text-slate-500">RBAC</span>
+          <p className="text-[12.5px] font-medium uppercase tracking-[0.14em] text-slate-300">Role</p>
+          <span className="text-[12.5px] text-slate-300">RBAC</span>
         </div>
 
         <div className="mt-3 grid gap-1.5">
@@ -129,18 +129,18 @@ export default function TenantSwitchConsole({
                   active ? "border-indigo-400/40 bg-indigo-400/[0.1]" : "border-white/[0.05] bg-white/[0.015] hover:border-white/20"
                 }`}
               >
-                <span className="text-[12px] font-medium text-slate-200">{definition.label}</span>
+                <span className="text-[14px] font-medium text-slate-200">{definition.label}</span>
                 <span className={`h-1.5 w-1.5 rounded-full ${active ? "bg-indigo-300" : "bg-slate-600"}`} aria-hidden />
               </button>
             );
           })}
         </div>
 
-        <p className="mt-3 text-[11px] leading-relaxed text-slate-500">{activeRole.description}</p>
+        <p className="mt-3 text-[13px] leading-relaxed text-slate-300">{activeRole.description}</p>
 
-        <table className="mt-3 w-full border-collapse text-[10.5px]">
+        <table className="mt-3 w-full border-collapse text-[13.5px]">
           <thead>
-            <tr className="text-slate-500">
+            <tr className="text-slate-300">
               <th className="py-1 text-left font-medium">권한</th>
               {ROLE_LIST.map((definition) => (
                 <th key={definition.id} className="py-1 text-center font-medium">
@@ -158,7 +158,7 @@ export default function TenantSwitchConsole({
                   return (
                     <td
                       key={definition.id}
-                      className={`py-1 text-center ${allowed ? "text-emerald-300" : "text-slate-700"}`}
+                      className={`py-1 text-center ${allowed ? "text-emerald-300" : "text-slate-500"}`}
                       aria-label={`${definition.label} ${ACTION_LABELS[permission]} ${allowed ? "가능" : "불가"}`}
                     >
                       {allowed ? "●" : "－"}
@@ -173,9 +173,9 @@ export default function TenantSwitchConsole({
 
       <section className="card p-4">
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">Audit trail</p>
+          <p className="text-[12.5px] font-medium uppercase tracking-[0.14em] text-slate-300">Audit trail</p>
           <span
-            className={`rounded-md border px-1.5 py-0.5 text-[10px] font-semibold ${
+            className={`rounded-md border px-1.5 py-0.5 text-[12.5px] font-semibold ${
               chainValid
                 ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-300"
                 : "border-rose-400/30 bg-rose-400/10 text-rose-300"
@@ -186,21 +186,21 @@ export default function TenantSwitchConsole({
         </div>
 
         <ul className="mt-3 space-y-1.5">
-          {auditEvents.length === 0 && <li className="text-[11px] text-slate-600">아직 기록이 없습니다.</li>}
+          {auditEvents.length === 0 && <li className="text-[13px] text-slate-400">아직 기록이 없습니다.</li>}
           {auditEvents.map((event) => (
             <li key={`${event.seq}-${event.hash}`} className="rounded-lg border border-white/[0.05] bg-white/[0.015] px-2 py-2">
               <div className="flex items-center justify-between gap-2">
-                <span className="truncate text-[11px] font-medium text-slate-300">{ACTION_LABELS[event.action as PermissionId] ?? event.action}</span>
+                <span className="truncate text-[13px] font-medium text-slate-300">{ACTION_LABELS[event.action as PermissionId] ?? event.action}</span>
                 <span
-                  className={`shrink-0 rounded px-1 py-0.5 text-[9.5px] font-semibold ${
+                  className={`shrink-0 rounded px-1 py-0.5 text-[12px] font-semibold ${
                     event.outcome === "allowed" ? "bg-emerald-400/10 text-emerald-300" : "bg-rose-400/10 text-rose-300"
                   }`}
                 >
                   {event.outcome === "allowed" ? "허용" : "거부"}
                 </span>
               </div>
-              <p className="mt-0.5 truncate text-[10px] text-slate-500">{event.target}</p>
-              <p className="mt-0.5 flex items-center justify-between text-[9.5px] text-slate-600">
+              <p className="mt-0.5 truncate text-[12.5px] text-slate-300">{event.target}</p>
+              <p className="mt-0.5 flex items-center justify-between text-[12px] text-slate-400">
                 <span className="tabular-nums">{event.at.slice(11, 19)}</span>
                 <span className="font-mono">#{event.seq} · {event.hash.slice(0, 6)}</span>
               </p>
@@ -212,7 +212,7 @@ export default function TenantSwitchConsole({
           type="button"
           onClick={onExportAudit}
           disabled={!canReadAudit}
-          className="mt-3 w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-2 py-2 text-[11px] font-medium text-slate-300 transition enabled:hover:border-white/20 enabled:hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+          className="mt-3 w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-2 py-2 text-[13px] font-medium text-slate-300 transition enabled:hover:border-white/20 enabled:hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
         >
           {canReadAudit ? "감사 로그 CSV 반출" : "감사 로그 반출 권한 없음"}
         </button>

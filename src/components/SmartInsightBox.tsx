@@ -66,7 +66,7 @@ const IMPACT_COLOR: Record<DiagnosticAction["impactKind"], string> = {
   saving: "text-emerald-300",
   upside: "text-emerald-300",
   headroom: "text-sky-300",
-  neutral: "text-slate-500",
+  neutral: "text-slate-300",
 };
 
 const STATUS_COLOR: Record<"ok" | "watch" | "over", { bar: string; text: string }> = {
@@ -105,7 +105,7 @@ function ScoreRing({ score, grade }: { score: number; grade: MarginGrade }) {
         <span className={`text-[27px] font-semibold leading-none tabular-nums ${style.text}`}>
           {score}
         </span>
-        <span className="mt-1 text-[10px] font-medium tracking-wide text-slate-500">/ 100</span>
+        <span className="mt-1 text-[12.5px] font-medium tracking-wide text-slate-300">/ 100</span>
       </div>
     </div>
   );
@@ -121,8 +121,8 @@ function CostRatioBar({ item }: { item: MarginDiagnosis["costRatios"][number] })
   return (
     <div>
       <div className="flex items-baseline justify-between gap-2">
-        <span className="text-[11px] text-slate-400">{item.label}</span>
-        <span className={`text-[11px] font-semibold tabular-nums ${style.text}`}>
+        <span className="text-[13px] text-slate-400">{item.label}</span>
+        <span className={`text-[13px] font-semibold tabular-nums ${style.text}`}>
           {formatPercent(item.ratio, 1)}
         </span>
       </div>
@@ -134,7 +134,7 @@ function CostRatioBar({ item }: { item: MarginDiagnosis["costRatios"][number] })
           aria-hidden
         />
       </div>
-      <p className="mt-1 text-[10px] text-slate-500">
+      <p className="mt-1 text-[12.5px] text-slate-300">
         {formatWon(item.amount)} · 권장 {formatPercent(item.benchmark, 1)} 이하
       </p>
     </div>
@@ -148,24 +148,24 @@ function ActionCard({ action, index }: { action: DiagnosticAction; index: number
     <article className="flex h-full flex-col rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 transition hover:border-white/[0.14]">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] text-[10px] font-semibold text-slate-400 tabular-nums">
+          <span className="flex h-6 w-6 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] text-[12.5px] font-semibold text-slate-400 tabular-nums">
             {String(index + 1).padStart(2, "0")}
           </span>
-          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${priority.chip}`}>
+          <span className={`rounded-full border px-2 py-0.5 text-[12.5px] font-semibold ${priority.chip}`}>
             {priority.label}
           </span>
         </div>
-        <span className="shrink-0 text-[11px] font-medium text-slate-500 tabular-nums">
+        <span className="shrink-0 text-[13px] font-medium text-slate-300 tabular-nums">
           {action.metric}
         </span>
       </div>
 
-      <h4 className="mt-2 text-[13px] font-semibold leading-snug text-white">{action.title}</h4>
-      <p className="mt-1.5 text-[11.5px] leading-relaxed text-slate-400">{action.detail}</p>
+      <h4 className="mt-2 text-[14.5px] font-semibold leading-snug text-white">{action.title}</h4>
+      <p className="mt-1.5 text-[13.5px] leading-relaxed text-slate-400">{action.detail}</p>
 
       <div className="mt-auto flex items-baseline justify-between gap-2 border-t border-white/[0.06] pt-2.5">
-        <span className="text-[10.5px] text-slate-500">{IMPACT_LABEL[action.impactKind]}</span>
-        <span className={`text-[13px] font-semibold tabular-nums ${IMPACT_COLOR[action.impactKind]}`}>
+        <span className="text-[13px] text-slate-300">{IMPACT_LABEL[action.impactKind]}</span>
+        <span className={`text-[14.5px] font-semibold tabular-nums ${IMPACT_COLOR[action.impactKind]}`}>
           {action.impactKind === "neutral" ? "—" : formatWon(action.impactMonthly)}
         </span>
       </div>
@@ -192,11 +192,11 @@ export default function SmartInsightBox({ input, result }: SmartInsightBoxProps)
             <ScoreRing score={diagnosis.score} grade={diagnosis.grade} />
             <div className="min-w-0">
               <span
-                className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold ${style.chip}`}
+                className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[13px] font-semibold ${style.chip}`}
               >
                 마진 건강도 · {diagnosis.grade}
               </span>
-              <p className="mt-2 text-[11px] leading-relaxed text-slate-400">{style.suffix}</p>
+              <p className="mt-2 text-[13px] leading-relaxed text-slate-400">{style.suffix}</p>
             </div>
           </div>
 
@@ -204,8 +204,8 @@ export default function SmartInsightBox({ input, result }: SmartInsightBoxProps)
             {diagnosis.scoreBreakdown.map((item) => (
               <li key={item.key}>
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-[11px] font-medium text-slate-300">{item.label}</span>
-                  <span className="text-[10.5px] text-slate-500 tabular-nums">
+                  <span className="text-[13px] font-medium text-slate-300">{item.label}</span>
+                  <span className="text-[13px] text-slate-300 tabular-nums">
                     {Math.round(item.score)}점 · 가중 {item.weight}%
                   </span>
                 </div>
@@ -224,7 +224,7 @@ export default function SmartInsightBox({ input, result }: SmartInsightBoxProps)
           <p className="text-[15px] font-semibold leading-snug tracking-tight text-white">
             {diagnosis.headline}
           </p>
-          <p className="mt-2 text-[12px] leading-relaxed text-slate-400">{diagnosis.summary}</p>
+          <p className="mt-2 text-[14px] leading-relaxed text-slate-400">{diagnosis.summary}</p>
 
           <div className="mt-4 grid grid-cols-2 gap-x-5 gap-y-3.5 sm:grid-cols-3">
             {diagnosis.costRatios.map((item) => (
@@ -232,7 +232,7 @@ export default function SmartInsightBox({ input, result }: SmartInsightBoxProps)
             ))}
           </div>
 
-          <p className="mt-3 text-[10.5px] leading-relaxed text-slate-500">
+          <p className="mt-3 text-[13px] leading-relaxed text-slate-300">
             막대의 흰 선은 권장 상한입니다. 목표 마진 {TARGET_MARGIN_RATE}% · 광고비 상한{" "}
             {CPS_CEILING_RATE}%는 업종 평균을 기준으로 잡은 참고선이며, 실제 적정선은 카테고리와
             상품 회전율에 따라 달라집니다.
@@ -242,8 +242,8 @@ export default function SmartInsightBox({ input, result }: SmartInsightBoxProps)
 
       <div className="mt-5 border-t border-white/[0.06] pt-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h3 className="text-sm font-semibold text-white">실전 액션 플랜</h3>
-          <p className="text-[11px] text-slate-500">
+          <h3 className="text-[15px] font-semibold text-white">실전 액션 플랜</h3>
+          <p className="text-[13px] text-slate-300">
             위에서부터 순서대로 처리할수록 개선 폭이 큽니다.
           </p>
         </div>
@@ -252,7 +252,7 @@ export default function SmartInsightBox({ input, result }: SmartInsightBoxProps)
             <ActionCard key={action.id} action={action} index={index} />
           ))}
         </div>
-        <p className="mt-4 text-[10.5px] leading-relaxed text-slate-500">
+        <p className="mt-4 text-[13px] leading-relaxed text-slate-300">
           * 처방 금액은 현재 입력한 월 판매량({input.monthlyUnits.toLocaleString("ko-KR")}건)과
           수수료율({formatPercent(input.commissionRate, 2)})을 그대로 반복했을 때의 월 단위
           시뮬레이션입니다. 순이익 계산은 위 마진 계산기와 같은 식을 사용합니다.

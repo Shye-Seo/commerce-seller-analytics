@@ -106,8 +106,8 @@ export default function SalesTrendChart({ daily, monthly }: SalesTrendChartProps
     <div className="card p-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h3 className="text-sm font-semibold text-white">매출 · 마진 추이</h3>
-          <p className="mt-1 text-[11px] text-slate-500">
+          <h3 className="text-[15px] font-semibold text-white">매출 · 마진 추이</h3>
+          <p className="mt-1 text-[13px] text-slate-300">
             막대는 매출, 선은 마진율입니다. 막대에 커서를 올리면 일별 상세가 표시됩니다.
           </p>
         </div>
@@ -123,12 +123,12 @@ export default function SalesTrendChart({ daily, monthly }: SalesTrendChartProps
                   setRange(option.value);
                   setHovered(null);
                 }}
-                className={`rounded-lg px-3 py-2 text-xs font-medium transition ${
+                className={`rounded-lg px-3 py-2 text-[13.5px] font-medium transition ${
                   active ? "bg-white/10 text-white" : "text-slate-400 hover:text-slate-200"
                 }`}
               >
                 {option.label}
-                <span className="ml-1 text-[10px] font-normal text-slate-500">{option.sub}</span>
+                <span className="ml-1 text-[12.5px] font-normal text-slate-300">{option.sub}</span>
               </button>
             );
           })}
@@ -143,7 +143,7 @@ export default function SalesTrendChart({ daily, monthly }: SalesTrendChartProps
           { label: "최고 매출", value: `${formatCompactNumber(summary.peak.revenue)}원` },
         ].map((item) => (
           <div key={item.label} className="rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-2">
-            <dt className="text-[11px] text-slate-500">{item.label}</dt>
+            <dt className="text-[13px] text-slate-300">{item.label}</dt>
             <dd className="mt-1 text-sm font-semibold text-slate-100 tabular-nums">{item.value}</dd>
           </div>
         ))}
@@ -184,7 +184,7 @@ export default function SalesTrendChart({ daily, monthly }: SalesTrendChartProps
                   y={y + 3.5}
                   textAnchor="end"
                   className="fill-slate-500"
-                  fontSize="10"
+                  fontSize="12"
                 >
                   {formatCompactNumber(value)}
                 </text>
@@ -192,7 +192,7 @@ export default function SalesTrendChart({ daily, monthly }: SalesTrendChartProps
             );
           })}
 
-          <text x={CHART.left - 10} y={CHART.top + 2} textAnchor="end" className="fill-indigo-300" fontSize="10">
+          <text x={CHART.left - 10} y={CHART.top + 2} textAnchor="end" className="fill-indigo-300" fontSize="12">
             {formatPercent(geometry.maxRate, 0)}
           </text>
           <text
@@ -200,7 +200,7 @@ export default function SalesTrendChart({ daily, monthly }: SalesTrendChartProps
             y={CHART.top + INNER_HEIGHT * RATE_BAND_RATIO}
             textAnchor="end"
             className="fill-indigo-300/70"
-            fontSize="10"
+            fontSize="12"
           >
             {formatPercent(geometry.minRate, 0)}
           </text>
@@ -257,7 +257,7 @@ export default function SalesTrendChart({ daily, monthly }: SalesTrendChartProps
                 y={CHART.height - 12}
                 textAnchor="middle"
                 className="fill-slate-500"
-                fontSize="10"
+                fontSize="12"
               >
                 {point.label}
               </text>
@@ -283,28 +283,28 @@ export default function SalesTrendChart({ daily, monthly }: SalesTrendChartProps
             className="pointer-events-none absolute top-0 z-10 w-40 -translate-x-1/2 rounded-xl border border-white/10 bg-ink-800/95 p-3 shadow-card backdrop-blur"
             style={{ left: `${tooltipLeft}%` }}
           >
-            <p className="text-[11px] font-semibold text-slate-300">{activePoint.label}</p>
-            <dl className="mt-2 space-y-1 text-[11px]">
+            <p className="text-[13px] font-semibold text-slate-300">{activePoint.label}</p>
+            <dl className="mt-2 space-y-1 text-[13px]">
               <div className="flex items-center justify-between gap-2">
-                <dt className="text-slate-500">매출</dt>
+                <dt className="text-slate-300">매출</dt>
                 <dd className="font-medium text-slate-100 tabular-nums">
                   {formatWon(activePoint.revenue)}
                 </dd>
               </div>
               <div className="flex items-center justify-between gap-2">
-                <dt className="text-slate-500">순이익</dt>
+                <dt className="text-slate-300">순이익</dt>
                 <dd className="font-medium text-emerald-300 tabular-nums">
                   {formatWon(activePoint.netProfit)}
                 </dd>
               </div>
               <div className="flex items-center justify-between gap-2">
-                <dt className="text-slate-500">마진율</dt>
+                <dt className="text-slate-300">마진율</dt>
                 <dd className="font-medium text-indigo-300 tabular-nums">
                   {formatPercent(activePoint.marginRate)}
                 </dd>
               </div>
               <div className="flex items-center justify-between gap-2">
-                <dt className="text-slate-500">주문</dt>
+                <dt className="text-slate-300">주문</dt>
                 <dd className="font-medium text-slate-100 tabular-nums">
                   {formatCount(activePoint.orders)}
                 </dd>
@@ -314,7 +314,7 @@ export default function SalesTrendChart({ daily, monthly }: SalesTrendChartProps
         ) : null}
       </div>
 
-      <p className="mt-4 text-[11px] text-slate-500">
+      <p className="mt-4 text-[13px] text-slate-300">
         평균 객단가 {formatWon(summary.averageOrderValue)}
       </p>
     </div>

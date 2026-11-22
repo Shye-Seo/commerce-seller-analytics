@@ -40,10 +40,10 @@ export default function CampaignPerformanceCard() {
       aria-labelledby="campaign-title"
     >
       <div className="flex items-baseline justify-between gap-2 border-b border-white/[0.06] px-4 py-2">
-        <h2 id="campaign-title" className="text-[13px] font-semibold text-slate-100">
+        <h2 id="campaign-title" className="text-[16px] font-semibold text-slate-100">
           쿠폰 캠페인
         </h2>
-        <span className="text-[10.5px] text-slate-600">발급 원장 기준</span>
+        <span className="text-[13px] text-slate-400">발급 원장 기준</span>
       </div>
 
       {hasData ? (
@@ -63,14 +63,14 @@ export default function CampaignPerformanceCard() {
                 key={stat.label}
                 className={`px-4 py-2 ${index >= 2 ? "border-t border-white/[0.06]" : ""}`}
               >
-                <p className="text-[10px] text-slate-600">{stat.label}</p>
+                <p className="text-[12.5px] text-slate-400">{stat.label}</p>
                 <p className="mt-0.5 text-[16px] font-semibold tabular-nums text-white">{stat.value}</p>
-                <p className="truncate text-[9.5px] text-slate-600">{stat.hint}</p>
+                <p className="truncate text-[12px] text-slate-400">{stat.hint}</p>
               </div>
             ))}
           </div>
 
-          <ul className="flex-1 px-4 py-2 text-[10.5px] text-slate-500">
+          <ul className="flex-1 px-4 py-2 text-[13px] text-slate-300">
             {ledger.campaigns.slice(0, 3).map((campaign) => (
               <li key={campaign.campaignId} className="truncate">
                 {campaign.campaignName} — 사용 {formatCount(campaign.used)} · 할인 {formatWon(campaign.discount)}
@@ -79,12 +79,12 @@ export default function CampaignPerformanceCard() {
           </ul>
 
           <div className="flex items-center justify-between gap-2 border-t border-white/[0.06] px-4 py-2">
-            <Link href="/flash" className="text-[11px] text-slate-400 transition hover:text-white">
+            <Link href="/flash" className="text-[13px] text-slate-400 transition hover:text-white">
               쿠폰 콘솔
             </Link>
             <Link
               href="/reconciliation#campaign-attribution"
-              className="text-[11px] font-medium text-emerald-300 transition hover:text-emerald-200"
+              className="text-[13px] font-medium text-emerald-300 transition hover:text-emerald-200"
             >
               정산 매칭 보기 →
             </Link>
@@ -93,8 +93,8 @@ export default function CampaignPerformanceCard() {
       ) : (
         <div className="flex flex-1 flex-col justify-between gap-3 px-4 py-3">
           <div>
-            <p className="text-[12px] text-slate-300">아직 발급된 쿠폰 원장이 없습니다.</p>
-            <p className="mt-1 text-[10.5px] leading-relaxed text-slate-500">
+            <p className="text-[14px] text-slate-300">아직 발급된 쿠폰 원장이 없습니다.</p>
+            <p className="mt-1 text-[13px] leading-relaxed text-slate-300">
               쿠폰 콘솔에서 부하를 한 번 발생시키면 발급·사용 원장과 쿠폰 사용 주문이 이 카드와 정산
               대사 콘솔에 함께 나타납니다.
             </p>

@@ -115,8 +115,8 @@ export default function KeywordRankingTable({ rows }: KeywordRankingTableProps) 
     <div className="card overflow-hidden">
       <div className="flex flex-col gap-4 border-b border-white/[0.06] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div>
-          <h3 className="text-sm font-semibold text-white">키워드 기회 분석</h3>
-          <p className="mt-1 text-[11px] text-slate-500">
+          <h3 className="text-[15px] font-semibold text-white">키워드 기회 분석</h3>
+          <p className="mt-1 text-[13px] text-slate-300">
             기회 지수 = 0.45×수요 + 0.30×구매 의도 + 0.25×(1−경쟁 강도)
           </p>
         </div>
@@ -135,7 +135,7 @@ export default function KeywordRankingTable({ rows }: KeywordRankingTableProps) 
                 type="button"
                 aria-pressed={market === option.value}
                 onClick={() => setMarket(option.value)}
-                className={`rounded-md px-2.5 py-2 text-[11px] font-medium transition ${
+                className={`rounded-md px-2.5 py-2 text-[13px] font-medium transition ${
                   market === option.value
                     ? "bg-white/10 text-white"
                     : "text-slate-400 hover:text-slate-200"
@@ -147,14 +147,14 @@ export default function KeywordRankingTable({ rows }: KeywordRankingTableProps) 
           </div>
 
           <div className="relative">
-            <IconSearch className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500" />
+            <IconSearch className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-300" />
             <input
               type="text"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="키워드 검색"
               aria-label="키워드 검색"
-              className="h-9 w-40 rounded-lg border border-white/[0.08] bg-white/[0.03] pl-8 pr-3 text-[12px] text-white placeholder:text-slate-500 focus:border-emerald-400/50 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+              className="h-9 w-40 rounded-lg border border-white/[0.08] bg-white/[0.03] pl-8 pr-3 text-[14px] text-white placeholder:text-slate-300 focus:border-emerald-400/50 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
             />
           </div>
         </div>
@@ -163,7 +163,7 @@ export default function KeywordRankingTable({ rows }: KeywordRankingTableProps) 
       <div className="thin-scrollbar overflow-x-auto">
         <table className="w-full min-w-[560px] border-collapse text-left">
           <thead>
-            <tr className="border-b border-white/[0.06] text-[11px] uppercase tracking-wide text-slate-500">
+            <tr className="border-b border-white/[0.06] text-[13px] uppercase tracking-wide text-slate-300">
               <th scope="col" className="px-5 py-2 font-medium sm:px-6">
                 키워드
               </th>
@@ -186,7 +186,7 @@ export default function KeywordRankingTable({ rows }: KeywordRankingTableProps) 
                       aria-label={`${column.label} 기준 정렬`}
                     >
                       {column.label}
-                      <span className={`text-[9px] ${active ? "text-emerald-400" : "text-slate-600"}`}>
+                      <span className={`text-[12px] ${active ? "text-emerald-400" : "text-slate-400"}`}>
                         {active ? (descending ? "▼" : "▲") : "↕"}
                       </span>
                     </button>
@@ -208,23 +208,23 @@ export default function KeywordRankingTable({ rows }: KeywordRankingTableProps) 
                   <td className="px-5 py-3 sm:px-6">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`inline-flex shrink-0 items-center rounded-md border px-1.5 py-0.5 text-[10px] font-semibold ${meta.chip}`}
+                        className={`inline-flex shrink-0 items-center rounded-md border px-1.5 py-0.5 text-[12.5px] font-semibold ${meta.chip}`}
                       >
                         {meta.label}
                       </span>
-                      <span className="text-[13px] font-medium text-slate-100">{row.keyword}</span>
+                      <span className="text-[14.5px] font-medium text-slate-100">{row.keyword}</span>
                     </div>
-                    <p className="mt-1 text-[11px] text-slate-500">{row.category}</p>
+                    <p className="mt-1 text-[13px] text-slate-300">{row.category}</p>
                   </td>
 
-                  <td className="px-3 py-3 text-right text-[13px] font-medium text-slate-200 tabular-nums">
+                  <td className="px-3 py-3 text-right text-[14.5px] font-medium text-slate-200 tabular-nums">
                     {formatCompactNumber(row.monthlyVolume)}
                   </td>
 
                   <td className="hidden px-3 py-3 sm:table-cell">
                     <div className="flex items-center gap-2">
                       <Meter value={row.competition} color={barColor(row.competition)} />
-                      <span className={`text-[11px] font-medium ${competition.tone}`}>
+                      <span className={`text-[13px] font-medium ${competition.tone}`}>
                         {competition.text}
                       </span>
                     </div>
@@ -233,7 +233,7 @@ export default function KeywordRankingTable({ rows }: KeywordRankingTableProps) 
                   <td className="hidden px-3 py-3 md:table-cell">
                     <div className="flex items-center gap-2">
                       <Meter value={row.purchaseIntent} color="#818CF8" />
-                      <span className="text-[11px] text-slate-400 tabular-nums">
+                      <span className="text-[13px] text-slate-400 tabular-nums">
                         {row.purchaseIntent}
                       </span>
                     </div>
@@ -241,13 +241,13 @@ export default function KeywordRankingTable({ rows }: KeywordRankingTableProps) 
 
                   <td className="px-3 py-3 text-right">
                     <span
-                      className={`inline-flex min-w-[38px] justify-center rounded-md border px-2 py-0.5 text-[11px] font-semibold tabular-nums ${GRADE_STYLES[row.grade]}`}
+                      className={`inline-flex min-w-[38px] justify-center rounded-md border px-2 py-0.5 text-[13px] font-semibold tabular-nums ${GRADE_STYLES[row.grade]}`}
                     >
                       {row.opportunityScore}
                     </span>
                   </td>
 
-                  <td className="hidden px-3 py-3 text-right text-[12px] text-slate-300 tabular-nums lg:table-cell">
+                  <td className="hidden px-3 py-3 text-right text-[14px] text-slate-300 tabular-nums lg:table-cell">
                     {formatWon(row.averagePrice)}
                   </td>
                 </tr>
@@ -260,11 +260,11 @@ export default function KeywordRankingTable({ rows }: KeywordRankingTableProps) 
       {visibleRows.length === 0 ? (
         <div className="px-6 py-12 text-center">
           <p className="text-sm text-slate-400">조건에 맞는 키워드가 없습니다.</p>
-          <p className="mt-1 text-[11px] text-slate-500">검색어를 지우거나 마켓 필터를 전체로 바꿔 보세요.</p>
+          <p className="mt-1 text-[13px] text-slate-300">검색어를 지우거나 마켓 필터를 전체로 바꿔 보세요.</p>
         </div>
       ) : null}
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] px-5 py-3 text-[11px] text-slate-500 sm:px-6">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] px-5 py-3 text-[13px] text-slate-300 sm:px-6">
         <span>
           {visibleRows.length}개 키워드 · 기회 지수 70 이상은 <span className="text-emerald-300">진입 추천</span>
         </span>

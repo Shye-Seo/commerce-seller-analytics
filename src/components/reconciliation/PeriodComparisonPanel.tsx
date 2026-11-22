@@ -64,7 +64,7 @@ function StatusChip({ status }: { status: CauseMovement["status"] }) {
     flat: { label: "변화 없음", className: "border-white/[0.08] bg-white/[0.03] text-slate-400" },
   };
   const chip = map[status];
-  return <span className={`rounded-full border px-1.5 py-0.5 text-[9.5px] ${chip.className}`}>{chip.label}</span>;
+  return <span className={`rounded-full border px-1.5 py-0.5 text-[12px] ${chip.className}`}>{chip.label}</span>;
 }
 
 export default function PeriodComparisonPanel({
@@ -214,9 +214,9 @@ export default function PeriodComparisonPanel({
     <section className="card p-4" data-testid="period-panel">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">Month over month</p>
-          <h2 className="mt-1 text-[13.5px] font-semibold text-white">월별 재대사 · 전월 대비 차액</h2>
-          <p className="mt-1 max-w-3xl text-[11px] leading-relaxed text-slate-500">
+          <p className="text-[12.5px] font-medium uppercase tracking-[0.14em] text-slate-300">Month over month</p>
+          <h2 className="mt-1 text-[16px] font-semibold text-white">월별 재대사 · 전월 대비 차액</h2>
+          <p className="mt-1 max-w-3xl text-[13px] leading-relaxed text-slate-300">
             이번 달 대사 요약을 저장해 두면, 다음 달에 <strong className="font-medium text-slate-300">원인별로 얼마가 늘고 줄었는지</strong>를
             바로 비교합니다. 마켓에 이의를 제기할 때 &ldquo;지난달보다 수수료 초과 청구가 얼마 늘었다&rdquo;까지 말할 수 있어야 합니다.
             이력은 이 브라우저에만 보관됩니다.
@@ -224,7 +224,7 @@ export default function PeriodComparisonPanel({
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
           <span
-            className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-[10px] text-slate-400"
+            className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-[12.5px] text-slate-400"
             data-testid="period-month-chip"
           >
             대상월 {month}
@@ -234,7 +234,7 @@ export default function PeriodComparisonPanel({
             onClick={handleSave}
             disabled={!summary || !permissive}
             data-testid="period-save"
-            className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-2 text-[11px] font-medium text-emerald-200 transition enabled:hover:border-emerald-400/60 enabled:hover:text-white disabled:opacity-40"
+            className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-2 text-[13px] font-medium text-emerald-200 transition enabled:hover:border-emerald-400/60 enabled:hover:text-white disabled:opacity-40"
           >
             이번 달 요약 저장
           </button>
@@ -243,7 +243,7 @@ export default function PeriodComparisonPanel({
             onClick={handleSeedDemo}
             disabled={!permissive}
             data-testid="period-seed-demo"
-            className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 text-[11px] text-slate-300 transition enabled:hover:border-white/20 enabled:hover:text-white disabled:opacity-40"
+            className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 text-[13px] text-slate-300 transition enabled:hover:border-white/20 enabled:hover:text-white disabled:opacity-40"
           >
             지난 2개월 이력
           </button>
@@ -251,12 +251,12 @@ export default function PeriodComparisonPanel({
       </div>
 
       {!summary ? (
-        <div className="mt-3 rounded-xl border border-dashed border-white/[0.08] px-4 py-6 text-center text-[12px] text-slate-500" data-testid="period-empty">
+        <div className="mt-3 rounded-xl border border-dashed border-white/[0.08] px-4 py-6 text-center text-[14px] text-slate-300" data-testid="period-empty">
           대사 결과가 준비되면 비교할 수 있습니다.
         </div>
       ) : previousOptions.length === 0 ? (
         <div className="mt-3 rounded-xl border border-dashed border-white/[0.08] px-4 py-6 text-center" data-testid="period-empty">
-          <p className="text-[12px] text-slate-400">
+          <p className="text-[14px] text-slate-400">
             비교할 지난달 기록이 없습니다. <span className="text-slate-300">이번 달 요약 저장</span>을 누르면 다음 달부터 비교되고,
             지금 바로 보려면 <span className="text-slate-300">지난 2개월 이력</span>로 화면을 채울 수 있습니다.
           </p>
@@ -264,7 +264,7 @@ export default function PeriodComparisonPanel({
       ) : (
         <>
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <label htmlFor="period-previous-select" className="text-[10.5px] text-slate-500">
+            <label htmlFor="period-previous-select" className="text-[13px] text-slate-300">
               비교 기준월
             </label>
             <select
@@ -272,7 +272,7 @@ export default function PeriodComparisonPanel({
               value={selectedMonth}
               onChange={(event) => setSelectedMonth(event.target.value)}
               data-testid="period-previous-select"
-              className="rounded-lg border border-white/[0.08] bg-ink-900 px-2 py-1 text-[11px] text-slate-200"
+              className="rounded-lg border border-white/[0.08] bg-ink-900 px-2 py-1 text-[13px] text-slate-200"
             >
               {previousOptions.map((entry) => (
                 <option key={`${entry.tenantId}-${entry.month}`} value={entry.month}>
@@ -285,7 +285,7 @@ export default function PeriodComparisonPanel({
               if (!active) return null;
               return (
                 <span
-                  className={`rounded-full border px-2 py-0.5 text-[9.5px] ${
+                  className={`rounded-full border px-2 py-0.5 text-[12px] ${
                     active.source === "demo"
                       ? "border-amber-400/30 bg-amber-400/10 text-amber-200"
                       : "border-white/[0.08] bg-white/[0.03] text-slate-400"
@@ -297,71 +297,71 @@ export default function PeriodComparisonPanel({
               );
             })()}
             {comparison && !comparison.consecutive && (
-              <span className="rounded-full border border-white/[0.08] bg-white/[0.02] px-2 py-0.5 text-[9.5px] text-slate-500">
+              <span className="rounded-full border border-white/[0.08] bg-white/[0.02] px-2 py-0.5 text-[12px] text-slate-300">
                 {comparison.monthGap}개월 간격
               </span>
             )}
           </div>
 
           {comparison === null ? (
-            <div className="mt-3 rounded-xl border border-dashed border-white/[0.08] px-4 py-4 text-center text-[11.5px] text-slate-500" data-testid="period-empty">
+            <div className="mt-3 rounded-xl border border-dashed border-white/[0.08] px-4 py-4 text-center text-[13.5px] text-slate-300" data-testid="period-empty">
               선택한 달과 이번 달을 비교할 수 없습니다. 비교 기준월은 이번 달보다 앞서야 합니다.
             </div>
           ) : (
             <div data-testid="period-comparison">
-              <p className="mt-2 text-[12px] leading-relaxed text-slate-300" data-testid="period-verdict">
+              <p className="mt-2 text-[14px] leading-relaxed text-slate-300" data-testid="period-verdict">
                 {describeComparison(comparison)}
               </p>
 
               <div className="mt-2 grid gap-2 sm:grid-cols-3">
                 <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
-                  <p className="text-[10.5px] text-slate-500">누수 추정 손실액</p>
+                  <p className="text-[13px] text-slate-300">누수 추정 손실액</p>
                   <p
-                    className={`mt-1 text-[17px] font-semibold leading-tight tabular-nums ${toneClass(
+                    className={`mt-1 text-[19px] font-bold leading-tight tabular-nums ${toneClass(
                       comparison.leak.sign > 0 ? "danger" : comparison.leak.sign < 0 ? "good" : "default",
                     )}`}
                     data-testid="period-leak-delta"
                   >
                     {maskSigned(comparison.leak.delta)}
                   </p>
-                  <p className="mt-0.5 text-[10px] tabular-nums text-slate-600">
+                  <p className="mt-0.5 text-[12.5px] tabular-nums text-slate-400">
                     {mask(comparison.leak.previous)} → {mask(comparison.leak.current)}
                     {comparison.leak.deltaPct === null ? " · 비교 불가" : ` · ${comparison.leak.deltaPct > 0 ? "+" : ""}${comparison.leak.deltaPct.toFixed(1)}%`}
                   </p>
                 </div>
                 <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
-                  <p className="text-[10.5px] text-slate-500">정상 대사율</p>
+                  <p className="text-[13px] text-slate-300">정상 대사율</p>
                   <p
-                    className={`mt-1 text-[17px] font-semibold leading-tight tabular-nums ${toneClass(
+                    className={`mt-1 text-[19px] font-bold leading-tight tabular-nums ${toneClass(
                       comparison.matchedRate.delta > 0 ? "good" : comparison.matchedRate.delta < 0 ? "danger" : "default",
                     )}`}
                   >
                     {comparison.matchedRate.delta > 0 ? "+" : ""}
                     {comparison.matchedRate.delta.toFixed(1)}%p
                   </p>
-                  <p className="mt-0.5 text-[10px] tabular-nums text-slate-600">
+                  <p className="mt-0.5 text-[12.5px] tabular-nums text-slate-400">
                     {formatPercent(comparison.matchedRate.previous, 1)} → {formatPercent(comparison.matchedRate.current, 1)}
                   </p>
                 </div>
                 <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
-                  <p className="text-[10.5px] text-slate-500">이상 행 수</p>
+                  <p className="text-[13px] text-slate-300">이상 행 수</p>
                   <p
-                    className={`mt-1 text-[17px] font-semibold leading-tight tabular-nums ${toneClass(
+                    className={`mt-1 text-[19px] font-bold leading-tight tabular-nums ${toneClass(
                       comparison.flagged.delta > 0 ? "danger" : comparison.flagged.delta < 0 ? "good" : "default",
                     )}`}
                   >
                     {comparison.flagged.delta > 0 ? "+" : ""}
                     {formatCount(comparison.flagged.delta)}
                   </p>
-                  <p className="mt-0.5 text-[10px] tabular-nums text-slate-600">
+                  <p className="mt-0.5 text-[12.5px] tabular-nums text-slate-400">
                     {formatCount(comparison.flagged.previous)} → {formatCount(comparison.flagged.current)} · 대사 {formatCount(comparison.rows.current)}
                   </p>
                 </div>
               </div>
 
               <div className="mt-3 overflow-hidden rounded-xl border border-white/[0.06]">
-                <table className="w-full text-left text-[11px]">
-                  <thead className="bg-white/[0.02] text-[10px] uppercase tracking-[0.12em] text-slate-500">
+                <table className="w-full text-left text-[13.5px]">
+                  <thead className="bg-white/[0.02] text-[13px] uppercase tracking-[0.12em] text-slate-300">
                     <tr>
                       <th className="px-3 py-2 font-medium">원인</th>
                       <th className="px-3 py-2 text-right font-medium">지난달</th>
@@ -381,11 +381,11 @@ export default function PeriodComparisonPanel({
                               <StatusChip status={cause.status} />
                             </span>
                           </td>
-                          <td className="px-3 py-2 text-right tabular-nums text-slate-500">{mask(cause.previousLoss)}</td>
+                          <td className="px-3 py-2 text-right tabular-nums text-slate-300">{mask(cause.previousLoss)}</td>
                           <td className="px-3 py-2 text-right tabular-nums text-slate-300">{mask(cause.currentLoss)}</td>
                           <td
                             className={`px-3 py-2 text-right tabular-nums ${
-                              cause.deltaLoss > 0 ? "text-rose-300" : cause.deltaLoss < 0 ? "text-emerald-300" : "text-slate-500"
+                              cause.deltaLoss > 0 ? "text-rose-300" : cause.deltaLoss < 0 ? "text-emerald-300" : "text-slate-300"
                             }`}
                           >
                             {maskSigned(cause.deltaLoss)}
@@ -407,7 +407,7 @@ export default function PeriodComparisonPanel({
                 </table>
               </div>
 
-              <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] text-slate-500">
+              <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[12.5px] text-slate-300">
                 {comparison.causes.length > topCauses.length && <span>외 {comparison.causes.length - topCauses.length}개 원인</span>}
                 {comparison.newCauses.length > 0 && (
                   <span className="rounded-full border border-rose-400/25 bg-rose-400/[0.07] px-2 py-0.5 text-rose-200" data-testid="period-new-causes">

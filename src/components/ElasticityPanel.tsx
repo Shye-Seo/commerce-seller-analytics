@@ -63,7 +63,7 @@ function Slider({ id, label, value, min, max, step, display, hint, onChange }: S
           background: `linear-gradient(to right, #34D399 ${filled}%, rgba(255,255,255,0.10) ${filled}%)`,
         }}
       />
-      {hint ? <p className="mt-1.5 text-[11px] text-slate-500">{hint}</p> : null}
+      {hint ? <p className="mt-1.5 text-[13px] text-slate-300">{hint}</p> : null}
     </div>
   );
 }
@@ -147,7 +147,7 @@ function MarginCurves({
               stroke={Math.abs(rate) < 0.001 ? "rgba(255,255,255,0.28)" : "rgba(255,255,255,0.06)"}
               strokeDasharray={Math.abs(rate) < 0.001 ? "4 4" : undefined}
             />
-            <text x={CHART.left - 8} y={y + 3.5} textAnchor="end" fontSize={10} fill="#64748B">
+            <text x={CHART.left - 8} y={y + 3.5} textAnchor="end" fontSize={12} fill="#94A3B8">
               {`${rate.toFixed(0)}%`}
             </text>
           </g>
@@ -160,8 +160,8 @@ function MarginCurves({
           x={geometry.xOf(price)}
           y={CHART.top + INNER_H + 18}
           textAnchor="middle"
-          fontSize={10}
-          fill="#64748B"
+          fontSize={12}
+          fill="#94A3B8"
         >
           {price >= 10_000 ? `${Math.round(price / 1_000)}천` : Math.round(price).toLocaleString("ko-KR")}
         </text>
@@ -176,7 +176,7 @@ function MarginCurves({
         stroke="rgba(52,211,153,0.45)"
         strokeDasharray="3 3"
       />
-      <text x={geometry.currentX + 4} y={CHART.top + 10} fontSize={9.5} fill="#6EE7B7">
+      <text x={geometry.currentX + 4} y={CHART.top + 10} fontSize={11.5} fill="#6EE7B7">
         현재 {formatWon(result.config.paidPrice)}
       </text>
 
@@ -205,8 +205,8 @@ function MarginCurves({
         x={CHART.left + INNER_W}
         y={CHART.height - 6}
         textAnchor="end"
-        fontSize={9.5}
-        fill="#475569"
+        fontSize={11.5}
+        fill="#94A3B8"
       >
         판매가(원) · 점 = 손익분기 판매가
       </text>
@@ -227,7 +227,7 @@ function MarketRow({ curve, best }: { curve: MarketCurve; best: boolean }) {
           />
           {curve.shortLabel}
           {best ? (
-            <span className="rounded border border-emerald-400/30 bg-emerald-400/10 px-1 text-[9.5px] font-medium text-emerald-300">
+            <span className="rounded border border-emerald-400/30 bg-emerald-400/10 px-1 text-[12px] font-medium text-emerald-300">
               최고
             </span>
           ) : null}
@@ -292,13 +292,13 @@ export default function ElasticityPanel({ input, onApply }: ElasticityPanelProps
     <div className="card p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">
+          <p className="text-[12.5px] font-medium uppercase tracking-[0.14em] text-slate-300">
             Elasticity
           </p>
-          <h2 className="mt-1 text-[13.5px] font-semibold text-slate-100">
+          <h2 className="mt-1 text-[16px] font-semibold text-slate-100">
             정가·할인·ROAS를 바꾸면 어느 마켓에서 적자가 되는가
           </h2>
-          <p className="mt-1 max-w-2xl text-[12px] leading-relaxed text-slate-500">
+          <p className="mt-1 max-w-2xl text-[14px] leading-relaxed text-slate-300">
             같은 원가·배송·반품 조건을 5개 마켓에 그대로 적용하고, 수수료율과 광고비만 다르게 계산합니다.
             슬라이더를 움직이면 곡선과 표가 함께 다시 계산됩니다.
           </p>
@@ -346,7 +346,7 @@ export default function ElasticityPanel({ input, onApply }: ElasticityPanelProps
             onChange={setRoas}
           />
 
-          <dl className="space-y-2 rounded-xl border border-white/[0.06] bg-white/[0.015] px-4 py-3 text-[12px]">
+          <dl className="space-y-2 rounded-xl border border-white/[0.06] bg-white/[0.015] px-4 py-3 text-[14px]">
             <div className="flex items-center justify-between gap-2">
               <dt className="text-slate-400">고정비성 원가</dt>
               <dd className="tabular-nums text-slate-200">{formatWon(result.config.fixedCostPerUnit)}</dd>
@@ -365,7 +365,7 @@ export default function ElasticityPanel({ input, onApply }: ElasticityPanelProps
             <button
               type="button"
               onClick={applyToDashboard}
-              className="w-full rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-[12px] font-medium text-emerald-200 transition hover:border-emerald-400/50 hover:bg-emerald-400/15"
+              className="w-full rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-[14px] font-medium text-emerald-200 transition hover:border-emerald-400/50 hover:bg-emerald-400/15"
             >
               이 조건을 대시보드에 반영
             </button>
@@ -383,10 +383,10 @@ export default function ElasticityPanel({ input, onApply }: ElasticityPanelProps
                   onClick={() => toggleMarket(curve.marketId)}
                   aria-pressed={active}
                   data-testid={`elasticity-legend-${curve.marketId}`}
-                  className={`inline-flex items-center gap-1.5 rounded-lg border px-2 py-1 text-[10.5px] font-medium transition ${
+                  className={`inline-flex items-center gap-1.5 rounded-lg border px-2 py-1 text-[13px] font-medium transition ${
                     active
                       ? "border-white/[0.12] bg-white/[0.04] text-slate-200"
-                      : "border-white/[0.05] bg-transparent text-slate-600"
+                      : "border-white/[0.05] bg-transparent text-slate-400"
                   }`}
                 >
                   <span
@@ -398,7 +398,7 @@ export default function ElasticityPanel({ input, onApply }: ElasticityPanelProps
                 </button>
               );
             })}
-            <span className="ml-auto text-[10.5px] text-slate-500">
+            <span className="ml-auto text-[13px] text-slate-300">
               y축은 마진율, 0% 선이 손익분기입니다
             </span>
           </div>
@@ -409,24 +409,24 @@ export default function ElasticityPanel({ input, onApply }: ElasticityPanelProps
 
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
             <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
-              <p className="text-[10.5px] text-slate-500">현재 판매가</p>
+              <p className="text-[13px] text-slate-300">현재 판매가</p>
               <p className="mt-0.5 text-[15px] font-semibold tabular-nums text-white">
                 {formatWon(result.config.paidPrice)}
               </p>
             </div>
             <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/[0.05] px-3 py-2">
-              <p className="text-[10.5px] text-slate-500">마진 최고 마켓</p>
+              <p className="text-[13px] text-slate-300">마진 최고 마켓</p>
               <p className="mt-0.5 text-[15px] font-semibold text-emerald-300">
                 {result.best ? result.best.shortLabel : "—"}
                 {result.best ? (
-                  <span className="ml-1.5 text-[11px] font-medium text-slate-400">
+                  <span className="ml-1.5 text-[13px] font-medium text-slate-400">
                     {formatPercent(result.best.marginRate, 1)}
                   </span>
                 ) : null}
               </p>
             </div>
             <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
-              <p className="text-[10.5px] text-slate-500">손익분기 낮은 마켓</p>
+              <p className="text-[13px] text-slate-300">손익분기 낮은 마켓</p>
               <p className="mt-0.5 text-[15px] font-semibold tabular-nums text-white">
                 {result.lowestBreakEven
                   ? `${result.lowestBreakEven.shortLabel} ${formatWon(result.lowestBreakEven.breakEvenPrice)}`
@@ -438,9 +438,9 @@ export default function ElasticityPanel({ input, onApply }: ElasticityPanelProps
       </div>
 
       <div className="mt-5 overflow-hidden rounded-xl border border-white/[0.06]">
-        <table className="w-full border-collapse text-[11.5px]">
+        <table className="w-full border-collapse text-[13.5px]">
           <thead>
-            <tr className="bg-white/[0.02] text-[10.5px] text-slate-500">
+            <tr className="bg-white/[0.02] text-[13px] text-slate-300">
               <th className="px-3 py-2 text-left font-semibold">마켓</th>
               <th className="px-3 py-2 text-right font-semibold">손익분기 판매가</th>
               <th className="px-3 py-2 text-right font-semibold">건당 순이익</th>
@@ -460,7 +460,7 @@ export default function ElasticityPanel({ input, onApply }: ElasticityPanelProps
         </table>
       </div>
 
-      <p className="mt-3 text-[10.5px] leading-relaxed text-slate-600">
+      <p className="mt-3 text-[13px] leading-relaxed text-slate-400">
         {result.assumptions.join(" ")} 수수료·광고비가 판매가에 비례하므로 건당 순이익은 1차식이고, 마진율 곡선이
         휘는 것은 분모가 판매가이기 때문입니다.
       </p>

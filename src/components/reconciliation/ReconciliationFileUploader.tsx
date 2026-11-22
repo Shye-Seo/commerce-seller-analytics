@@ -181,10 +181,10 @@ export default function ReconciliationFileUploader({ disabled = false, onParsed,
     <section className="card p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">File intake</p>
-          <p className="mt-1 text-[12.5px] text-slate-300">마켓 정산서 파일을 그대로 올리면 ①검증 ②파싱 ③대사까지 이어집니다.</p>
+          <p className="text-[12.5px] font-medium uppercase tracking-[0.14em] text-slate-300">File intake</p>
+          <p className="mt-1 text-[14px] text-slate-300">마켓 정산서 파일을 그대로 올리면 ①검증 ②파싱 ③대사까지 이어집니다.</p>
         </div>
-        <span className="rounded-md border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-[10px] text-slate-400">
+        <span className="rounded-md border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-[12.5px] text-slate-400">
           최대 {formatBytes(DEFAULT_UPLOAD_LIMITS.maxBytes)} · CSV · TSV · XLSX
         </span>
       </div>
@@ -216,13 +216,13 @@ export default function ReconciliationFileUploader({ disabled = false, onParsed,
               : "cursor-pointer border-white/[0.14] bg-white/[0.02] hover:border-emerald-400/40 hover:bg-emerald-400/[0.04]"
         }`}
       >
-        <p className="text-[13px] font-medium text-slate-200">
+        <p className="text-[14.5px] font-medium text-slate-200">
           {dragging ? "여기에 놓으면 바로 파싱합니다" : "정산서 파일을 이 영역에 끌어다 놓으세요"}
         </p>
-        <p className="mt-1 text-[11px] text-slate-500">
+        <p className="mt-1 text-[13px] text-slate-300">
           스마트스토어·쿠팡 정산 내역 원본 · 엑셀(.xlsx)은 변환 없이 그대로 인식합니다 · 클릭해서 선택도 가능
         </p>
-        <p className="mt-2 text-[10px] text-slate-600">파일은 브라우저 안에서만 처리되며 서버로 전송되지 않습니다.</p>
+        <p className="mt-2 text-[12.5px] text-slate-400">파일은 브라우저 안에서만 처리되며 서버로 전송되지 않습니다.</p>
         <input
           ref={inputRef}
           type="file"
@@ -240,7 +240,7 @@ export default function ReconciliationFileUploader({ disabled = false, onParsed,
 
       {(stage !== "idle" || percent > 0) && (
         <div className="mt-3">
-          <div className="flex items-center justify-between text-[10.5px] text-slate-500">
+          <div className="flex items-center justify-between text-[13px] text-slate-300">
             <span className="tabular-nums">{statusText}</span>
             <span className="tabular-nums">
               {stateLabel} · {percent}%
@@ -261,14 +261,14 @@ export default function ReconciliationFileUploader({ disabled = false, onParsed,
       )}
 
       {issue && (
-        <div className="mt-3 rounded-lg border border-rose-400/25 bg-rose-400/[0.07] px-3 py-2 text-[11px] leading-relaxed text-rose-200">
+        <div className="mt-3 rounded-lg border border-rose-400/25 bg-rose-400/[0.07] px-3 py-2 text-[13px] leading-relaxed text-rose-200">
           <p className="font-medium">{issue.message}</p>
           {issue.hint && <p className="mt-0.5 text-rose-200/80">{issue.hint}</p>}
         </div>
       )}
 
       {localNotice && !issue && (
-        <p className="mt-3 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-3 py-2 text-[11px] text-amber-200">{localNotice}</p>
+        <p className="mt-3 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-3 py-2 text-[13px] text-amber-200">{localNotice}</p>
       )}
 
       {snapshot && (
@@ -291,7 +291,7 @@ export default function ReconciliationFileUploader({ disabled = false, onParsed,
       )}
 
       {snapshot?.truncated && (
-        <p className="mt-2 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-3 py-2 text-[11px] text-amber-200">
+        <p className="mt-2 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-3 py-2 text-[13px] text-amber-200">
           파일이 처리 상한(20만 행)을 넘어 앞부분만 읽었습니다. 정산 기간을 나눠 업로드해 주세요.
         </p>
       )}
@@ -302,9 +302,9 @@ export default function ReconciliationFileUploader({ disabled = false, onParsed,
 function Stat({ label, value, hint, tone = "normal" }: { label: string; value: string; hint?: string; tone?: "normal" | "warn" }) {
   return (
     <div className="rounded-lg border border-white/[0.05] bg-white/[0.015] px-2.5 py-2">
-      <p className="text-[9.5px] text-slate-500">{label}</p>
-      <p className={`mt-0.5 text-[12px] font-semibold tabular-nums ${tone === "warn" ? "text-amber-300" : "text-slate-200"}`}>{value}</p>
-      {hint && <p className="mt-0.5 truncate text-[9.5px] text-slate-600">{hint}</p>}
+      <p className="text-[12px] text-slate-300">{label}</p>
+      <p className={`mt-0.5 text-[14px] font-semibold tabular-nums ${tone === "warn" ? "text-amber-300" : "text-slate-200"}`}>{value}</p>
+      {hint && <p className="mt-0.5 truncate text-[12px] text-slate-400">{hint}</p>}
     </div>
   );
 }

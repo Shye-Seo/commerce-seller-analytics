@@ -272,14 +272,14 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
     <section className="card p-4" data-testid="market-api-panel" aria-label="마켓 정산 API 자동 수집">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">API 자동 수집</p>
-          <p className="mt-1 text-[12.5px] text-slate-300">마켓 API에서 정산 내역을 직접 받아 원장과 대사합니다.</p>
-          <p className="mt-0.5 text-[10.5px] leading-relaxed text-slate-500">
+          <p className="text-[12.5px] font-medium uppercase tracking-[0.14em] text-slate-300">API 자동 수집</p>
+          <p className="mt-1 text-[14px] text-slate-300">마켓 API에서 정산 내역을 직접 받아 원장과 대사합니다.</p>
+          <p className="mt-0.5 text-[13px] leading-relaxed text-slate-300">
             정산월을 골라 연결을 확인하고 수집하면, 받은 정산 내역을 계약 조건으로 다시 계산해 차액을 찾아냅니다. 시크릿은 입력 후 마스킹되어 다시 표시되지 않습니다.
           </p>
         </div>
         <span
-          className={`rounded-md border px-2 py-1 text-[10px] ${
+          className={`rounded-md border px-2 py-1 text-[12.5px] ${
             probe?.ok
               ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-200"
               : "border-white/[0.08] bg-white/[0.03] text-slate-400"
@@ -307,7 +307,7 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
               }}
               aria-pressed={active}
               data-testid={`api-provider-${key}`}
-              className={`rounded-lg border px-2.5 py-2 text-[11px] font-medium transition ${
+              className={`rounded-lg border px-2.5 py-2 text-[13px] font-medium transition ${
                 active
                   ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-200"
                   : "border-white/[0.08] bg-white/[0.03] text-slate-400 hover:border-white/20 hover:text-slate-200"
@@ -321,18 +321,18 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
 
       <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
         <label className="block">
-          <span className="text-[10px] text-slate-500">정산월</span>
+          <span className="text-[12.5px] text-slate-300">정산월</span>
           <input
             type="month"
             value={month}
             disabled={busy}
             onChange={(event) => setMonth(event.target.value || defaultSettlementMonth())}
             data-testid="api-month"
-            className="mt-0.5 w-full rounded-lg border border-white/[0.08] bg-ink-900 px-2 py-2 text-[11px] text-slate-200 outline-none focus:border-emerald-400/50"
+            className="mt-0.5 w-full rounded-lg border border-white/[0.08] bg-ink-900 px-2 py-2 text-[13px] text-slate-200 outline-none focus:border-emerald-400/50"
           />
         </label>
         <label className="block">
-          <span className="text-[10px] text-slate-500">{provider === "coupang" ? "Access Key" : "애플리케이션 ID"}</span>
+          <span className="text-[12.5px] text-slate-300">{provider === "coupang" ? "Access Key" : "애플리케이션 ID"}</span>
           <input
             value={clientId}
             disabled={busy}
@@ -341,11 +341,11 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
             data-testid="api-client-id"
             autoComplete="off"
             spellCheck={false}
-            className="mt-0.5 w-full rounded-lg border border-white/[0.08] bg-ink-900 px-2 py-2 font-mono text-[11px] text-slate-200 outline-none focus:border-emerald-400/50"
+            className="mt-0.5 w-full rounded-lg border border-white/[0.08] bg-ink-900 px-2 py-2 font-mono text-[13px] text-slate-200 outline-none focus:border-emerald-400/50"
           />
         </label>
         <label className="block">
-          <span className="text-[10px] text-slate-500">{provider === "coupang" ? "Secret Key" : "시크릿"}</span>
+          <span className="text-[12.5px] text-slate-300">{provider === "coupang" ? "Secret Key" : "시크릿"}</span>
           <input
             type="password"
             value={clientSecret}
@@ -354,11 +354,11 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
             placeholder="시크릿을 입력하세요"
             data-testid="api-client-secret"
             autoComplete="new-password"
-            className="mt-0.5 w-full rounded-lg border border-white/[0.08] bg-ink-900 px-2 py-2 font-mono text-[11px] text-slate-200 outline-none focus:border-emerald-400/50"
+            className="mt-0.5 w-full rounded-lg border border-white/[0.08] bg-ink-900 px-2 py-2 font-mono text-[13px] text-slate-200 outline-none focus:border-emerald-400/50"
           />
         </label>
         <label className="block">
-          <span className="text-[10px] text-slate-500">{provider === "coupang" ? "업체코드(vendorId)" : "스토어 구분"}</span>
+          <span className="text-[12.5px] text-slate-300">{provider === "coupang" ? "업체코드(vendorId)" : "스토어 구분"}</span>
           {provider === "coupang" ? (
             <input
               value={vendorId}
@@ -367,17 +367,17 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
               placeholder={provider === "coupang" ? "예: A00123456" : ""}
               data-testid="api-vendor-id"
               autoComplete="off"
-              className="mt-0.5 w-full rounded-lg border border-white/[0.08] bg-ink-900 px-2 py-2 font-mono text-[11px] text-slate-200 outline-none focus:border-emerald-400/50"
+              className="mt-0.5 w-full rounded-lg border border-white/[0.08] bg-ink-900 px-2 py-2 font-mono text-[13px] text-slate-200 outline-none focus:border-emerald-400/50"
             />
           ) : (
-            <p className="mt-0.5 rounded-lg border border-white/[0.05] bg-white/[0.015] px-2 py-2 text-[10.5px] text-slate-500">
+            <p className="mt-0.5 rounded-lg border border-white/[0.05] bg-white/[0.015] px-2 py-2 text-[13px] text-slate-300">
               내 스토어
             </p>
           )}
         </label>
       </div>
 
-      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[10.5px] text-slate-500">
+      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px] text-slate-300">
         <span className="tabular-nums">
           {publicView.hasSecret ? `키 ${publicView.clientIdMasked} · 시크릿 ${publicView.secretMasked}` : "키가 아직 입력되지 않았습니다"}
         </span>
@@ -409,7 +409,7 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
           onClick={() => void runProbe()}
           disabled={disabled || busy}
           data-testid="api-probe"
-          className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 text-[11px] font-medium text-slate-300 transition enabled:hover:border-white/20 enabled:hover:text-white disabled:opacity-40"
+          className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 text-[13px] font-medium text-slate-300 transition enabled:hover:border-white/20 enabled:hover:text-white disabled:opacity-40"
         >
           연결 테스트
         </button>
@@ -418,15 +418,15 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
           onClick={() => void runCollect()}
           disabled={disabled || busy}
           data-testid="api-collect"
-          className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-2 text-[11px] font-semibold text-emerald-200 transition enabled:hover:border-emerald-400/60 enabled:hover:bg-emerald-400/15 disabled:opacity-40"
+          className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-2 text-[13px] font-semibold text-emerald-200 transition enabled:hover:border-emerald-400/60 enabled:hover:bg-emerald-400/15 disabled:opacity-40"
         >
           정산 수집 + 대사 실행
         </button>
-        {busy && <span className="text-[10.5px] tabular-nums text-emerald-300/80">{phaseLabel}…</span>}
+        {busy && <span className="text-[13px] tabular-nums text-emerald-300/80">{phaseLabel}…</span>}
       </div>
 
       <div className="mt-3">
-        <div className="flex items-center justify-between text-[10.5px] text-slate-500">
+        <div className="flex items-center justify-between text-[13px] text-slate-300">
           <span className="tabular-nums" data-testid="api-status">
             {statusText}
           </span>
@@ -449,11 +449,11 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
       </div>
 
       {error && (
-        <div className="mt-3 rounded-lg border border-rose-400/25 bg-rose-400/[0.07] px-3 py-2 text-[11px] leading-relaxed text-rose-200" data-testid="api-error" role="alert">
+        <div className="mt-3 rounded-lg border border-rose-400/25 bg-rose-400/[0.07] px-3 py-2 text-[13px] leading-relaxed text-rose-200" data-testid="api-error" role="alert">
           <p className="font-semibold">
             {error.title}
-            {error.status ? <span className="ml-1 font-mono text-[10px] opacity-70">HTTP {error.status}</span> : null}
-            <span className="ml-1 rounded bg-rose-400/10 px-1 font-mono text-[9.5px] uppercase opacity-80">{error.code}</span>
+            {error.status ? <span className="ml-1 font-mono text-[12.5px] opacity-70">HTTP {error.status}</span> : null}
+            <span className="ml-1 rounded bg-rose-400/10 px-1 font-mono text-[12px] uppercase opacity-80">{error.code}</span>
           </p>
           <p className="mt-0.5">{error.message}</p>
           <p className="mt-1 text-rose-200/75">{error.hint}</p>
@@ -461,7 +461,7 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
       )}
 
       {probe?.ok && !result && (
-        <p className="mt-3 rounded-lg border border-emerald-400/20 bg-emerald-400/[0.06] px-3 py-2 text-[11px] text-emerald-200" data-testid="api-probe-result">
+        <p className="mt-3 rounded-lg border border-emerald-400/20 bg-emerald-400/[0.06] px-3 py-2 text-[13px] text-emerald-200" data-testid="api-probe-result">
           {probe.message} · {probe.latencyMs}ms
         </p>
       )}
@@ -484,9 +484,9 @@ export default function MarketApiSyncConsole({ role, tenantId, disabled = false,
 function Stat({ label, value, hint, tone = "normal" }: { label: string; value: string; hint?: string; tone?: "normal" | "warn" }) {
   return (
     <div className="rounded-lg border border-white/[0.05] bg-white/[0.015] px-2.5 py-2">
-      <p className="text-[9.5px] text-slate-500">{label}</p>
-      <p className={`mt-0.5 text-[12px] font-semibold tabular-nums ${tone === "warn" ? "text-amber-300" : "text-slate-200"}`}>{value}</p>
-      {hint && <p className="mt-0.5 truncate text-[9.5px] text-slate-600">{hint}</p>}
+      <p className="text-[12px] text-slate-300">{label}</p>
+      <p className={`mt-0.5 text-[14px] font-semibold tabular-nums ${tone === "warn" ? "text-amber-300" : "text-slate-200"}`}>{value}</p>
+      {hint && <p className="mt-0.5 truncate text-[12px] text-slate-400">{hint}</p>}
     </div>
   );
 }

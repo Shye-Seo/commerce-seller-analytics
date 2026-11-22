@@ -40,19 +40,19 @@ function Cell({ item }: { item: KpiItem }) {
   return (
     <>
       <div className="flex items-baseline justify-between gap-2">
-        <p className="truncate text-[11px] font-medium text-slate-500">{item.label}</p>
+        <p className="truncate text-[13px] font-medium text-slate-300">{item.label}</p>
         {item.status ? (
           <span
-            className={`shrink-0 rounded border px-1 py-px text-[9.5px] font-medium leading-4 ${STATUS_STYLE[tone]}`}
+            className={`shrink-0 rounded border px-1 py-px text-[12px] font-medium leading-4 ${STATUS_STYLE[tone]}`}
           >
             {item.status}
           </span>
         ) : null}
       </div>
-      <p className={`mt-1 text-[20px] font-semibold leading-tight tracking-tight tabular-nums ${VALUE_TONE[tone]}`} data-testid={item.testId}>
+      <p className={`mt-1 text-[22px] font-bold leading-tight tracking-tight tabular-nums ${VALUE_TONE[tone]}`} data-testid={item.testId}>
         {item.value}
       </p>
-      {item.hint ? <p className="mt-0.5 truncate text-[10.5px] text-slate-600">{item.hint}</p> : null}
+      {item.hint ? <p className="mt-0.5 truncate text-[13px] text-slate-400">{item.hint}</p> : null}
     </>
   );
 }
@@ -118,8 +118,8 @@ export function Panel({
       {title ? (
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.06] px-4 py-2">
           <div className="flex items-baseline gap-2">
-            <h2 className="text-[13px] font-semibold text-slate-100">{title}</h2>
-            {hint ? <span className="text-[10.5px] text-slate-600">{hint}</span> : null}
+            <h2 className="text-[16px] font-semibold text-slate-100">{title}</h2>
+            {hint ? <span className="text-[13px] text-slate-400">{hint}</span> : null}
           </div>
           {actions}
         </div>

@@ -14,7 +14,7 @@ export default function PageShell({ children }: { children: ReactNode }) {
       <Header />
       <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 py-5 sm:px-6 lg:py-6">{children}</main>
       <footer className="border-t border-white/[0.06]">
-        <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-1 px-4 py-4 text-[10.5px] text-slate-600 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-1 px-4 py-4 text-[13px] text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <span>서승혜 · 커머스 SaaS 기획·개발</span>
           <span className="flex flex-wrap items-center gap-3">
             <span>수수료 프리셋은 마켓 공개 정책을 참고한 예시값입니다.</span>

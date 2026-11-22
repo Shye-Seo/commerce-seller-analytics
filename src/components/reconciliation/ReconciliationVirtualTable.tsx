@@ -183,14 +183,14 @@ export default function ReconciliationVirtualTable({
                 onClick={() => onFilterChange(item.id)}
                 aria-pressed={active}
                 data-testid={`vtable-filter-${item.id}`}
-                className={`rounded-lg border px-2.5 py-1 text-[11px] font-medium transition ${
+                className={`rounded-lg border px-2.5 py-1 text-[13px] font-medium transition ${
                   active
                     ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-200"
                     : "border-white/[0.07] bg-white/[0.02] text-slate-400 hover:border-white/20 hover:text-slate-200"
                 }`}
               >
                 {item.label}
-                <span className="ml-1 tabular-nums text-[10px] opacity-70">{counts[item.id].toLocaleString("ko-KR")}</span>
+                <span className="ml-1 tabular-nums text-[12.5px] opacity-70">{counts[item.id].toLocaleString("ko-KR")}</span>
               </button>
             );
           })}
@@ -198,7 +198,7 @@ export default function ReconciliationVirtualTable({
 
         <label className="flex items-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.02] px-2.5 py-1">
           <span className="sr-only">주문번호·상품명 검색</span>
-          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-slate-500" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
+          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-slate-300" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
             <circle cx="11" cy="11" r="7" />
             <path d="m20 20-3.5-3.5" />
           </svg>
@@ -206,7 +206,7 @@ export default function ReconciliationVirtualTable({
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder="주문번호 · 상품명 · SKU"
-            className="w-44 bg-transparent text-[11.5px] text-slate-200 outline-none placeholder:text-slate-600"
+            className="w-44 bg-transparent text-[13.5px] text-slate-200 outline-none placeholder:text-slate-400"
           />
         </label>
       </div>
@@ -232,9 +232,9 @@ export default function ReconciliationVirtualTable({
         data-testid="vtable-scroll"
         data-row-count={rows.length}
       >
-        <table className="w-full min-w-[1120px] border-collapse text-[11.5px]">
+        <table className="w-full min-w-[1120px] border-collapse text-[13.5px]">
           <thead>
-            <tr className="sticky top-0 z-10 bg-[#0B1020] text-slate-500">
+            <tr className="sticky top-0 z-10 bg-[#0B1020] text-slate-300">
               {[
                 ["상태", "w-[132px]"],
                 ["주문일", "w-[86px]"],
@@ -251,7 +251,7 @@ export default function ReconciliationVirtualTable({
               ].map(([label, className]) => (
                 <th
                   key={label}
-                  className={`border-b border-white/[0.08] px-2.5 py-2 text-[10.5px] font-semibold ${
+                  className={`border-b border-white/[0.08] px-2.5 py-2 text-[13px] font-semibold ${
                     className.includes("text-right") ? "text-right" : "text-left"
                   } ${className}`}
                 >
@@ -295,12 +295,12 @@ export default function ReconciliationVirtualTable({
                 >
                   <td className="px-2.5">
                     {primary ? (
-                      <span className={`inline-flex max-w-full items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-medium ${SEVERITY_STYLE[primary.severity]}`}>
+                      <span className={`inline-flex max-w-full items-center gap-1 rounded-md border px-1.5 py-0.5 text-[12.5px] font-medium ${SEVERITY_STYLE[primary.severity]}`}>
                         <span className="truncate">{primary.label}</span>
                         {item.anomalies.length > 1 && <span className="opacity-70">+{item.anomalies.length - 1}</span>}
                       </span>
                     ) : (
-                      <span className="inline-flex items-center rounded-md border border-emerald-400/20 bg-emerald-400/[0.06] px-1.5 py-0.5 text-[10px] font-medium text-emerald-300/90">
+                      <span className="inline-flex items-center rounded-md border border-emerald-400/20 bg-emerald-400/[0.06] px-1.5 py-0.5 text-[12.5px] font-medium text-emerald-300/90">
                         정상
                       </span>
                     )}
@@ -312,22 +312,22 @@ export default function ReconciliationVirtualTable({
                       {CHANNEL_LABEL[item.row.channel]}
                     </span>
                   </td>
-                  <td className="px-2.5 font-mono text-[10.5px] text-slate-400">{item.row.orderNo}</td>
+                  <td className="px-2.5 font-mono text-[13.5px] text-slate-400">{item.row.orderNo}</td>
                   <td className="max-w-[220px] px-2.5">
                     <div className="truncate text-slate-200">{item.row.productName}</div>
-                    <div className="truncate font-mono text-[9.5px] text-slate-600">{item.row.sku} · {item.row.quantity}개</div>
+                    <div className="truncate font-mono text-[12px] text-slate-400">{item.row.sku} · {item.row.quantity}개</div>
                   </td>
                   <td className="px-2.5 text-right tabular-nums text-slate-300">{formatWon(item.row.paidAmount)}</td>
                   <td className="px-2.5 text-right tabular-nums text-slate-400">
                     {formatPercent(item.effectiveFeeRate, 2)}
-                    <span className="ml-1 text-[9.5px] text-slate-600">({money(item.row.commission, role)})</span>
+                    <span className="ml-1 text-[12px] text-slate-400">({money(item.row.commission, role)})</span>
                   </td>
-                  <td className={`px-2.5 text-right tabular-nums ${item.row.returnFee > 0 ? "text-amber-300/90" : "text-slate-600"}`}>
+                  <td className={`px-2.5 text-right tabular-nums ${item.row.returnFee > 0 ? "text-amber-300/90" : "text-slate-400"}`}>
                     {item.row.returnFee > 0 ? formatWon(item.row.returnFee) : "—"}
                   </td>
                   <td className="px-2.5 text-right tabular-nums text-slate-200">{money(item.actualSettlement, role)}</td>
-                  <td className="px-2.5 text-right tabular-nums text-slate-500">{money(item.expectedSettlement, role)}</td>
-                  <td className={`px-2.5 text-right tabular-nums ${item.variance < -10 ? "text-rose-300" : item.variance > 10 ? "text-sky-300" : "text-slate-600"}`}>
+                  <td className="px-2.5 text-right tabular-nums text-slate-300">{money(item.expectedSettlement, role)}</td>
+                  <td className={`px-2.5 text-right tabular-nums ${item.variance < -10 ? "text-rose-300" : item.variance > 10 ? "text-sky-300" : "text-slate-400"}`}>
                     {item.variance === 0 ? "—" : `${item.variance > 0 ? "+" : ""}${money(item.variance, role)}`}
                   </td>
                   <td className={`px-2.5 text-right tabular-nums ${item.marginRate < 0 ? "font-semibold text-rose-300" : "text-slate-300"}`}>
@@ -347,13 +347,13 @@ export default function ReconciliationVirtualTable({
 
         {rows.length === 0 && (
           <div className="flex h-[260px] flex-col items-center justify-center gap-2 text-center">
-            <p className="text-[13px] font-medium text-slate-400">조건에 맞는 행이 없습니다.</p>
-            <p className="text-[11px] text-slate-600">필터를 바꾸거나 검색어를 지워 보세요.</p>
+            <p className="text-[14.5px] font-medium text-slate-400">조건에 맞는 행이 없습니다.</p>
+            <p className="text-[13px] text-slate-400">필터를 바꾸거나 검색어를 지워 보세요.</p>
           </div>
         )}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] px-4 py-2 text-[10.5px] text-slate-500">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] px-4 py-2 text-[13px] text-slate-300">
         <span className="tabular-nums">
           {rows.length === 0
             ? "0행"

@@ -22,7 +22,12 @@ test.describe("쿠폰 발급 → 정산 대사 매칭", () => {
     await page.goto("/flash");
     await expect(page.getByRole("heading", { name: /실시간 선착순 응모/ })).toBeVisible();
 
-    await page.getByRole("button", { name: /부하 발생/ }).click();
+    // 동시 접속 경합 테스트는 기본 화면에서 접혀 있다. 펼친 뒤에만 실행 버튼이 보인다.
+    await page.getByTestId("flash-advanced-toggle").click();
+    const runButton = page.getByTestId("flash-run");
+    await expect(runButton).toBeVisible();
+    await expect(runButton).toContainText("동시 발급");
+    await runButton.click();
 
     // 시뮬레이션 → 원장 저장 → handoff 카드까지
     await expect(page.getByTestId("flash-handoff")).toBeVisible({ timeout: 30_000 });

@@ -69,10 +69,10 @@ export default function OpsEntry() {
   return (
     <section id="ops" aria-labelledby="ops-title">
       <div className="mb-2 flex items-baseline justify-between gap-2">
-        <h2 id="ops-title" className="text-[13px] font-semibold text-slate-100">
+        <h2 id="ops-title" className="text-[16px] font-semibold text-slate-100">
           운영 모듈
         </h2>
-        <p className="hidden text-[10.5px] text-slate-600 sm:block">매달 반복되는 네 가지 계산</p>
+        <p className="hidden text-[13px] text-slate-400 sm:block">매달 반복되는 네 가지 계산</p>
       </div>
 
       <ul className="divide-y divide-white/[0.06] overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.015]">
@@ -84,15 +84,15 @@ export default function OpsEntry() {
               className="group flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 transition hover:bg-white/[0.03]"
             >
               <div className="min-w-0 flex-1">
-                <p className="text-[12.5px] font-semibold text-slate-100">{module.title}</p>
-                <p className="hidden truncate text-[10.5px] text-slate-500 sm:block">{module.description}</p>
+                <p className="text-[14px] font-semibold text-slate-100">{module.title}</p>
+                <p className="hidden truncate text-[13px] text-slate-300 sm:block">{module.description}</p>
               </div>
               {/* 좁은 화면: 지표를 한 줄 문장으로. 넓은 화면: 값 두 개를 오른쪽에 나란히. */}
               <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end sm:gap-4">
-                <p className="text-[11px] leading-relaxed text-slate-600 sm:hidden">
+                <p className="text-[13px] leading-relaxed text-slate-400 sm:hidden">
                   {module.metrics.map((metric, index) => (
                     <span key={metric.label}>
-                      {index > 0 ? <span className="mx-1 text-slate-700">·</span> : null}
+                      {index > 0 ? <span className="mx-1 text-slate-500">·</span> : null}
                       {metric.label}{" "}
                       <span className="font-semibold tabular-nums text-slate-200">{metric.value}</span>
                     </span>
@@ -102,13 +102,13 @@ export default function OpsEntry() {
                 <div className="hidden shrink-0 items-center gap-4 sm:flex">
                   {module.metrics.map((metric) => (
                     <div key={metric.label} className="text-right">
-                      <p className="whitespace-nowrap text-[9.5px] text-slate-600">{metric.label}</p>
-                      <p className="whitespace-nowrap text-[12px] font-semibold tabular-nums text-slate-200">{metric.value}</p>
+                      <p className="whitespace-nowrap text-[12px] text-slate-400">{metric.label}</p>
+                      <p className="whitespace-nowrap text-[14px] font-semibold tabular-nums text-slate-200">{metric.value}</p>
                     </div>
                   ))}
                 </div>
 
-                <span className="text-[11px] text-slate-600 transition group-hover:text-emerald-300" aria-hidden>
+                <span className="text-[13px] text-slate-400 transition group-hover:text-emerald-300" aria-hidden>
                   →
                 </span>
               </div>

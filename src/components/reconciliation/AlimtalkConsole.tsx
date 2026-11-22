@@ -183,36 +183,36 @@ export default function AlimtalkConsole({ rows, summary, batchId, datasetLabel }
     <section className="card p-4" id="alimtalk" data-testid="alimtalk-panel">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">카카오 알림톡</p>
-          <h2 className="mt-1 text-[13.5px] font-semibold text-white">정산 이상 알림톡 발송 콘솔</h2>
-          <p className="mt-1 max-w-3xl text-[11px] leading-relaxed text-slate-500">
+          <p className="text-[12.5px] font-medium uppercase tracking-[0.14em] text-slate-300">카카오 알림톡</p>
+          <h2 className="mt-1 text-[16px] font-semibold text-white">정산 이상 알림톡 발송 콘솔</h2>
+          <p className="mt-1 max-w-3xl text-[13px] leading-relaxed text-slate-300">
             정산 이상을 카카오 알림톡으로 알리는 발송 흐름(중복 차단 → 발송 대기 → 수락/실패 → 재시도)을 이 콘솔에서 그대로 확인합니다.
             템플릿은 카카오 검수본 형식({ALIMTALK_TEMPLATES.SS_ANOMALY_CRITICAL.code}, {ALIMTALK_TEMPLATES.SS_BATCH_SUMMARY.code})만 씁니다.
           </p>
         </div>
-        <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-[10px] font-medium text-amber-300" data-testid="alimtalk-simulation-badge">
+        <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-[12.5px] font-medium text-amber-300" data-testid="alimtalk-simulation-badge">
           테스트 발송
         </span>
       </div>
 
       <div className="mt-3 flex flex-wrap items-end gap-2">
         <label className="flex flex-col gap-1">
-          <span className="text-[10px] text-slate-500">수신 번호 (+82 허용)</span>
+          <span className="text-[12.5px] text-slate-300">수신 번호 (+82 허용)</span>
           <input
             value={phone}
             onChange={(event) => setPhone(event.target.value)}
             inputMode="tel"
-            className="w-40 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 text-[12px] tabular-nums text-slate-200 outline-none focus:border-emerald-400/50"
+            className="w-40 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 text-[14px] tabular-nums text-slate-200 outline-none focus:border-emerald-400/50"
             aria-label="알림톡 수신 번호"
           />
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-[10px] text-slate-500">발송 응답 시나리오</span>
+          <span className="text-[12.5px] text-slate-300">발송 응답 시나리오</span>
           <select
             value={scenario}
             onChange={(event) => setScenario(event.target.value as SendScenario)}
-            className="w-56 rounded-lg border border-white/[0.08] bg-ink-950 px-2.5 py-2 text-[12px] text-slate-200 outline-none focus:border-emerald-400/50"
+            className="w-56 rounded-lg border border-white/[0.08] bg-ink-950 px-2.5 py-2 text-[14px] text-slate-200 outline-none focus:border-emerald-400/50"
             aria-label="발송 응답 시나리오"
           >
             {SEND_SCENARIOS.map((item) => (
@@ -227,7 +227,7 @@ export default function AlimtalkConsole({ rows, summary, batchId, datasetLabel }
           type="button"
           onClick={handleSendAnomalies}
           data-testid="alimtalk-send"
-          className="rounded-lg bg-emerald-500 px-3 py-2 text-[12px] font-semibold text-ink-950 transition hover:bg-emerald-400"
+          className="rounded-lg bg-emerald-500 px-3 py-2 text-[14px] font-semibold text-ink-950 transition hover:bg-emerald-400"
         >
           이상 알림 발송 (critical {criticalAlerts.length}건)
         </button>
@@ -235,7 +235,7 @@ export default function AlimtalkConsole({ rows, summary, batchId, datasetLabel }
           type="button"
           onClick={handleSendSummary}
           data-testid="alimtalk-summary-send"
-          className="rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-[12px] font-medium text-slate-200 transition hover:border-white/25 hover:text-white"
+          className="rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-[14px] font-medium text-slate-200 transition hover:border-white/25 hover:text-white"
         >
           배치 요약 발송
         </button>
@@ -247,17 +247,17 @@ export default function AlimtalkConsole({ rows, summary, batchId, datasetLabel }
             setNotice({ tone: "info", text: "발송 이력을 비웠습니다." });
           }}
           disabled={!hasLogs}
-          className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-2 text-[11px] text-slate-500 transition enabled:hover:border-rose-400/40 enabled:hover:text-rose-300 disabled:opacity-40"
+          className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-2 text-[13px] text-slate-300 transition enabled:hover:border-rose-400/40 enabled:hover:text-rose-300 disabled:opacity-40"
         >
           이력 비우기
         </button>
-        <span className="text-[10.5px] text-slate-600">{scenarioMeta.hint}</span>
+        <span className="text-[13px] text-slate-400">{scenarioMeta.hint}</span>
       </div>
 
       {notice && (
         <div
           role="status"
-          className={`mt-3 rounded-lg border px-3 py-2 text-[11.5px] leading-relaxed ${
+          className={`mt-3 rounded-lg border px-3 py-2 text-[13.5px] leading-relaxed ${
             notice.tone === "error"
               ? "border-rose-400/25 bg-rose-400/[0.07] text-rose-200"
               : notice.tone === "warn"
@@ -273,29 +273,29 @@ export default function AlimtalkConsole({ rows, summary, batchId, datasetLabel }
 
       <div className="mt-3 grid gap-3 lg:grid-cols-[320px_minmax(0,1fr)]">
         <div>
-          <p className="mb-1.5 text-[10.5px] text-slate-500">카카오톡 말풍선 미리보기</p>
+          <p className="mb-1.5 text-[13px] text-slate-300">카카오톡 말풍선 미리보기</p>
           <div className="rounded-xl bg-[#B2C7D9] p-2.5" data-testid="alimtalk-bubble">
             <div className="flex items-center gap-1.5 px-1 pb-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#FEE500] text-[9px] font-bold text-[#3C1E1E]">S</span>
-              <span className="text-[10.5px] font-semibold text-[#1F2C3D]">{PLUS_FRIEND_ID}</span>
-              <span className="rounded-sm bg-[#8FA6B8] px-1 text-[8.5px] text-white">알림톡</span>
+              <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#FEE500] text-[12px] font-bold text-[#3C1E1E]">S</span>
+              <span className="text-[13px] font-semibold text-[#1F2C3D]">{PLUS_FRIEND_ID}</span>
+              <span className="rounded-sm bg-[#8FA6B8] px-1 text-[12px] text-white">알림톡</span>
             </div>
             {preview ? (
               <>
                 <div className="rounded-xl rounded-tl-sm bg-white px-3 py-2">
-                  <p className="whitespace-pre-wrap text-[11px] leading-[1.5] text-[#191919]">{preview.content}</p>
+                  <p className="whitespace-pre-wrap text-[13px] leading-[1.5] text-[#191919]">{preview.content}</p>
                 </div>
-                <p className="mt-1 px-0.5 text-[9px] text-[#1F2C3D]/70">{timeFormatter.format(preview.createdAt)}</p>
+                <p className="mt-1 px-0.5 text-[12px] text-[#1F2C3D]/70">{timeFormatter.format(preview.createdAt)}</p>
               </>
             ) : (
               <div className="rounded-xl rounded-tl-sm bg-white px-3 py-6 text-center">
-                <p className="text-[10.5px] leading-relaxed text-slate-500">
+                <p className="text-[13px] leading-relaxed text-slate-300">
                   발송 버튼을 누르면 템플릿 변수로 채운 실제 본문이 여기에 나타납니다.
                 </p>
               </div>
             )}
           </div>
-          <div className="mt-2 rounded-lg border border-white/[0.05] bg-white/[0.015] px-2.5 py-2 text-[10px] leading-relaxed text-slate-500">
+          <div className="mt-2 rounded-lg border border-white/[0.05] bg-white/[0.015] px-2.5 py-2 text-[12.5px] leading-relaxed text-slate-300">
             본문은 카카오에 검수된 템플릿과 같은 형식이며, 변수에는 개행을 넣지 않습니다. 상한은 1,000자입니다.
             발송 요청은 서버에서 서명해 전달하고, 화면은 발송 결과만 보여 줍니다.
           </div>
@@ -303,15 +303,15 @@ export default function AlimtalkConsole({ rows, summary, batchId, datasetLabel }
 
         <div>
           <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-[10.5px] text-slate-500">발송 이력 타임라인</p>
-            <p className="text-[10px] tabular-nums text-slate-600">
+            <p className="text-[13px] text-slate-300">발송 이력 타임라인</p>
+            <p className="text-[12.5px] tabular-nums text-slate-400">
               총 {stats.total}건 · 성공 {stats.accepted} · 실패 {stats.failed} · 불확실 {stats.uncertain} · 성공률 {stats.successRate}%
             </p>
           </div>
 
           <div className="max-h-[380px] space-y-1.5 overflow-y-auto pr-1 thin-scrollbar" data-testid="alimtalk-timeline">
             {!hasLogs ? (
-              <div className="rounded-lg border border-dashed border-white/[0.08] px-3 py-8 text-center text-[11px] text-slate-500">
+              <div className="rounded-lg border border-dashed border-white/[0.08] px-3 py-8 text-center text-[13px] text-slate-300">
                 발송 이력이 없습니다. 이상 알림이나 배치 요약을 한 번 보내 보세요.
               </div>
             ) : (
@@ -329,37 +329,37 @@ export default function AlimtalkConsole({ rows, summary, batchId, datasetLabel }
                       <button
                         type="button"
                         onClick={() => setPreviewId(entry.id)}
-                        className="text-[10px] tabular-nums text-slate-400 transition hover:text-slate-200"
+                        className="text-[12.5px] tabular-nums text-slate-400 transition hover:text-slate-200"
                       >
                         {timeFormatter.format(entry.createdAt)}
                       </button>
-                      <span className={`rounded-full border px-1.5 py-0.5 text-[9px] font-medium ${chip.className}`} data-testid="alimtalk-status">
+                      <span className={`rounded-full border px-1.5 py-0.5 text-[12px] font-medium ${chip.className}`} data-testid="alimtalk-status">
                         {chip.label}
                       </span>
-                      <span className="text-[9.5px] text-slate-500">{template?.label ?? entry.templateCode}</span>
-                      <span className="text-[9px] text-slate-600">
+                      <span className="text-[12px] text-slate-300">{template?.label ?? entry.templateCode}</span>
+                      <span className="text-[12px] text-slate-400">
                         {entry.recipientMasked} · 시도 {entry.attempts}/{MAX_SEND_ATTEMPTS}
                       </span>
-                      {entry.orderNo && <span className="font-mono text-[9px] text-slate-600">{entry.orderNo}</span>}
+                      {entry.orderNo && <span className="font-mono text-[12px] text-slate-400">{entry.orderNo}</span>}
                       {entry.status === "failed" && (
                         <button
                           type="button"
                           onClick={() => handleRetry(entry)}
-                          className="ml-auto rounded border border-amber-400/30 bg-amber-400/10 px-1.5 py-0.5 text-[9px] text-amber-200 transition hover:bg-amber-400/20"
+                          className="ml-auto rounded border border-amber-400/30 bg-amber-400/10 px-1.5 py-0.5 text-[12px] text-amber-200 transition hover:bg-amber-400/20"
                         >
                           재시도
                         </button>
                       )}
                     </div>
-                    <p className="mt-1 line-clamp-1 text-[10.5px] text-slate-500">{entry.content.split("\n")[0]}</p>
-                    {entry.error && <p className="mt-0.5 text-[10px] text-rose-300/90">{entry.error}</p>}
+                    <p className="mt-1 line-clamp-1 text-[13px] text-slate-300">{entry.content.split("\n")[0]}</p>
+                    {entry.error && <p className="mt-0.5 text-[12.5px] text-rose-300/90">{entry.error}</p>}
                   </div>
                 );
               })
             )}
           </div>
 
-          <p className="mt-2 text-[10px] leading-relaxed text-slate-600">
+          <p className="mt-2 text-[12.5px] leading-relaxed text-slate-400">
             발송 상태는 발송 대기 → 수락 → 도달/실패 순서로 남고, 수신 결과가 불확실한 건은 성공으로 세지 않습니다.
             재시도는 {MAX_SEND_ATTEMPTS}회까지이며, 템플릿·서명 오류는 재시도해도 성공하지 않습니다.
             이 이력은 이 브라우저에 보관됩니다.

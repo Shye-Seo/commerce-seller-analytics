@@ -38,7 +38,7 @@ export default function Header() {
               <path d="M4 19.5h16" />
             </svg>
           </span>
-          <span className="hidden whitespace-nowrap text-[13.5px] font-semibold tracking-tight text-white sm:block">SellerScope</span>
+          <span className="hidden whitespace-nowrap text-[14.5px] font-semibold tracking-tight text-white sm:block">SellerScope</span>
         </Link>
 
         <nav className="thin-scrollbar ml-1 flex flex-1 items-center gap-0.5 overflow-x-auto sm:ml-2" aria-label="주요 화면">
@@ -49,7 +49,7 @@ export default function Header() {
                 key={item.id}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`relative shrink-0 whitespace-nowrap rounded-md px-2.5 py-2 text-[12.5px] font-medium transition ${
+                className={`relative shrink-0 whitespace-nowrap rounded-md px-2.5 py-2 text-[14px] font-medium transition ${
                   active ? "bg-white/[0.07] text-white" : "text-slate-400 hover:bg-white/[0.03] hover:text-slate-100"
                 }`}
               >
@@ -60,7 +60,7 @@ export default function Header() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-1.5">
-          <span className="hidden items-center gap-1.5 rounded-md border border-white/[0.07] px-2 py-1 text-[10.5px] text-slate-500 xl:flex">
+          <span className="hidden items-center gap-1.5 rounded-md border border-white/[0.07] px-2 py-1 text-[13px] text-slate-300 xl:flex">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />
             스마트스토어·쿠팡 연결
           </span>

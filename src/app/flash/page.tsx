@@ -17,7 +17,7 @@ export default function FlashPage() {
       <PageHeader
         meta="Campaign"
         title="실시간 선착순 응모 · 쿠폰 발급 콘솔"
-        description="재고 100장에 1,000명이 동시에 눌러도 101장이 나가지 않아야 합니다. 이 콘솔은 동시 요청을 실제로 넣어 발급·품절·중복·오버이슈를 집계하고, 발급 원장을 주문·정산과 연결합니다."
+        description="재고 100장에 1,000명이 동시에 눌러도 101장이 나가지 않아야 합니다. 진행 중인 캠페인 조건을 먼저 확인하고, [고급] 동시 접속 경합 테스트로 동시 요청을 실제로 넣어 발급·품절·중복·오버이슈를 검증합니다."
         actions={
           <Link href="/settlement" className="btn">
             정산 대사로 확인
