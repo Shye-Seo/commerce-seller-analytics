@@ -287,8 +287,8 @@ export default function FlashCouponConsole() {
         <div className="mt-3 space-y-3 border-t border-white/[0.06] pt-3">
           <p className="max-w-3xl text-[14px] leading-relaxed text-slate-300">
             선착순 오픈 시 수천 명이 동시에 몰려도 재고 초과 발급(오버이슈)이 나지 않는지 검증하는
-            시뮬레이션입니다. 유입 상황을 고르고 실행하면, 엔진이 그 요청을 실제로 처리한 결과(발급·
-            품절·중복 차단·TPS)가 아래에 쌓입니다.
+            시뮬레이션입니다. 유입 상황을 고르고 실행하면, 엔진이 그 요청을 실제로 처리한
+            결과(발급·품절·중복 차단·TPS)가 아래에 쌓입니다.
           </p>
 
           <div className="grid gap-3 sm:grid-cols-3">
