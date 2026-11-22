@@ -48,6 +48,7 @@ import {
 } from "@/lib/multiTenantRbac";
 import { formatPercent, formatWon } from "@/lib/format";
 import { monthOf } from "@/lib/periodComparison";
+import { DEMO_ROW_COUNT, seedForTenant } from "@/lib/demoLedger";
 import Drawer from "@/components/ui/Drawer";
 import KpiStrip, { type KpiItem } from "@/components/ui/KpiStrip";
 import { Panel } from "@/components/ui/KpiStrip";
@@ -66,7 +67,6 @@ import { Panel } from "@/components/ui/KpiStrip";
  * 금액 계산은 전부 `reconciliationEngine`이 한다. 화면은 계산하지 않고 보여 주기만 한다.
  */
 
-const DEMO_ROW_COUNT = 20_000;
 const STRESS_ROW_COUNT = 100_000;
 const BATCH_SIZE = 5_000;
 
@@ -98,13 +98,6 @@ const CHANNEL_LABEL: Record<MarketChannel, string> = {
   elevenst: "11번가",
   gmarket: "G마켓",
 };
-
-/** 테넌트마다 다른 정산 원장을 갖도록 시드를 파생한다 */
-function seedForTenant(tenantId: string): number {
-  let sum = 20261111;
-  for (let index = 0; index < tenantId.length; index += 1) sum = (sum * 31 + tenantId.charCodeAt(index)) >>> 0;
-  return sum;
-}
 
 function nextPaint(): Promise<void> {
   return new Promise((resolve) => {

@@ -3,8 +3,7 @@ import { DEFAULT_NET_PAYOUT_INPUT, calculateNetPayout } from "@/lib/netPayout";
 import { INVENTORY_PLAN } from "@/lib/inventoryData";
 import { computeSettlementWatch } from "@/lib/settlementWatch";
 import { WATCH_LEDGER } from "@/lib/settlementWatchData";
-import { reconcileSettlement } from "@/lib/reconciliationEngine";
-import { generateSettlementRows } from "@/lib/settlementFixtures";
+import { demoReconciliation } from "@/lib/demoLedger";
 import { formatCount, formatPercent, formatWon } from "@/lib/format";
 
 /**
@@ -18,7 +17,7 @@ import { formatCount, formatPercent, formatWon } from "@/lib/format";
  */
 const payout = calculateNetPayout(DEFAULT_NET_PAYOUT_INPUT);
 const watch = computeSettlementWatch(WATCH_LEDGER.orders, WATCH_LEDGER.records, WATCH_LEDGER.snapshotDate);
-const reconciliation = reconcileSettlement(generateSettlementRows({ count: 2_000, seed: 20261111 }));
+const reconciliation = demoReconciliation();
 
 const MODULES = [
   {

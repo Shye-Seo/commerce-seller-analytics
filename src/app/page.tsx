@@ -8,8 +8,8 @@ import { calculateMargin } from "@/lib/calculator";
 import { formatCount, formatPercent, formatWon } from "@/lib/format";
 import { INVENTORY_PLAN } from "@/lib/inventoryData";
 import { DEFAULT_MARGIN_INPUT } from "@/lib/mockData";
-import { reconcileSettlement } from "@/lib/reconciliationEngine";
-import { generateSettlementRows, SETTLEMENT_SNAPSHOT_DATE } from "@/lib/settlementFixtures";
+import { demoReconciliation } from "@/lib/demoLedger";
+import { SETTLEMENT_SNAPSHOT_DATE } from "@/lib/settlementFixtures";
 import { computeSettlementWatch } from "@/lib/settlementWatch";
 import { WATCH_LEDGER } from "@/lib/settlementWatchData";
 
@@ -21,7 +21,7 @@ import { WATCH_LEDGER } from "@/lib/settlementWatchData";
  * 지표와 카드의 숫자는 모두 빌드 시점에 엔진으로 계산한 값이라, 손으로 적은 숫자가 없다.
  */
 const margin = calculateMargin(DEFAULT_MARGIN_INPUT);
-const reconciliation = reconcileSettlement(generateSettlementRows({ count: 2_000, seed: 20261111 }));
+const reconciliation = demoReconciliation();
 const watch = computeSettlementWatch(WATCH_LEDGER.orders, WATCH_LEDGER.records, WATCH_LEDGER.snapshotDate);
 
 const marginStatus =
